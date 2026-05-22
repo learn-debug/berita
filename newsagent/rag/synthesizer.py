@@ -11,6 +11,7 @@ class Synthesizer:
 
     async def synthesize(self, documents: list[str], topic: str) -> str:
         return await self.llm.complete(
-            system="Sintesis dokumen-dokumen berikut menjadi ringkasan terstruktur yang relevan dengan topik.",
+            system="Sintesis dokumen-dokumen berikut menjadi ringkasan terstruktur "
+            "yang relevan dengan topik.",
             prompt=f"Topik: {topic}\n\nDokumen:\n" + "\n---\n".join(documents),
         )

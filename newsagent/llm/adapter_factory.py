@@ -14,6 +14,7 @@ def adapter_factory(agent_key: str) -> BaseLLMAdapter:
         "editor_agent": settings.editor_agent_llm,
         "fact_check": settings.fact_check_llm,
         "publisher_agent": settings.publisher_agent_llm,
+        "rag": settings.rag_llm,
     }
     provider = provider_map.get(agent_key, "claude")
 

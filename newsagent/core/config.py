@@ -2,7 +2,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://newsagent:newsagent_dev@localhost:5432/newsagent"
+    database_url: str = (
+        "postgresql+asyncpg://newsagent:newsagent_dev@localhost:5432/newsagent"
+    )
     redis_url: str = "redis://localhost:6379/0"
 
     anthropic_api_key: str = ""
@@ -16,6 +18,7 @@ class Settings(BaseSettings):
     editor_agent_llm: str = "claude"
     fact_check_llm: str = "claude"
     publisher_agent_llm: str = "claude"
+    rag_llm: str = "claude"
 
     quality_gate_auto_publish: float = 0.75
     quality_gate_review_threshold: float = 0.50
