@@ -3,7 +3,7 @@
 ## Current state
 
 - **Phase 1 complete.** `newsagent/` package, all agents, LangGraph pipeline, LLM adapters, resilience/security/cost layers, FastAPI entrypoint, Docker Compose, and tests exist and pass.
-- Repo has zero commits — no code has been committed yet.
+- All Phase 1 code has been committed.
 
 ## Authoritative docs
 
