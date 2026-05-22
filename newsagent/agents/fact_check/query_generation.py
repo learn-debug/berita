@@ -17,14 +17,23 @@ class QueryGenerationAgent:
         logger.info("[QueryGeneration] mulai — article_id=%s", state["article_id"])
 
         claims = state.get("fact_check_report", {}).get("claims", "")
-        result = await self.llm.complete(
-            system=self._system_prompt(),
-            prompt=f"Buat query pencarian untuk memverifikasi klaim-klaim berikut:\n\n{claims}",
-        )
+        try:
+            result = await self.llm.complete(
+                system=self._system_prompt(),
+                prompt=f"Buat query pencarian untuk memverifikasi klaim-klaim berikut:\n\n{claims}",
+            )
+            queries = result
+        except Exception as e:
+            logger.error("[QueryGeneration] gagal: %s", e)
+            queries = ""
+
+        fact_check = {**state.get("fact_check_report", {}), "queries": queries}
 
         return {
             **state,
-            "events": state["events"] + [make_event("QueryGeneration", "generate_queries", result[:200])],
+            "fact_check_report": fact_check,
+            "events": state["events"]
+            + [make_event("QueryGeneration", "generate_queries", f"{len(queries)} chars")],
         }
 
     def _system_prompt(self) -> str:

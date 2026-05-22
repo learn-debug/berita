@@ -16,22 +16,27 @@ class VerdictPredictionAgent:
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[VerdictPrediction] mulai — article_id=%s", state["article_id"])
 
-        claims = state.get("fact_check_report", {}).get("claims", "")
-        evidence = state.get("fact_check_report", {}).get("evidence", "")
+        report = state.get("fact_check_report", {})
+        claims = report.get("claims", "")
+        evidence = report.get("evidence", "")
 
-        result = await self.llm.complete(
-            system=self._system_prompt(),
-            prompt=f"Klaim:\n{claims}\n\nBukti:\n{evidence}\n\nBerikan putusan untuk setiap klaim.",
-        )
+        try:
+            result = await self.llm.complete(
+                system=self._system_prompt(),
+                prompt=f"Klaim:\n{claims}\n\nBukti:\n{evidence}\n\nBerikan putusan untuk setiap klaim.",
+            )
+            verdict = result
+        except Exception as e:
+            logger.error("[VerdictPrediction] gagal: %s", e)
+            verdict = ""
+
+        fact_check = {**report, "verdict": verdict}
 
         return {
             **state,
-            "fact_check_report": {
-                "claims": claims,
-                "evidence": evidence,
-                "verdict": result,
-            },
-            "events": state["events"] + [make_event("VerdictPrediction", "predict_verdict", result[:200])],
+            "fact_check_report": fact_check,
+            "events": state["events"]
+            + [make_event("VerdictPrediction", "predict_verdict", f"{len(verdict)} chars")],
         }
 
     def _system_prompt(self) -> str:

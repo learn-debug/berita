@@ -17,14 +17,23 @@ class InputIngestionAgent:
         logger.info("[InputIngestion] mulai — article_id=%s", state["article_id"])
 
         source = state.get("edited_draft") or state["draft"]
-        result = await self.llm.complete(
-            system=self._system_prompt(),
-            prompt=f"Ekstrak klaim-klaim faktual dari artikel berikut:\n\n{source}",
-        )
+        try:
+            result = await self.llm.complete(
+                system=self._system_prompt(),
+                prompt=f"Ekstrak klaim-klaim faktual dari artikel berikut:\n\n{source}",
+            )
+            claims = result
+        except Exception as e:
+            logger.error("[InputIngestion] gagal: %s", e)
+            claims = ""
+
+        fact_check = {**state.get("fact_check_report", {}), "claims": claims}
 
         return {
             **state,
-            "events": state["events"] + [make_event("InputIngestion", "extract_claims", result[:200])],
+            "fact_check_report": fact_check,
+            "events": state["events"]
+            + [make_event("InputIngestion", "extract_claims", f"{len(claims)} chars")],
         }
 
     def _system_prompt(self) -> str:
