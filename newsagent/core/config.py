@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     gemini_api_key: str = ""
+    mistral_api_key: str = ""
+    qwen_api_key: str = ""
 
     orchestrator_llm: str = "claude"
     draft_agent_llm: str = "claude"
