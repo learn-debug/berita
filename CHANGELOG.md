@@ -6,6 +6,21 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 
 ---
 
+## [Unreleased]
+
+### Added
+- External markdown prompt files in `newsagent/prompts/`
+- `newsagent.utils.prompt_loader` utility to dynamically load prompts
+
+### Changed
+- Refactored all 9 core and fact-check agents' `_system_prompt()` methods to use `load_prompt()`
+- Upgraded all agent prompts with advanced Prompt Engineering techniques: Chain of Thought (CoT), Few-Shot examples, and Multi-Role Debate formatting
+
+### Docs
+- Updated `docs/AGENT_GUIDE.md` to document the new external Markdown prompt structure and CoT requirement
+
+---
+
 ## [0.3.0] — 2026-05-22
 
 ### Added
