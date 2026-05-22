@@ -12,16 +12,21 @@ from newsagent.agents.fact_check.verdict_prediction import VerdictPredictionAgen
 from newsagent.agents.orchestrator import OrchestratorAgent
 from newsagent.agents.publisher_agent import PublisherAgent
 from newsagent.agents.quality_gate import QualityGateAgent
+from newsagent.core.config import settings
 from newsagent.core.state import ArticleState
 from newsagent.llm.adapter_factory import adapter_factory
 from newsagent.rag.pipeline import RAGPipeline
+from newsagent.tools.cms_client import CMSClient
 
 
 def route_after_quality(state: ArticleState) -> str:
     score = state.get("credibility_score", 0.0)
-    if score >= 0.50:
+    if score >= 0.75:
         return "publisher"
-    return "editor_agent"
+    if score >= 0.50:
+        return "editor_agent"
+    return "orchestrator"
+    return "orchestrator"
 
 
 def route_after_draft(state: ArticleState) -> str:
@@ -42,7 +47,12 @@ def build_graph() -> Any:
     verdict = VerdictPredictionAgent(llm=adapter_factory("fact_check"))
     aggregator = AggregatorAgent(llm=adapter_factory("orchestrator"))
     quality = QualityGateAgent(llm=adapter_factory("orchestrator"))
-    publisher = PublisherAgent(llm=adapter_factory("publisher_agent"))
+    cms = (
+        CMSClient(base_url=settings.cms_base_url, api_key=settings.cms_api_key)
+        if settings.cms_base_url and settings.cms_api_key
+        else None
+    )
+    publisher = PublisherAgent(llm=adapter_factory("publisher_agent"), cms=cms)
 
     workflow = StateGraph(ArticleState)
 

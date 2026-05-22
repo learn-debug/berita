@@ -34,24 +34,28 @@ class TestRouteAfterQuality:
 
     def test_score_at_review_boundary(self) -> None:
         state = _make_state({"credibility_score": 0.50})
-        assert route_after_quality(state) == "publisher"
+        assert route_after_quality(state) == "editor_agent"
 
-    def test_low_score_goes_to_editor(self) -> None:
+    def test_editor_review_upper_boundary(self) -> None:
+        state = _make_state({"credibility_score": 0.74})
+        assert route_after_quality(state) == "editor_agent"
+
+    def test_low_score_goes_to_orchestrator(self) -> None:
         state = _make_state({"credibility_score": 0.30})
-        assert route_after_quality(state) == "editor_agent"
+        assert route_after_quality(state) == "orchestrator"
 
-    def test_zero_score_goes_to_editor(self) -> None:
+    def test_zero_score_goes_to_orchestrator(self) -> None:
         state = _make_state({"credibility_score": 0.0})
-        assert route_after_quality(state) == "editor_agent"
+        assert route_after_quality(state) == "orchestrator"
 
-    def test_missing_score_goes_to_editor(self) -> None:
+    def test_missing_score_goes_to_orchestrator(self) -> None:
         state = _make_state({})
         del state["credibility_score"]
-        assert route_after_quality(state) == "editor_agent"
+        assert route_after_quality(state) == "orchestrator"
 
     def test_score_just_below_boundary(self) -> None:
         state = _make_state({"credibility_score": 0.4999})
-        assert route_after_quality(state) == "editor_agent"
+        assert route_after_quality(state) == "orchestrator"
 
 
 class TestRouteAfterDraft:
