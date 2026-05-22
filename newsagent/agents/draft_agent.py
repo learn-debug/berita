@@ -5,6 +5,7 @@ from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
+from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +39,4 @@ class DraftAgent:
         }
 
     def _system_prompt(self) -> str:
-        return (
-            PromptHardener.SYSTEM_GUARD
-            + "\n\nKamu adalah jurnalis senior. Buat artikel berita yang informatif dan terstruktur "
-            "berdasarkan topik dan konteks RAG yang diberikan.\n"
-            "Gunakan struktur: judul, pendahuluan, isi (2-3 paragraf), kesimpulan.\n"
-            "Gunakan bahasa Indonesia yang baik dan benar."
-        )
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("draft_agent.md")
