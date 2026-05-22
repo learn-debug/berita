@@ -295,7 +295,7 @@ Menerima artikel final dari Quality Gate dan mempublikasikannya ke CMS sesuai ja
 | Komponen | Teknologi |
 |---|---|
 | Framework Multi-Agent | [LangGraph](https://github.com/langchain-ai/langgraph) |
-| **LLM Adapter Layer** | `BaseLLMAdapter` — pluggable: Claude, GPT-4, Gemini, Ollama |
+| **LLM Adapter Layer** | `BaseLLMAdapter` — pluggable: Claude, GPT-4o, Gemini, Mistral, Qwen |
 | LLM Default | Claude API (`claude-sonnet-4-20250514`) via `ClaudeAdapter` |
 | RAG & Evidence Retrieval | LangChain + Anthropic Web Search Tool |
 | Vector Store | PostgreSQL + pgvector |
@@ -343,7 +343,8 @@ newsagent/
 │   ├── claude_adapter.py            # Implementasi Claude API
 │   ├── openai_adapter.py            # Implementasi OpenAI GPT-4
 │   ├── gemini_adapter.py            # Implementasi Google Gemini
-│   ├── ollama_adapter.py            # Implementasi Ollama (lokal)
+│   ├── mistral_adapter.py           # Implementasi Mistral AI
+│   ├── qwen_adapter.py              # Implementasi Alibaba Qwen
 │   └── adapter_factory.py           # Factory: baca config -> return adapter
 ├── resilience/
 │   ├── retry_policy.py              # Per-agen retry + backoff config
@@ -478,13 +479,14 @@ CONSENSUS_THRESHOLD=0.8       # threshold kesepakatan agen
 ORCHESTRATOR_LLM=claude        # butuh reasoning kuat
 DRAFT_AGENT_LLM=claude         # butuh kreativitas tinggi
 FACT_CHECK_LLM=claude          # butuh akurasi tinggi
-EDITOR_AGENT_LLM=claude        # bisa diganti Gemini/GPT-4
-PUBLISHER_AGENT_LLM=ollama     # tugas simpel -> pakai lokal gratis
+EDITOR_AGENT_LLM=claude        # bisa diganti Gemini/GPT-4/Mistral
+PUBLISHER_AGENT_LLM=claude     # bisa diganti Qwen untuk hemat biaya
 
 # Adapter credentials
 OPENAI_API_KEY=sk-...          # opsional jika pakai OpenAI
 GEMINI_API_KEY=...             # opsional jika pakai Gemini
-OLLAMA_BASE_URL=http://localhost:11434  # opsional jika pakai Ollama
+MISTRAL_API_KEY=...            # opsional jika pakai Mistral
+QWEN_API_KEY=...               # opsional jika pakai Qwen (DashScope)
 
 # Error Handling & Resilience
 MAX_RETRY_ATTEMPTS=3           # retry per agen sebelum DLQ
