@@ -1,3 +1,5 @@
+import pytest
+
 from newsagent.llm.adapter_factory import adapter_factory
 from newsagent.llm.base_adapter import BaseLLMAdapter
 
@@ -8,9 +10,9 @@ def test_adapter_factory_returns_adapter() -> None:
     assert adapter.model_name() is not None
 
 
-def test_adapter_factory_unknown_key_falls_back_to_claude() -> None:
-    adapter = adapter_factory("unknown_agent")
-    assert isinstance(adapter, BaseLLMAdapter)
+def test_adapter_factory_unknown_key_raises() -> None:
+    with pytest.raises(ValueError, match="Unknown agent key"):
+        adapter_factory("unknown_agent")
 
 
 def test_adapter_factory_all_keys() -> None:
@@ -26,6 +28,6 @@ def test_adapter_factory_all_keys() -> None:
         assert isinstance(adapter, BaseLLMAdapter), f"Failed for key '{key}'"
 
 
-def test_adapter_factory_empty_key() -> None:
-    adapter = adapter_factory("")
-    assert isinstance(adapter, BaseLLMAdapter)
+def test_adapter_factory_empty_key_raises() -> None:
+    with pytest.raises(ValueError, match="Unknown agent key"):
+        adapter_factory("")

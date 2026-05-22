@@ -18,13 +18,14 @@ class AggregatorAgent:
         logger.info("[Aggregator] mulai — article_id=%s", state["article_id"])
 
         try:
+            article_source = state.get("edited_draft") or state["draft"]
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=PromptHardener.wrap_user_input((
-                    f"Artikel (edited):\n{state.get('edited_draft', state['draft'])}\n\n"
+                prompt=(
+                    f"Artikel (edited):\n{article_source}\n\n"
                     f"Laporan Fact-Check:\n{state.get('fact_check_report', {})}\n\n"
                     "Lakukan debat 2 ronde dan berikan artikel final."
-                )),
+                ),
             )
             article = result
         except Exception as e:

@@ -59,10 +59,10 @@ class PublisherAgent:
         }
 
     def _parse_result(self, text: str) -> tuple[str, str]:
-        match = re.search(r"JUDUL:\s*(.+?)(?:\n|$)", text, re.IGNORECASE | re.DOTALL)
+        title_match = re.search(r"JUDUL:\s*(.+)$", text, re.IGNORECASE | re.MULTILINE)
         konten_match = re.search(r"KONTEN:\s*(.+)", text, re.IGNORECASE | re.DOTALL)
 
-        title = match.group(1).strip() if match else ""
+        title = title_match.group(1).strip() if title_match else ""
         body = konten_match.group(1).strip() if konten_match else ""
         return title, body
 

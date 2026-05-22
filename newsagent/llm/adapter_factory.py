@@ -16,7 +16,9 @@ def adapter_factory(agent_key: str) -> BaseLLMAdapter:
         "publisher_agent": settings.publisher_agent_llm,
         "rag": settings.rag_llm,
     }
-    provider = provider_map.get(agent_key, "claude")
+    provider = provider_map.get(agent_key)
+    if provider is None:
+        raise ValueError(f"Unknown agent key '{agent_key}'. Valid keys: {', '.join(provider_map)}")
 
     adapters: dict[str, type[BaseLLMAdapter]] = {
         "claude": ClaudeAdapter,
@@ -25,5 +27,10 @@ def adapter_factory(agent_key: str) -> BaseLLMAdapter:
         "mistral": MistralAdapter,
         "qwen": QwenAdapter,
     }
-    cls = adapters.get(provider, ClaudeAdapter)
+    cls = adapters.get(provider)
+    if cls is None:
+        raise ValueError(
+            f"Unknown LLM provider '{provider}' for agent '{agent_key}'. "
+            f"Valid providers: {', '.join(adapters)}"
+        )
     return cls()
