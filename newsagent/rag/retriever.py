@@ -24,16 +24,12 @@ class Retriever:
 
             for query in queries[:3]:
                 try:
-                    search_url = (
-                        f"https://duckduckgo.com/html/?q={query.replace(' ', '+')}"
-                    )
+                    search_url = f"https://duckduckgo.com/html/?q={query.replace(' ', '+')}"
                     page = await self._search.fetch_page(search_url)
                     if page and len(page) > 200:
                         documents.append(f"Sumber ({query}):\n{page}")
                 except Exception as e:
-                    logger.debug(
-                        "[Retriever] fetch gagal untuk query '%s': %s", query, e
-                    )
+                    logger.debug("[Retriever] fetch gagal untuk query '%s': %s", query, e)
 
         except Exception as e:
             logger.error("[Retriever] error: %s", e)

@@ -37,4 +37,7 @@ class InputIngestionAgent:
         }
 
     def _system_prompt(self) -> str:
-        return "Ekstrak semua klaim faktual yang dapat diverifikasi dari artikel di bawah ini. Kembalikan sebagai daftar terpisah."
+        return (
+            "Ekstrak semua klaim faktual yang dapat diverifikasi dari artikel di bawah ini. "
+            "Kembalikan sebagai daftar terpisah."
+        )

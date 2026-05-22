@@ -49,4 +49,7 @@ class EvidenceRetrievalAgent:
         }
 
     def _system_prompt(self) -> str:
-        return "Kumpulkan bukti dari sumber kredibel untuk setiap query. Prioritaskan sumber primer dan data resmi."
+        return (
+            "Kumpulkan bukti dari sumber kredibel untuk setiap query. "
+            "Prioritaskan sumber primer dan data resmi."
+        )

@@ -37,4 +37,7 @@ class QueryGenerationAgent:
         }
 
     def _system_prompt(self) -> str:
-        return "Buat query pencarian web yang tepat untuk memverifikasi setiap klaim. Fokus pada sumber kredibel."
+        return (
+            "Buat query pencarian web yang tepat untuk memverifikasi setiap klaim. "
+            "Fokus pada sumber kredibel."
+        )

@@ -51,8 +51,7 @@ class RAGPipeline:
             return {
                 **state,
                 "rag_context": f"Konteks tentang: {topic}",
-                "events": state["events"]
-                + [make_event("RAGPipeline", "failed", f"RAG pipeline error: {e}")],
+                "events": state["events"] + [make_event("RAGPipeline", "failed", f"RAG pipeline error: {e}")],
             }
 
     async def close(self) -> None:

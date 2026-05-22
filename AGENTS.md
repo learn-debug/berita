@@ -16,14 +16,26 @@
 | `docs/adr/` | ADRs for key decisions (LLM Adapter, OSINT deferral, etc.) |
 | `docs/API_REFERENCE.md` | Planned REST + WebSocket endpoints |
 
-## Commands (verified working)
+## Quick start
 
 ```bash
-# format
-black . && isort .
+uv sync --extra dev   # install semua deps (termasuk dev)
+npm install           # install pyright (type checker)
+```
 
-# type check
+## Commands (via `uv run` or direct after `uv shell`)
+
+```bash
+# format & lint (replaces black, isort, flake8)
+ruff check . --fix
+ruff format .
+
+# type check (two options)
 mypy newsagent/
+npx pyright newsagent/
+
+# security audit
+pip-audit --strict --path .venv
 
 # test (single run or with coverage)
 pytest newsagent/tests/ -v
@@ -34,6 +46,10 @@ uvicorn newsagent.api.main:app --reload
 
 # start services
 docker compose up -d
+
+# pre-commit (run manually or auto on git commit)
+pre-commit run --all-files
+pre-commit install   # aktifkan hook otomatis
 ```
 
 - Commit: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`).
@@ -51,7 +67,7 @@ docker compose up -d
 
 ## Development rules
 
-- Python 3.11+, type hints on all public functions, docstrings on classes + public functions.
+- Python 3.10+, type hints on all public functions, docstrings on classes + public functions.
 - Each agent: one class per file, `@with_retry` + `@with_budget` decorators, implements `async def run(state) -> state`.
 - Each feature needs tests in `tests/test_agents/` (unit) or `tests/test_integration/` (integration).
 - No generated code, no migrations, no build artifacts yet. Alembic planned for future DB migrations.

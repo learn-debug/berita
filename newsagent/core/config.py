@@ -2,9 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = (
-        "postgresql+asyncpg://newsagent:newsagent_dev@localhost:5432/newsagent"
-    )
+    database_url: str = "postgresql+asyncpg://newsagent:newsagent_dev@localhost:5432/newsagent"
     redis_url: str = "redis://localhost:6379/0"
 
     anthropic_api_key: str = ""

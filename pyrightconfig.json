@@ -1,0 +1,9 @@
+{
+  "include": ["newsagent"],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.venv",
+    "**/tests"
+  ]
+}

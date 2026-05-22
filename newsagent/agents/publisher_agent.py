@@ -35,4 +35,7 @@ class PublisherAgent:
         }
 
     def _system_prompt(self) -> str:
-        return "Ekstrak judul dan siapkan artikel untuk dipublikasikan ke CMS. Kembalikan dalam format: JUDUL: ...\n\nKONTEN: ..."
+        return (
+            "Ekstrak judul dan siapkan artikel untuk dipublikasikan ke CMS. "
+            "Kembalikan dalam format: JUDUL: ...\n\nKONTEN: ..."
+        )

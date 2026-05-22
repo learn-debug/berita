@@ -13,9 +13,7 @@ class FakeLLM:
             return "query 1\nquery 2\nquery 3"
         return "Fallback information about the topic."
 
-    async def complete_structured(
-        self, prompt: str, schema: dict, system: str | None = None
-    ) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -99,9 +97,7 @@ async def test_retriever_fallback_to_topic() -> None:
                 raise RuntimeError("API error")
             return "fallback"
 
-        async def complete_structured(
-            self, prompt: str, schema: dict, system: str | None = None
-        ) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:
