@@ -5,8 +5,9 @@ from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
-from newsagent.tools.cms_client import CMSClient
 from newsagent.security.prompt_hardening import PromptHardener
+from newsagent.tools.cms_client import CMSClient
+from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +24,12 @@ class PublisherAgent:
         content = state.get("aggregated_article") or state.get("edited_draft") or state["draft"]
 
         try:
+            prompt = PromptHardener.wrap_user_input(
+                f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}"
+            )
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=PromptHardener.wrap_user_input(f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}"),
+                prompt=prompt,
             )
             logger.info("[PublisherAgent] LLM selesai — %d karakter", len(result))
         except Exception as e:
@@ -34,7 +38,11 @@ class PublisherAgent:
 
         title, body = self._parse_result(result)
         if not title or not body:
-            logger.warning("[PublisherAgent] parse gagal (title=%s, body=%s), fallback ke raw", bool(title), bool(body))
+            logger.warning(
+                "[PublisherAgent] parse gagal (title=%s, body=%s), fallback ke raw",
+                bool(title),
+                bool(body),
+            )
             title = title or f"Artikel {state['article_id']}"
             body = body or content
 
@@ -74,7 +82,4 @@ class PublisherAgent:
         }
 
     def _system_prompt(self) -> str:
-        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
-            "Ekstrak judul dan siapkan artikel untuk dipublikasikan ke CMS. "
-            "Kembalikan dalam format: JUDUL: ...\n\nKONTEN: ..."
-        )
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("publisher_agent.md")
