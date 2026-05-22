@@ -1,19 +1,37 @@
 import re
 from typing import Any
 
+from lxml.html import fromstring
+
 
 class InputSanitizer:
-    BLOCKED_PATTERNS: list[re.Pattern[str]] = [
-        re.compile(r"<script[^>]*>.*?</script>", re.IGNORECASE | re.DOTALL),
-        re.compile(r"javascript:", re.IGNORECASE),
-        re.compile(r"on\w+\s*=", re.IGNORECASE),
+    BLOCKED_TAGS: set[str] = {"script", "style", "iframe", "object", "embed", "svg", "noscript"}
+    BLOCKED_ATTR_PATTERNS: list[re.Pattern[str]] = [
+        re.compile(r"^\s*javascript:", re.IGNORECASE),
+        re.compile(r"^\s*data:", re.IGNORECASE),
+        re.compile(r"^\s*vbscript:", re.IGNORECASE),
     ]
 
     @classmethod
     def sanitize(cls, text: str) -> str:
-        for pattern in cls.BLOCKED_PATTERNS:
-            text = pattern.sub("", text)
-        return text.strip()
+        try:
+            root = fromstring(f"<div>{text}</div>")
+            for tag in cls.BLOCKED_TAGS:
+                for elem in root.iter(tag):
+                    elem.drop_tree()
+            for elem in root.iter():
+                for attr in list(elem.attrib):
+                    val = elem.attrib[attr]
+                    for pattern in cls.BLOCKED_ATTR_PATTERNS:
+                        if pattern.search(val):
+                            del elem.attrib[attr]
+                            break
+            result = root.text_content()
+        except Exception:
+            result = text
+        result = re.sub(r"javascript\s*:", " ", result, flags=re.IGNORECASE)
+        result = re.sub(r"on\w+\s*=", " ", result, flags=re.IGNORECASE)
+        return result.strip()
 
     @classmethod
     def validate_input_type(cls, raw: dict[str, Any]) -> dict[str, Any]:

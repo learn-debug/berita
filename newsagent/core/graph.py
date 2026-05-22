@@ -54,6 +54,11 @@ def build_graph() -> Any:
     )
     publisher = PublisherAgent(llm=adapter_factory("publisher_agent"), cms=cms)
 
+    if cms:
+        from newsagent.api.main import _cleanup_handlers
+
+        _cleanup_handlers.append(cms.close)
+
     workflow = StateGraph(ArticleState)
 
     workflow.add_node("orchestrator", orchestrator.run)

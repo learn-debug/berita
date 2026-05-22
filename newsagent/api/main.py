@@ -1,4 +1,7 @@
+import asyncio
 import logging
+from collections.abc import Awaitable, Callable
+from contextlib import asynccontextmanager
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
@@ -11,7 +14,20 @@ from newsagent.security.rate_limiter import RateLimiter
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="NewsAgent API", version="0.1.0")
+_cleanup_handlers: list[Callable[[], Awaitable[None]]] = []
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    yield
+    for handler in _cleanup_handlers:
+        try:
+            await handler()
+        except Exception as e:
+            logger.warning("[cleanup] error: %s", e)
+
+
+app = FastAPI(title="NewsAgent API", version="0.1.0", lifespan=lifespan)
 
 graph = build_graph()
 
@@ -55,8 +71,10 @@ async def process_article(req: ProcessRequest) -> ArticleResponse:
     }
 
     try:
-        result = await graph.ainvoke(initial)
+        result = await asyncio.wait_for(graph.ainvoke(initial), timeout=120.0)
         return ArticleResponse(article_id=result["article_id"], status=result["status"])
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="Pipeline timeout")
     except Exception as e:
         logger.error("[API] pipeline error: %s", e)
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
