@@ -6,6 +6,39 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 
 ---
 
+## [0.2.0] — 2026-05-22
+
+### Added
+- `GeminiAdapter` untuk Google Gemini 2.0 Flash (`llm/gemini_adapter.py`)
+- `MistralAdapter` untuk Mistral AI (`llm/mistral_adapter.py`)
+- `QwenAdapter` untuk Alibaba Qwen via DashScope (`llm/qwen_adapter.py`)
+- Conditional routing di LangGraph graph (`route_after_quality`, `route_after_draft`)
+- Rate limiting di API endpoint (`RateLimiter`)
+- Input sanitasi di API endpoint (`InputSanitizer`)
+- `.gitignore` dengan pengecualian `__pycache__`, `.venv`, `.mypy_cache`, `.pytest_cache`
+- Mermaid pipeline diagrams di `docs/ARCHITECTURE.md` dan `README.md`
+
+### Fixed
+- **Fact-Check data flow**: InputIngestion sekarang menulis ke `fact_check_report["claims"]`, QueryGeneration ke `["queries"]`, EvidenceRetrieval ke `["evidence"]`, VerdictPrediction ke `["verdict"]`
+- **Quality Gate score 0.0**: `compute_credibility()` sekarang dipanggil dengan argumen nyata dari evaluasi LLM (4 dimensi)
+- **EvidenceRetrieval web search**: `WebSearchTool.fetch_page()` dipanggil per query, bukan hanya instantiate tanpa dipakai
+- **Error handling**: Semua 10 agen + 5 LLM adapter + API endpoint punya `try/except` dengan fallback
+- **PublisherAgent**: Menambahkan `_system_prompt()` yang hilang
+
+### Changed
+- `docs/ARCHITECTURE.md`: Replace `OllamaAdapter` → `MistralAdapter` + `QwenAdapter`
+- `docs/AGENT_GUIDE.md`, `TROUBLESHOOTING.md`, `ROADMAP.md`, `adr/0002`: Replace Ollama references dengan Mistral/Qwen
+- `README.md`: Update LLM provider list, tech stack, struktur `llm/`, konfigurasi `.env`
+- `API_REFERENCE.md`: Tandai endpoint Fase 2 sebagai `(planned)`, pisahkan endpoint yang sudah ada
+- `DEPLOYMENT.md`: Hapus referensi Alembic/Celery/production yang belum ada
+- `CONTRIBUTING.md`: Update area prioritas kontribusi, perbaiki perintah mypy
+- `pyproject.toml`: Tambah `[build-system]`, set Python 3.11 + mypy 3.11, perbaiki dependency groups
+
+### Docs
+- `AGENTS.md`, `README.md`, `ROADMAP.md`, `CONTRIBUTING.md` — sinkronisasi dengan status Fase 1
+
+---
+
 ## [0.1.0] — 2026-05-22
 
 ### Added
