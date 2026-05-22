@@ -26,12 +26,14 @@ def route_after_quality(state: ArticleState) -> str:
     if score >= 0.50:
         return "editor_agent"
     return "orchestrator"
+    return "orchestrator"
 
 
 def route_after_draft(state: ArticleState) -> str:
     status = state.get("status", "")
     if status == "revision":
         return "orchestrator"
+    return "editor_agent"
 
 
 def build_graph() -> Any:
