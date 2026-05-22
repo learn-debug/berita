@@ -12,15 +12,18 @@ logger = logging.getLogger(__name__)
 class QwenAdapter(BaseLLMAdapter):
     _model = "qwen-plus"
 
-    def __init__(self) -> None:
-        self._client = AsyncOpenAI(
-            api_key=settings.qwen_api_key,
-            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-        )
+    def _get_client(self) -> AsyncOpenAI:
+        if not hasattr(self, "_client"):
+            self._client = AsyncOpenAI(
+                api_key=settings.qwen_api_key,
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            )
+        return self._client
 
     async def complete(self, prompt: str, system: str | None = None) -> str:
+        client = self._get_client()
         try:
-            response = await self._client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=self._model,
                 max_tokens=4096,
                 messages=[
@@ -36,8 +39,9 @@ class QwenAdapter(BaseLLMAdapter):
     async def complete_structured(
         self, prompt: str, schema: dict[str, Any], system: str | None = None
     ) -> dict[str, Any]:
+        client = self._get_client()
         try:
-            response = await self._client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=self._model,
                 max_tokens=4096,
                 messages=[

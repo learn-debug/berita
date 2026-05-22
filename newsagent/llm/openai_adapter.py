@@ -12,12 +12,15 @@ logger = logging.getLogger(__name__)
 class OpenAIAdapter(BaseLLMAdapter):
     _model = "gpt-4o"
 
-    def __init__(self) -> None:
-        self._client = AsyncOpenAI(api_key=settings.openai_api_key)
+    def _get_client(self) -> AsyncOpenAI:
+        if not hasattr(self, "_client"):
+            self._client = AsyncOpenAI(api_key=settings.openai_api_key)
+        return self._client
 
     async def complete(self, prompt: str, system: str | None = None) -> str:
+        client = self._get_client()
         try:
-            response = await self._client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=self._model,
                 max_tokens=4096,
                 messages=[
@@ -33,8 +36,9 @@ class OpenAIAdapter(BaseLLMAdapter):
     async def complete_structured(
         self, prompt: str, schema: dict[str, Any], system: str | None = None
     ) -> dict[str, Any]:
+        client = self._get_client()
         try:
-            response = await self._client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=self._model,
                 max_tokens=4096,
                 messages=[
