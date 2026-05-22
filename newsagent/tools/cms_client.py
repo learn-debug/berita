@@ -1,5 +1,6 @@
 import httpx
 
+from newsagent.security.input_sanitizer import InputSanitizer
 from newsagent.tools.base import BaseTool
 
 
@@ -26,11 +27,13 @@ class CMSClient(BaseTool):
     async def publish(self, title: str, content: str, status: str = "publish") -> dict:
         if not hasattr(self, "_client"):
             await self.setup()
+        safe_title = InputSanitizer.sanitize(title)
+        safe_content = InputSanitizer.sanitize(content)
         response = await self._client.post(
             "/wp-json/wp/v2/posts",
             json={
-                "title": title,
-                "content": content,
+                "title": safe_title,
+                "content": safe_content,
                 "status": status,
             },
         )

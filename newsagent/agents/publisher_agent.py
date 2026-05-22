@@ -33,10 +33,10 @@ class PublisherAgent:
             return self._fail(state, str(e))
 
         title, body = self._parse_result(result)
-        if not title:
-            logger.warning("[PublisherAgent] tidak bisa ekstrak judul, fallback ke raw")
-            title = f"Artikel {state['article_id']}"
-            body = content
+        if not title or not body:
+            logger.warning("[PublisherAgent] parse gagal (title=%s, body=%s), fallback ke raw", bool(title), bool(body))
+            title = title or f"Artikel {state['article_id']}"
+            body = body or content
 
         published_url: str | None = None
         if self.cms:

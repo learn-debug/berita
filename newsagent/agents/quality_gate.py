@@ -39,12 +39,18 @@ class QualityGateAgent:
         try:
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=PromptHardener.wrap_user_input(f"Artikel:\n{article}\n\nLaporan Fact-Check:\n{report}"),
+                prompt=f"Artikel:\n{article}\n\nLaporan Fact-Check:\n{report}",
             )
             scores = self._parse_scores(result)
         except Exception as e:
             logger.error("[QualityGate] gagal: %s", e)
             scores = {}
+            if state.get("credibility_score", 0.0) > 0.0:
+                return {
+                    **state,
+                    "events": state["events"]
+                    + [make_event("QualityGate", "score_fallback", "LLM fail, retain previous score")],
+                }
 
         score = compute_credibility(
             fact_accuracy=scores.get("fact_accuracy", 0.0),

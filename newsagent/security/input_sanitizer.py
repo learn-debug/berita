@@ -20,7 +20,8 @@ class InputSanitizer:
         allowed = {"topic", "draft", "url"}
         if raw.get("input_type") not in allowed:
             raw["input_type"] = "topic"
-        if not isinstance(raw.get("raw_input", ""), str) or len(raw["raw_input"]) == 0:
+        raw_input = raw.get("raw_input", "")
+        if not isinstance(raw_input, str) or not raw_input.strip():
             raise ValueError("raw_input must be a non-empty string")
-        raw["raw_input"] = cls.sanitize(raw["raw_input"])
+        raw["raw_input"] = cls.sanitize(raw_input)
         return raw
