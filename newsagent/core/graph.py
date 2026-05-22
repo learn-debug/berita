@@ -16,6 +16,20 @@ from newsagent.core.state import ArticleState
 from newsagent.llm.adapter_factory import adapter_factory
 
 
+def route_after_quality(state: ArticleState) -> str:
+    score = state.get("credibility_score", 0.0)
+    if score >= 0.75:
+        return "publisher"
+    return "publisher"
+
+
+def route_after_draft(state: ArticleState) -> str:
+    status = state.get("status", "")
+    if status == "revision":
+        return "orchestrator"
+    return "editor_agent"
+
+
 def build_graph() -> Any:
     orchestrator = OrchestratorAgent()
     draft = DraftAgent(llm=adapter_factory("draft_agent"))
@@ -42,17 +56,16 @@ def build_graph() -> Any:
     workflow.add_node("publisher", publisher.run)
 
     workflow.set_entry_point("orchestrator")
-    workflow.add_edge("orchestrator", "draft_agent")
-    workflow.add_edge("draft_agent", "editor_agent")
 
+    workflow.add_edge("orchestrator", "draft_agent")
+    workflow.add_conditional_edges("draft_agent", route_after_draft)
     workflow.add_edge("editor_agent", "input_ingestion")
     workflow.add_edge("input_ingestion", "query_generation")
     workflow.add_edge("query_generation", "evidence_retrieval")
     workflow.add_edge("evidence_retrieval", "verdict_prediction")
-
     workflow.add_edge("verdict_prediction", "aggregator")
     workflow.add_edge("aggregator", "quality_gate")
-    workflow.add_edge("quality_gate", "publisher")
+    workflow.add_conditional_edges("quality_gate", route_after_quality)
     workflow.add_edge("publisher", END)
 
     return workflow.compile()

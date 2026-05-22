@@ -33,3 +33,6 @@ class PublisherAgent:
             "events": state["events"]
             + [make_event("PublisherAgent", "publish_article", "artikel dipublikasikan")],
         }
+
+    def _system_prompt(self) -> str:
+        return "Ekstrak judul dan siapkan artikel untuk dipublikasikan ke CMS. Kembalikan dalam format: JUDUL: ...\n\nKONTEN: ..."
