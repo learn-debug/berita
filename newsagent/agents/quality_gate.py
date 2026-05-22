@@ -5,8 +5,9 @@ from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
-from newsagent.tools.scoring import compute_credibility, routing
 from newsagent.security.prompt_hardening import PromptHardener
+from newsagent.tools.scoring import compute_credibility, routing
+from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -77,15 +78,4 @@ class QualityGateAgent:
         }
 
     def _system_prompt(self) -> str:
-        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
-            "Evaluasi artikel ini untuk credibility scoring. Nilai 4 dimensi berikut dengan skor 0.0-1.0:\n"
-            "- fact_accuracy: akurasi faktual berdasarkan laporan fact-check\n"
-            "- narrative_consistency: konsistensi narasi dan alur artikel\n"
-            "- conflict_resolution: resolusi konflik antar klaim\n"
-            "- source_quality: kualitas sumber bukti yang digunakan\n\n"
-            "Format output:\n"
-            "fact_accuracy: 0.85\n"
-            "narrative_consistency: 0.90\n"
-            "conflict_resolution: 0.75\n"
-            "source_quality: 0.80"
-        )
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("quality_gate.md")
