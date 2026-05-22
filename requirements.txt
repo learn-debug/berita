@@ -12,6 +12,7 @@ pydantic-settings>=2.6.0
 # LLM providers
 anthropic>=0.48.0
 openai>=1.55.0
+google-genai>=1.0.0
 
 # Async HTTP
 httpx>=0.28.0
