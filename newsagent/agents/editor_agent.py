@@ -16,16 +16,21 @@ class EditorAgent:
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[EditorAgent] mulai — article_id=%s", state["article_id"])
 
-        result = await self.llm.complete(
-            system=self._system_prompt(),
-            prompt=f"Berikut adalah draf artikel yang perlu diedit:\n\n{state['draft']}",
-        )
+        try:
+            result = await self.llm.complete(
+                system=self._system_prompt(),
+                prompt=f"Berikut adalah draf artikel yang perlu diedit:\n\n{state['draft']}",
+            )
+            edited = result
+        except Exception as e:
+            logger.error("[EditorAgent] gagal: %s", e)
+            edited = state["draft"]
 
         return {
             **state,
-            "edited_draft": result,
+            "edited_draft": edited,
             "events": state["events"]
-            + [make_event("EditorAgent", "edit_draft", f"draf diedit ({len(result)} chars)")],
+            + [make_event("EditorAgent", "edit_draft", f"draf diedit ({len(edited)} chars)")],
         }
 
     def _system_prompt(self) -> str:

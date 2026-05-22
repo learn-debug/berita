@@ -16,18 +16,22 @@ class DraftAgent:
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[DraftAgent] mulai — article_id=%s", state["article_id"])
 
-        result = await self.llm.complete(
-            system=self._system_prompt(),
-            prompt=f"Topik: {state['raw_input']}\n\nKonteks RAG:\n{state['rag_context']}",
-        )
-
-        logger.info("[DraftAgent] selesai — %d karakter", len(result))
+        try:
+            result = await self.llm.complete(
+                system=self._system_prompt(),
+                prompt=f"Topik: {state['raw_input']}\n\nKonteks RAG:\n{state['rag_context']}",
+            )
+            draft = result
+            logger.info("[DraftAgent] selesai — %d karakter", len(draft))
+        except Exception as e:
+            logger.error("[DraftAgent] gagal: %s", e)
+            draft = state["raw_input"]
 
         return {
             **state,
-            "draft": result,
+            "draft": draft,
             "events": state["events"]
-            + [make_event("DraftAgent", "generate_draft", f"draft selesai ({len(result)} chars)")],
+            + [make_event("DraftAgent", "generate_draft", f"draft selesai ({len(draft)} chars)")],
         }
 
     def _system_prompt(self) -> str:

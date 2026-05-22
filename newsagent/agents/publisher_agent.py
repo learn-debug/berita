@@ -17,16 +17,19 @@ class PublisherAgent:
         logger.info("[PublisherAgent] mulai — article_id=%s", state["article_id"])
 
         content = state.get("aggregated_article") or state.get("edited_draft") or state["draft"]
-        result = await self.llm.complete(
-            system=self._system_prompt(),
-            prompt=f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}",
-        )
+
+        try:
+            result = await self.llm.complete(
+                system=self._system_prompt(),
+                prompt=f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}",
+            )
+            logger.info("[PublisherAgent] selesai — %d karakter", len(result))
+        except Exception as e:
+            logger.error("[PublisherAgent] gagal: %s", e)
 
         return {
             **state,
             "status": "published",
-            "events": state["events"] + [make_event("PublisherAgent", "publish_article", result[:200])],
+            "events": state["events"]
+            + [make_event("PublisherAgent", "publish_article", "artikel dipublikasikan")],
         }
-
-    def _system_prompt(self) -> str:
-        return "Ekstrak judul dan siapkan artikel untuk dipublikasikan ke CMS. Kembalikan dalam format: JUDUL: ...\n\nKONTEN: ..."

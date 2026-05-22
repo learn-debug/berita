@@ -11,12 +11,20 @@ class OrchestratorAgent:
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[Orchestrator] mulai pipeline — article_id=%s", state["article_id"])
 
-        if "article_id" not in state or not state["article_id"]:
-            state = {**state, "article_id": uuid4().hex[:12]}
+        try:
+            if "article_id" not in state or not state["article_id"]:
+                state = {**state, "article_id": uuid4().hex[:12]}
 
-        return {
-            **state,
-            "status": "processing",
-            "events": state["events"]
-            + [make_event("Orchestrator", "init_pipeline", f"pipeline dimulai untuk {state['input_type']}")],
-        }
+            return {
+                **state,
+                "status": "processing",
+                "events": state["events"]
+                + [make_event("Orchestrator", "init_pipeline", f"pipeline dimulai untuk {state['input_type']}")],
+            }
+        except Exception as e:
+            logger.error("[Orchestrator] gagal: %s", e)
+            return {
+                **state,
+                "status": "failed",
+                "events": state["events"] + [make_event("Orchestrator", "failed", str(e))],
+            }
