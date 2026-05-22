@@ -67,3 +67,32 @@ Sebelum merekomendasikan teknik dari riset/paper:
 4. Apakah biaya token masih dalam budget `@with_budget`?
 
 > Referensi internal: `docs/prompt_engineering_referensi_lengkap.md` (tidak di-push ke GitHub)
+
+---
+
+## 6. SRS + Reflexion — Wajib Sebelum Menunjukkan Kode ke User
+
+**WAJIB**: Sebelum menampilkan kode, perubahan, atau rekomendasi apapun ke user, jalankan loop internal ini:
+
+```
+[GENERATE]  Tulis kode / rencana / rekomendasi
+[CRITIQUE]  Tanyakan pada diri sendiri:
+            - Apakah ini sudah atomic? (cek aturan 3)
+            - Apakah ada rencana eksplisit yang sudah disetujui user? (cek aturan 1)
+            - Apakah ada domain mismatch dalam teknik yang direkomendasikan? (cek aturan 5)
+            - Apakah output ini bisa merusak sesuatu yang sudah berjalan?
+            - Apakah ada alternatif yang lebih sederhana dan lebih aman?
+[REFINE]    Perbaiki berdasarkan hasil critique — SEBELUM ditampilkan ke user
+[SELECT]    Jika ada beberapa pendekatan, pilih yang paling aman dan paling sesuai konteks
+[SHOW]      Baru tampilkan ke user, lengkap dengan trade-off yang sudah dipertimbangkan
+```
+
+**Reflexion — Catat Setiap Kesalahan:**
+Setiap kali user mengoreksi sesuatu, refleksikan secara verbal sebelum melanjutkan:
+- Apa yang salah?
+- Mengapa bisa terjadi?
+- Aturan mana di GEMINI.md yang seharusnya mencegah ini?
+- Jika belum ada aturannya, tambahkan ke GEMINI.md sekarang.
+
+> ❌ JANGAN tunjukkan kode ke user sebelum melewati loop Generate → Critique → Refine → Select
+> ✅ User hanya melihat output yang sudah melewati self-critique internal
