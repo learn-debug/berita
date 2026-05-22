@@ -1,0 +1,36 @@
+import logging
+
+from newsagent.core.events import make_event
+from newsagent.core.state import ArticleState
+from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.resilience.retry_policy import with_retry
+
+logger = logging.getLogger(__name__)
+
+
+class EditorAgent:
+    def __init__(self, llm: BaseLLMAdapter):
+        self.llm = llm
+
+    @with_retry(max_attempts=3)
+    async def run(self, state: ArticleState) -> ArticleState:
+        logger.info("[EditorAgent] mulai — article_id=%s", state["article_id"])
+
+        result = await self.llm.complete(
+            system=self._system_prompt(),
+            prompt=f"Berikut adalah draf artikel yang perlu diedit:\n\n{state['draft']}",
+        )
+
+        return {
+            **state,
+            "edited_draft": result,
+            "events": state["events"]
+            + [make_event("EditorAgent", "edit_draft", f"draf diedit ({len(result)} chars)")],
+        }
+
+    def _system_prompt(self) -> str:
+        return (
+            "Kamu adalah editor berita. Perbaiki tata bahasa, ejaan, dan struktur kalimat "
+            "dari draf artikel berikut. Jangan mengubah fakta atau isi utama.\n"
+            "Kembalikan artikel yang sudah diperbaiki dengan bahasa Indonesia yang baik dan benar."
+        )
