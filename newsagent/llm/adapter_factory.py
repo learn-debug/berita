@@ -1,6 +1,7 @@
 from newsagent.core.config import settings
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.llm.claude_adapter import ClaudeAdapter
+from newsagent.llm.gemini_adapter import GeminiAdapter
 from newsagent.llm.openai_adapter import OpenAIAdapter
 
 
@@ -17,6 +18,7 @@ def adapter_factory(agent_key: str) -> BaseLLMAdapter:
     adapters: dict[str, type[BaseLLMAdapter]] = {
         "claude": ClaudeAdapter,
         "openai": OpenAIAdapter,
+        "gemini": GeminiAdapter,
     }
     cls = adapters.get(provider, ClaudeAdapter)
     return cls()
