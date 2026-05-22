@@ -62,9 +62,7 @@ async def test_search_constructs_url_and_fetches() -> None:
     result = await tool.search("apa itu AI di Indonesia")
 
     assert "Hasil pencarian" in result
-    mock_client.get.assert_awaited_once_with(
-        "https://duckduckgo.com/html/?q=apa+itu+AI+di+Indonesia"
-    )
+    mock_client.get.assert_awaited_once_with("https://duckduckgo.com/html/?q=apa+itu+AI+di+Indonesia")
     await tool.close()
 
 
