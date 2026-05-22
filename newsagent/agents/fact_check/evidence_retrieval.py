@@ -24,7 +24,7 @@ class EvidenceRetrievalAgent:
             for q in queries.split("\n"):
                 q = q.strip()
                 if q:
-                    page = await self.search.fetch_page(q)
+                    page = await self.search.search(q)
                     if page:
                         results.append(page)
             evidence = "\n\n".join(results[:3]) if results else ""

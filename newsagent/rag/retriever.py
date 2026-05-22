@@ -24,8 +24,7 @@ class Retriever:
 
             for query in queries[:3]:
                 try:
-                    search_url = f"https://duckduckgo.com/html/?q={query.replace(' ', '+')}"
-                    page = await self._search.fetch_page(search_url)
+                    page = await self._search.search(query)
                     if page and len(page) > 200:
                         documents.append(f"Sumber ({query}):\n{page}")
                 except Exception as e:

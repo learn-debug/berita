@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     quality_gate_auto_publish: float = 0.75
     quality_gate_review_threshold: float = 0.50
 
+    cms_base_url: str = ""
+    cms_api_key: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

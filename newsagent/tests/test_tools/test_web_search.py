@@ -50,6 +50,25 @@ async def test_fetch_page_strips_html_tags() -> None:
 
 
 @pytest.mark.asyncio
+async def test_search_constructs_url_and_fetches() -> None:
+    tool = WebSearchTool()
+    mock_response = MagicMock()
+    mock_response.text = "<html><body>Hasil pencarian</body></html>"
+    mock_response.raise_for_status = MagicMock()
+    mock_client = AsyncMock()
+    mock_client.get.return_value = mock_response
+    tool._client = mock_client
+
+    result = await tool.search("apa itu AI di Indonesia")
+
+    assert "Hasil pencarian" in result
+    mock_client.get.assert_awaited_once_with(
+        "https://duckduckgo.com/html/?q=apa+itu+AI+di+Indonesia"
+    )
+    await tool.close()
+
+
+@pytest.mark.asyncio
 async def test_fetch_page_truncates_long_content() -> None:
     tool = WebSearchTool()
 

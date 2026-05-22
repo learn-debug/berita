@@ -26,6 +26,10 @@ class WebSearchTool(BaseTool):
             tag.decompose()
         return soup.get_text(separator="\n", strip=True)[:5000]
 
+    async def search(self, query: str) -> str:
+        search_url = f"https://duckduckgo.com/html/?q={query.replace(' ', '+')}"
+        return await self.fetch_page(search_url)
+
     async def close(self) -> None:
         if hasattr(self, "_client"):
             await self._client.aclose()

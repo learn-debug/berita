@@ -1,16 +1,19 @@
 import logging
+import re
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
+from newsagent.tools.cms_client import CMSClient
 
 logger = logging.getLogger(__name__)
 
 
 class PublisherAgent:
-    def __init__(self, llm: BaseLLMAdapter):
+    def __init__(self, llm: BaseLLMAdapter, cms: CMSClient | None = None):
         self.llm = llm
+        self.cms = cms
 
     @with_retry(max_attempts=3)
     async def run(self, state: ArticleState) -> ArticleState:
@@ -23,15 +26,50 @@ class PublisherAgent:
                 system=self._system_prompt(),
                 prompt=f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}",
             )
-            logger.info("[PublisherAgent] selesai — %d karakter", len(result))
+            logger.info("[PublisherAgent] LLM selesai — %d karakter", len(result))
         except Exception as e:
-            logger.error("[PublisherAgent] gagal: %s", e)
+            logger.error("[PublisherAgent] LLM gagal: %s", e)
+            return self._fail(state, str(e))
+
+        title, body = self._parse_result(result)
+        if not title:
+            logger.warning("[PublisherAgent] tidak bisa ekstrak judul, fallback ke raw")
+            title = f"Artikel {state['article_id']}"
+            body = content
+
+        published_url: str | None = None
+        if self.cms:
+            try:
+                cms_result = await self.cms.publish(title, body)
+                published_url = cms_result.get("link") or cms_result.get("id", "")
+                logger.info("[PublisherAgent] CMS publish sukses — id=%s", published_url)
+            except Exception as e:
+                logger.error("[PublisherAgent] CMS publish gagal: %s", e)
+                return self._fail(state, f"CMS error: {e}")
 
         return {
             **state,
             "status": "published",
+            "published_title": title,
+            "published_body": body,
+            "published_url": published_url,
             "events": state["events"]
             + [make_event("PublisherAgent", "publish_article", "artikel dipublikasikan")],
+        }
+
+    def _parse_result(self, text: str) -> tuple[str, str]:
+        match = re.search(r"JUDUL:\s*(.+?)(?:\n|$)", text, re.IGNORECASE | re.DOTALL)
+        konten_match = re.search(r"KONTEN:\s*(.+)", text, re.IGNORECASE | re.DOTALL)
+
+        title = match.group(1).strip() if match else ""
+        body = konten_match.group(1).strip() if konten_match else ""
+        return title, body
+
+    def _fail(self, state: ArticleState, reason: str) -> ArticleState:
+        return {
+            **state,
+            "status": "failed",
+            "events": state["events"] + [make_event("PublisherAgent", "publish_failed", reason)],
         }
 
     def _system_prompt(self) -> str:

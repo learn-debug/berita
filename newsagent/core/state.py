@@ -1,5 +1,7 @@
 from typing import TypedDict
 
+from typing_extensions import NotRequired
+
 
 class ArticleState(TypedDict):
     article_id: str
@@ -13,3 +15,6 @@ class ArticleState(TypedDict):
     credibility_score: float
     status: str
     events: list[dict]
+    published_title: NotRequired[str]
+    published_body: NotRequired[str]
+    published_url: NotRequired[str | None]
