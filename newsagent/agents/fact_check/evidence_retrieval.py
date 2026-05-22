@@ -4,8 +4,9 @@ from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
-from newsagent.tools.web_search import WebSearchTool
 from newsagent.security.prompt_hardening import PromptHardener
+from newsagent.tools.web_search import WebSearchTool
+from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +32,10 @@ class EvidenceRetrievalAgent:
             evidence = "\n\n".join(results[:3]) if results else ""
 
             if not evidence:
+                prompt = PromptHardener.wrap_user_input(f"Cari bukti untuk query-query berikut:\n\n{queries}")
                 result = await self.llm.complete(
                     system=self._system_prompt(),
-                    prompt=PromptHardener.wrap_user_input(f"Cari bukti untuk query-query berikut:\n\n{queries}"),
+                    prompt=prompt,
                 )
                 evidence = result
         except Exception as e:
@@ -50,7 +52,4 @@ class EvidenceRetrievalAgent:
         }
 
     def _system_prompt(self) -> str:
-        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
-            "Kumpulkan bukti dari sumber kredibel untuk setiap query. "
-            "Prioritaskan sumber primer dan data resmi."
-        )
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("fact_check/evidence_retrieval.md")

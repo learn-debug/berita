@@ -5,6 +5,7 @@ from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
+from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +20,12 @@ class InputIngestionAgent:
 
         source = state.get("edited_draft") or state["draft"]
         try:
+            prompt = PromptHardener.wrap_user_input(
+                f"Ekstrak klaim-klaim faktual dari artikel berikut:\n\n{source}"
+            )
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=PromptHardener.wrap_user_input(f"Ekstrak klaim-klaim faktual dari artikel berikut:\n\n{source}"),
+                prompt=prompt,
             )
             claims = result
         except Exception as e:
@@ -38,7 +42,4 @@ class InputIngestionAgent:
         }
 
     def _system_prompt(self) -> str:
-        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
-            "Ekstrak semua klaim faktual yang dapat diverifikasi dari artikel di bawah ini. "
-            "Kembalikan sebagai daftar terpisah."
-        )
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("fact_check/input_ingestion.md")
