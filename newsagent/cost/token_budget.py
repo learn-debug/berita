@@ -6,17 +6,19 @@ P = ParamSpec("P")
 R = TypeVar("R", bound=Awaitable[Any])
 
 
-class TokenBudgetExceeded(Exception):
+class TokenBudgetExceededError(Exception):
     pass
 
 
-def with_budget(max_tokens: int = 4000) -> Callable[[Callable[P, R]], Callable[P, Coroutine[Any, Any, Any]]]:
+def with_budget(
+    max_tokens: int = 4000,
+) -> Callable[[Callable[P, R]], Callable[P, Coroutine[Any, Any, Any]]]:
     def decorator(func: Callable[P, R]) -> Callable[P, Coroutine[Any, Any, Any]]:
         @wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> Any:
             result = await func(*args, **kwargs)
             if isinstance(result, str) and len(result.split()) > max_tokens:
-                raise TokenBudgetExceeded(f"Output exceeds budget of {max_tokens} tokens")
+                raise TokenBudgetExceededError(f"Output exceeds budget of {max_tokens} tokens")
             return result
 
         return wrapper

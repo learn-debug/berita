@@ -16,7 +16,11 @@ class DeadLetterQueue:
         return self._redis
 
     async def push(
-        self, article_id: str, agent: str, error: str, payload: dict[str, Any] | None = None
+        self,
+        article_id: str,
+        agent: str,
+        error: str,
+        payload: dict[str, Any] | None = None,
     ) -> None:
         redis = await self._conn()
         entry = {
@@ -25,11 +29,11 @@ class DeadLetterQueue:
             "error": error,
             "payload": payload,
         }
-        await redis.lpush("dlq:articles", json.dumps(entry))
+        await redis.lpush("dlq:articles", json.dumps(entry))  # type: ignore[arg-type]
 
     async def pop(self) -> dict[str, Any] | None:
         redis = await self._conn()
-        raw = await redis.rpop("dlq:articles")
+        raw = await redis.rpop("dlq:articles")  # type: ignore[reportGeneralTypeIssues]
         if raw is None:
             return None
-        return json.loads(raw)
+        return json.loads(raw)  # type: ignore[arg-type]

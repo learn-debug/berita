@@ -1,10 +1,8 @@
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
 from tenacity import retry, stop_after_attempt, wait_exponential
-
-from newsagent.core.state import ArticleState
 
 P = ParamSpec("P")
 R = TypeVar("R")

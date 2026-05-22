@@ -29,7 +29,7 @@ class ArticleResponse(BaseModel):
 @app.post("/process")
 async def process_article(req: ProcessRequest) -> ArticleResponse:
     limiter = RateLimiter(max_calls=60, window=60.0)
-    if not limiter._allow():
+    if not limiter.acquire():
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
     try:
