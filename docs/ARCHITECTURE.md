@@ -1,0 +1,239 @@
+# 🏗️ Arsitektur Detail — NewsAgent
+
+## Daftar Isi
+
+- [Mengapa HMAS, Bukan Flat MAS?](#mengapa-hmas-bukan-flat-mas)
+- [Mengapa LangGraph?](#mengapa-langgraph-bukan-crewai-atau-autogen)
+- [Desain LLM Adapter Layer](#desain-llm-adapter-layer)
+- [Desain Immutable State](#desain-immutable-state)
+- [Desain Fact-Check Pipeline](#desain-fact-check-pipeline)
+- [Desain Debate + Consensus](#desain-debate--consensus-aggregator)
+- [Desain Credibility Scoring](#desain-credibility-scoring-quality-gate)
+- [Keputusan yang Disengaja Ditunda](#keputusan-yang-disengaja-ditunda)
+
+
+Dokumen ini menjelaskan keputusan-keputusan arsitektur utama NewsAgent secara mendalam. Untuk gambaran umum, lihat [README.md](../README.md).
+
+---
+
+## Mengapa HMAS, Bukan Flat MAS?
+
+NewsAgent menggunakan **Hierarchical Multi-Agent System (HMAS)** — bukan flat MAS di mana semua agen setara.
+
+Alasannya sederhana: bayangkan 10 jurnalis tanpa redaktur. Semua bisa ngobrol satu sama lain, tapi tidak ada yang memimpin. Kacau. HMAS memberikan struktur yang jelas:
+
+```
+Level 1: Orchestrator        (pemimpin redaksi)
+Level 2: Agen Spesialis      (reporter & editor)
+Level 3: Sub-Agen            (asisten spesifik)
+```
+
+Keputusan ini juga diperkuat oleh paper FactAgent (2025) dan DelphiAgent (2025) yang keduanya menggunakan pola hierarki.
+
+---
+
+## Mengapa LangGraph, Bukan CrewAI atau AutoGen?
+
+| Kriteria | LangGraph | CrewAI | AutoGen |
+|---|---|---|---|
+| Kontrol alur kerja | Penuh (graph-based) | Terbatas | Sedang |
+| State management | Eksplisit & immutable | Implisit | Implisit |
+| Debugging | Mudah (visual graph) | Sulit | Sedang |
+| Custom workflow | Sangat fleksibel | Terbatas | Sedang |
+| Integrasi LangSmith | Native | Tidak | Tidak |
+
+LangGraph dipilih karena memberikan kontrol penuh atas alur kerja — kritis untuk sistem yang harus dapat diaudit seperti NewsAgent.
+
+---
+
+## Desain LLM Adapter Layer
+
+Prinsip: **agen tidak boleh tahu LLM apa yang dipakai.**
+
+```python
+# Semua agen hanya tahu interface ini
+class BaseLLMAdapter(ABC):
+    async def complete(self, prompt: str, system: str) -> str: ...
+    async def complete_structured(self, prompt: str, schema: dict) -> dict: ...
+
+# Provider spesifik di-inject saat runtime
+class ClaudeAdapter(BaseLLMAdapter): ...
+class OpenAIAdapter(BaseLLMAdapter): ...
+class GeminiAdapter(BaseLLMAdapter): ...
+class OllamaAdapter(BaseLLMAdapter): ...  # lokal, gratis
+```
+
+Keuntungan: tiap agen bisa dikonfigurasi pakai LLM berbeda via `.env` — agen kompleks pakai Claude, agen sederhana pakai Ollama lokal untuk hemat biaya.
+
+---
+
+## Desain Immutable State
+
+State antar agen bersifat **immutable** — agen tidak mengubah state yang ada, mereka membuat state baru.
+
+```python
+class ArticleState(TypedDict):
+    article_id: str
+    raw_input: str
+    rag_context: str           # diisi RAG Pipeline
+    draft: str                 # diisi Draft Agent
+    fact_check_report: dict    # diisi Fact-Check Pipeline
+    edited_draft: str          # diisi Editor Agent
+    aggregated_article: str    # diisi Aggregator
+    credibility_score: float   # diisi Quality Gate
+    status: str
+    events: list[dict]         # append-only event log
+```
+
+Mengapa immutable? Karena pipeline multi-agen yang paralel rentan race condition jika state bisa diubah sembarang agen. Dengan immutable state + event sourcing, setiap langkah pipeline bisa di-replay dan di-audit.
+
+---
+
+## Desain Fact-Check Pipeline
+
+Dipecah menjadi 4 sub-agen (bukan 1 agen monolitik) berdasarkan FactAgent (arxiv:2506.17878):
+
+```
+Input Ingestion → Query Generation → Evidence Retrieval → Verdict Prediction
+```
+
+Mengapa 4 sub-agen lebih baik dari 1?
+- Tiap sub-agen punya satu tanggung jawab (Single Responsibility)
+- Lebih mudah di-debug: tahu persis di mana pipeline gagal
+- Lebih mudah diganti: bisa swap Evidence Retrieval tanpa sentuh yang lain
+- Terbukti: peningkatan 12.3% Macro F1 vs monolitik (FactAgent, 2025)
+
+---
+
+## Desain Debate + Consensus (Aggregator)
+
+Terinspirasi dari DelphiAgent (2025). Alih-alih merge output secara mekanis, Aggregator menjalankan "ronde debat":
+
+```
+Ronde 1: Setiap agen beri penilaian INDEPENDEN
+         (Draft Agent, Fact-Check, Editor membaca artikel final)
+         ↓
+Deteksi konflik: ada klaim yang bertentangan?
+         ↓
+Ronde 2: Agen berdebat pada poin konflik
+         ↓
+Sintesis konsensus → artikel final
+```
+
+Hasilnya lebih akurat karena konflik terdeteksi sebelum artikel tayang, bukan sesudah.
+
+---
+
+## Desain Credibility Scoring (Quality Gate)
+
+Terinspirasi MAFC (Scientific Reports, 2026). Skor 0–1 dihitung dari 4 komponen:
+
+```python
+credibility_score = (
+    0.40 * fact_accuracy_score +      # dari Fact-Check Pipeline
+    0.25 * narrative_consistency +     # dari Editor Agent
+    0.20 * conflict_resolution_score + # dari Aggregator
+    0.15 * source_quality_score        # kualitas sumber bukti
+)
+```
+
+Tiga jalur keputusan:
+- `≥ 0.75` → auto-publish
+- `0.50–0.74` → review editor
+- `< 0.50` → revisi penuh
+
+---
+
+## Keputusan yang Disengaja Ditunda
+
+| Keputusan | Alasan Ditunda |
+|---|---|
+| OSINT Layer | Kompleks, tidak kritis untuk MVP |
+| Caching Layer | Optimasi, bukan fondasi |
+| Fine-tuning model | Butuh data produksi dulu |
+| Multi-bahasa | Butuh pipeline stabil dulu |
+
+---
+
+---
+
+## Diagram Pipeline LangGraph
+
+Pipeline NewsAgent terdiri dari 10 node LangGraph yang berjalan secara sekuensial:
+
+```mermaid
+flowchart LR
+    subgraph Init["Inisialisasi"]
+        A[Orchestrator<br/>init pipeline] --> B[Draft Agent<br/>tulis artikel]
+    end
+
+    subgraph Editorial["Editorial"]
+        B --> C[Editor Agent<br/>perbaiki bahasa]
+    end
+
+    subgraph FactCheck["Fact-Check Pipeline"]
+        C --> D[Input Ingestion<br/>ekstrak klaim]
+        D --> E[Query Generation<br/>buat subquery]
+        E --> F[Evidence Retrieval<br/>cari bukti]
+        F --> G[Verdict Prediction<br/>verifikasi klaim]
+    end
+
+    subgraph Finalization["Finalisasi"]
+        G --> H[Aggregator<br/>debate + konsensus]
+        H --> I[Quality Gate<br/>credibility scoring]
+        I --> J[Publisher<br/>publikasi ke CMS]
+    end
+
+    J --> END([Selesai])
+```
+
+### Alur State per Node
+
+Setiap node membaca field tertentu dari `ArticleState` dan menulis field baru tanpa mengubah milik node lain:
+
+```mermaid
+flowchart LR
+    O[Orchestrator] --> |"menulis: status, events"| S
+    D[Draft] --> |"menulis: draft, events"| S
+    E[Editor] --> |"menulis: edited_draft, events"| S
+    IN[InputIngestion] --> |"menulis: fact_check_report.claims, events"| S
+    QG[QueryGen] --> |"menulis: fact_check_report.queries, events"| S
+    ER[EvidenceRetrieval] --> |"menulis: fact_check_report.evidence, events"| S
+    VP[VerdictPrediction] --> |"menulis: fact_check_report.verdicts, events"| S
+    AG[Aggregator] --> |"menulis: aggregated_article, events"| S
+    QL[QualityGate] --> |"menulis: credibility_score, status, events"| S
+    PB[Publisher] --> |"menulis: status, events"| S
+
+    S(("ArticleState<br/>(immutable)"))
+```
+
+### Detail Routing Quality Gate
+
+Quality Gate menghitung skor lalu menentukan jalur — implementasi routing saat ini:
+
+```mermaid
+flowchart TD
+    QG[Quality Gate] --> Score{credibility_score}
+    Score -->|">= 0.75"| Auto[auto-publish → Publisher]
+    Score -->|"0.50 - 0.74"| Review[editor-review → Publisher<br/>status=review]
+    Score -->|"< 0.50"| Full[full-revision → Publisher<br/>(routing dihitung,<br/>graph masih linear)]
+```
+
+> **Catatan:** Saat ini graph masih linear ke Publisher untuk semua jalur. Routing conditional (cabang ke agen tertentu untuk revisi) akan diimplementasikan di Fase 2.
+
+### Pipeline Masa Depan (Fase 2+)
+
+Rencana pengembangan setelah routing kondisional diimplementasikan:
+
+```mermaid
+flowchart LR
+    QG{Quality Gate} -->|>= 0.75| Pub[Publisher]
+    QG -->|0.50-0.74| Review[Review Editor Manusia]
+    QG -->|< 0.50| FullRev[Revisi Penuh<br/>→ Orchestrator]
+    Review --> Pub
+    FullRev --> Draft[Draft Agent]
+```
+
+---
+
+*Untuk keputusan arsitektur individual, lihat [docs/adr/](./adr/).**
