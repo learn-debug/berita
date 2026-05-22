@@ -19,7 +19,11 @@ class OrchestratorAgent:
                 **state,
                 "status": "processing",
                 "events": state["events"]
-                + [make_event("Orchestrator", "init_pipeline", f"pipeline dimulai untuk {state['input_type']}")],
+                + [
+                    make_event(
+                        "Orchestrator", "init_pipeline", f"pipeline dimulai untuk {state['input_type']}"
+                    )
+                ],
             }
         except Exception as e:
             logger.error("[Orchestrator] gagal: %s", e)

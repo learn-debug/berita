@@ -15,7 +15,12 @@ class QualityGateAgent:
         self.llm = llm
 
     def _parse_scores(self, text: str) -> dict[str, float]:
-        scores = {"fact_accuracy": 0.0, "narrative_consistency": 0.0, "conflict_resolution": 0.0, "source_quality": 0.0}
+        scores = {
+            "fact_accuracy": 0.0,
+            "narrative_consistency": 0.0,
+            "conflict_resolution": 0.0,
+            "source_quality": 0.0,
+        }
         for key in scores:
             match = re.search(rf"{key}[:\s]+([0-9]*\.?[0-9]+)", text, re.IGNORECASE)
             if match:

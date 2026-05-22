@@ -33,7 +33,9 @@ async def process_article(req: ProcessRequest) -> ArticleResponse:
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
     try:
-        validated = InputSanitizer.validate_input_type({"input_type": req.input_type, "raw_input": req.raw_input})
+        validated = InputSanitizer.validate_input_type(
+            {"input_type": req.input_type, "raw_input": req.raw_input}
+        )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
