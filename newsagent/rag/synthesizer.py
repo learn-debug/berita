@@ -1,6 +1,7 @@
 import logging
 
 from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.security.prompt_hardening import PromptHardener
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ class Synthesizer:
 
     async def synthesize(self, documents: list[str], topic: str) -> str:
         return await self.llm.complete(
-            system="Sintesis dokumen-dokumen berikut menjadi ringkasan terstruktur "
+            system=PromptHardener.SYSTEM_GUARD + "\n\n" + "Sintesis dokumen-dokumen berikut menjadi ringkasan terstruktur "
             "yang relevan dengan topik.",
-            prompt=f"Topik: {topic}\n\nDokumen:\n" + "\n---\n".join(documents),
+            prompt=PromptHardener.wrap_user_input(f"Topik: {topic}\n\nDokumen:\n" + "\n---\n".join(documents)),
         )

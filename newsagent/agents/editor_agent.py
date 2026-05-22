@@ -4,6 +4,7 @@ from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
+from newsagent.security.prompt_hardening import PromptHardener
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class EditorAgent:
         try:
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=f"Berikut adalah draf artikel yang perlu diedit:\n\n{state['draft']}",
+                prompt=PromptHardener.wrap_user_input(f"Berikut adalah draf artikel yang perlu diedit:\n\n{state['draft']}"),
             )
             edited = result
         except Exception as e:
@@ -34,7 +35,7 @@ class EditorAgent:
         }
 
     def _system_prompt(self) -> str:
-        return (
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
             "Kamu adalah editor berita. Perbaiki tata bahasa, ejaan, dan struktur kalimat "
             "dari draf artikel berikut. Jangan mengubah fakta atau isi utama.\n"
             "Kembalikan artikel yang sudah diperbaiki dengan bahasa Indonesia yang baik dan benar."

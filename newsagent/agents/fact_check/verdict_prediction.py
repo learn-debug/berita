@@ -4,6 +4,7 @@ from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
+from newsagent.security.prompt_hardening import PromptHardener
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class VerdictPredictionAgent:
         try:
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=f"Klaim:\n{claims}\n\nBukti:\n{evidence}\n\nBerikan putusan untuk setiap klaim.",
+                prompt=PromptHardener.wrap_user_input(f"Klaim:\n{claims}\n\nBukti:\n{evidence}\n\nBerikan putusan untuk setiap klaim."),
             )
             verdict = result
         except Exception as e:
@@ -40,7 +41,7 @@ class VerdictPredictionAgent:
         }
 
     def _system_prompt(self) -> str:
-        return (
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
             "Berdasarkan klaim dan bukti yang diberikan, berikan putusan untuk setiap klaim: "
             "SUPPORTED, REFUTED, atau NOT_ENOUGH_EVIDENCE. Sertakan penjelasan singkat."
         )

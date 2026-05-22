@@ -1,6 +1,7 @@
 import logging
 
 from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.security.prompt_hardening import PromptHardener
 from newsagent.tools.web_search import WebSearchTool
 
 logger = logging.getLogger(__name__)
@@ -16,9 +17,9 @@ class Retriever:
 
         try:
             queries_text = await self.llm.complete(
-                system="Kamu adalah asisten riset. "
+                system=PromptHardener.SYSTEM_GUARD + "\n\n" + "Kamu adalah asisten riset. "
                 "Buat 3 query pencarian web yang spesifik untuk riset topik berita.",
-                prompt=f"Topik: {topic}\n\nKembalikan 3 query, satu per baris, tanpa nomor atau bullet.",
+                prompt=PromptHardener.wrap_user_input(f"Topik: {topic}\n\nKembalikan 3 query, satu per baris, tanpa nomor atau bullet."),
             )
             queries = [q.strip() for q in queries_text.strip().split("\n") if q.strip()]
 
@@ -36,9 +37,9 @@ class Retriever:
         if not documents:
             try:
                 fallback = await self.llm.complete(
-                    system="Kamu adalah asisten riset. "
+                    system=PromptHardener.SYSTEM_GUARD + "\n\n" + "Kamu adalah asisten riset. "
                     "Berikan informasi faktual dan konteks yang relevan tentang topik berita berikut.",
-                    prompt=f"Berikan informasi faktual terkini tentang topik ini:\n{topic}",
+                    prompt=PromptHardener.wrap_user_input(f"Berikan informasi faktual terkini tentang topik ini:\n{topic}"),
                 )
                 documents = [fallback]
             except Exception as e:

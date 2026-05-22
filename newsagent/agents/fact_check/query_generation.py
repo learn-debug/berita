@@ -4,6 +4,7 @@ from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
+from newsagent.security.prompt_hardening import PromptHardener
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ class QueryGenerationAgent:
         try:
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=f"Buat query pencarian untuk memverifikasi klaim-klaim berikut:\n\n{claims}",
+                prompt=PromptHardener.wrap_user_input(f"Buat query pencarian untuk memverifikasi klaim-klaim berikut:\n\n{claims}"),
             )
             queries = result
         except Exception as e:
@@ -37,7 +38,7 @@ class QueryGenerationAgent:
         }
 
     def _system_prompt(self) -> str:
-        return (
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
             "Buat query pencarian web yang tepat untuk memverifikasi setiap klaim. "
             "Fokus pada sumber kredibel."
         )

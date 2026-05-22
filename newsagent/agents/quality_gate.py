@@ -6,6 +6,7 @@ from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.tools.scoring import compute_credibility, routing
+from newsagent.security.prompt_hardening import PromptHardener
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class QualityGateAgent:
         try:
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=f"Artikel:\n{article}\n\nLaporan Fact-Check:\n{report}",
+                prompt=PromptHardener.wrap_user_input(f"Artikel:\n{article}\n\nLaporan Fact-Check:\n{report}"),
             )
             scores = self._parse_scores(result)
         except Exception as e:
@@ -70,7 +71,7 @@ class QualityGateAgent:
         }
 
     def _system_prompt(self) -> str:
-        return (
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
             "Evaluasi artikel ini untuk credibility scoring. Nilai 4 dimensi berikut dengan skor 0.0-1.0:\n"
             "- fact_accuracy: akurasi faktual berdasarkan laporan fact-check\n"
             "- narrative_consistency: konsistensi narasi dan alur artikel\n"

@@ -6,6 +6,7 @@ from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.tools.cms_client import CMSClient
+from newsagent.security.prompt_hardening import PromptHardener
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class PublisherAgent:
         try:
             result = await self.llm.complete(
                 system=self._system_prompt(),
-                prompt=f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}",
+                prompt=PromptHardener.wrap_user_input(f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}"),
             )
             logger.info("[PublisherAgent] LLM selesai — %d karakter", len(result))
         except Exception as e:
@@ -73,7 +74,7 @@ class PublisherAgent:
         }
 
     def _system_prompt(self) -> str:
-        return (
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
             "Ekstrak judul dan siapkan artikel untuk dipublikasikan ke CMS. "
             "Kembalikan dalam format: JUDUL: ...\n\nKONTEN: ..."
         )
