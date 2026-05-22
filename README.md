@@ -299,7 +299,7 @@ Menerima artikel final dari Quality Gate dan mempublikasikannya ke CMS sesuai ja
 | LLM Default | Claude API (`claude-sonnet-4-20250514`) via `ClaudeAdapter` |
 | RAG & Evidence Retrieval | LangChain + Anthropic Web Search Tool |
 | Vector Store | PostgreSQL + pgvector |
-| Backend | Python 3.11+ / FastAPI |
+| Backend | Python 3.10+ / FastAPI |
 | CMS Integration | WordPress REST API / Headless CMS |
 | Task Queue | Redis *(planned)* |
 | Database | PostgreSQL |
@@ -330,7 +330,8 @@ newsagent/
 │   ├── quality_gate.py              # Credibility scoring (MAFC pattern)
 │   └── publisher_agent.py           # Publikasi ke CMS
 ├── rag/
-│   ├── retriever.py                 # Document retrieval
+│   ├── pipeline.py                  # RAG orchestration (retrieve → rerank → synthesize)
+│   ├── retriever.py                 # Document retrieval (LLM-powered search)
 │   ├── synthesizer.py               # Structured evidence summarization
 │   └── reranker.py                  # Source re-ranking
 ├── core/
@@ -359,6 +360,7 @@ newsagent/
 │   ├── token_budget.py              # Token budget per agen
 │   └── cost_tracker.py              # Estimasi & tracking biaya per artikel
 ├── tools/
+│   ├── base.py                      # BaseTool protocol (lifecycle + metadata)
 │   ├── web_search.py                # Tool pencarian web
 │   ├── cms_client.py                # Klien CMS
 │   └── scoring.py                   # Credibility scoring engine
@@ -379,9 +381,11 @@ newsagent/
 
 ### Prasyarat
 
-- Python 3.11 atau lebih baru
+- Python 3.10 atau lebih baru
 - Docker & Docker Compose
 - API Key Anthropic
+- `uv` ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
+- Node.js 18+ (untuk pyright)
 
 ### Langkah Instalasi
 
@@ -390,24 +394,20 @@ newsagent/
 git clone https://github.com/YOUR_USERNAME/newsagent.git
 cd newsagent
 
-# 2. Buat virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
+# 2. Install semua dependensi (Python + Node)
+uv sync --extra dev
+npm install
 
-# 3. Install dependensi
-pip install -r requirements.txt
-
-# 4. Salin file konfigurasi
+# 3. Salin file konfigurasi
 cp .env.example .env
 
-# 5. Isi variabel environment (lihat bagian Konfigurasi)
+# 4. Isi variabel environment (lihat bagian Konfigurasi)
 nano .env
 
-# 6. Jalankan infrastruktur (PostgreSQL + Redis)
+# 5. Jalankan infrastruktur (PostgreSQL + Redis)
 docker-compose up -d
 
-# 7. Jalankan API server
+# 6. Jalankan API server
 uvicorn newsagent.api.main:app --reload --port 8000
 ```
 
@@ -480,6 +480,7 @@ ORCHESTRATOR_LLM=claude        # butuh reasoning kuat
 DRAFT_AGENT_LLM=claude         # butuh kreativitas tinggi
 FACT_CHECK_LLM=claude          # butuh akurasi tinggi
 EDITOR_AGENT_LLM=claude        # bisa diganti Gemini/GPT-4/Mistral
+RAG_LLM=claude                 # LLM untuk RAG Pipeline (retrieval + sintesis)
 PUBLISHER_AGENT_LLM=claude     # bisa diganti Qwen untuk hemat biaya
 
 # Adapter credentials

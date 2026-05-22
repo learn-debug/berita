@@ -39,8 +39,9 @@ Tiga aturan utama yang tidak boleh dilanggar:
 Referensi cepat input/output tiap agen. Sebelum membuat agen baru, pastikan tidak tumpang tindih dengan yang sudah ada.
 
 | Agen | Input State | Output State | LLM Config |
-|---|---|---|---|
-| `OrchestratorAgent` | `raw_input`, `input_type` | `rag_context` (trigger) | `ORCHESTRATOR_LLM` |
+|---|---|---|---|---|
+| `OrchestratorAgent` | `raw_input`, `input_type` | `status`, `events` | `ORCHESTRATOR_LLM` |
+| `RAGPipeline` | `raw_input` | `rag_context` | `RAG_LLM` |
 | `DraftAgent` | `raw_input`, `rag_context` | `draft` | `DRAFT_AGENT_LLM` |
 | `EditorAgent` | `draft` | `edited_draft` | `EDITOR_AGENT_LLM` |
 | `InputIngestionAgent` | `draft` | `claims` | `FACT_CHECK_LLM` |
@@ -506,6 +507,7 @@ asyncio.run(debug_draft_agent())
 ## Checklist Sebelum Merge
 
 - [ ] Kontrak agen didefinisikan (input/output/fallback)
+- [ ] Tool mengikuti `BaseTool` protocol (jika agen menggunakan tool eksternal)
 - [ ] Mengikuti template `BaseLLMAdapter`
 - [ ] State bersifat immutable (`{**state, field_baru: ...}`)
 - [ ] Events ditambahkan untuk status completed DAN failed

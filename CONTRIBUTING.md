@@ -101,16 +101,18 @@ test: tambah unit test untuk credibility scoring engine
 ## Standar Kode
 
 ### Python
-- Gunakan Python 3.11+
-- Format kode dengan `black` dan `isort`
+- Gunakan Python 3.10+
+- Format kode dengan `ruff` (menggantikan black + isort + flake8)
 - Type hints wajib untuk semua fungsi publik
 - Docstring untuk semua class dan fungsi publik
 
 ```bash
 # Format sebelum commit
-black .
-isort .
+ruff check . --fix
+ruff format .
 mypy newsagent/
+npx pyright newsagent/   # type checker alternatif
+pre-commit run --all-files
 ```
 
 ### Struktur Agen Baru

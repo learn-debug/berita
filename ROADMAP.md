@@ -31,17 +31,18 @@ Selesai (Fase 1 — Fondasi Agen):
   ✅ Struktur proyek & package hierarchy
   ✅ Immutable State Schema (core/state.py)
   ✅ LangGraph workflow engine (core/graph.py)
-  ✅ LLM Adapter Layer (Claude, OpenAI, factory)
+  ✅ LLM Adapter Layer (Claude, OpenAI, Gemini, Mistral, Qwen + factory)
   ✅ Resilience Layer (retry, circuit breaker, DLQ, fallback)
   ✅ Security Layer (sanitizer, prompt hardening, rate limiter)
   ✅ Cost Control (token budget, cost tracker)
   ✅ Semua agen: Orchestrator, Draft, Editor, Fact-Check (4 sub-agen),
      Aggregator, Quality Gate, Publisher
-  ✅ RAG Pipeline (retriever, synthesizer, reranker)
-  ✅ Tools (web search, CMS client, scoring)
+  ✅ RAG Pipeline (pipeline, retriever, synthesizer, reranker)
+  ✅ Tools (BaseTool, web search, CMS client, scoring)
   ✅ FastAPI entrypoint (POST /process)
   ✅ Docker Compose (PostgreSQL + Redis)
-  ✅ 7 unit test passing, mypy clean
+  ✅ 209 unit/integration test passing, ruff + mypy + pyright clean
+  ✅ Dev tooling: ruff, uv, pre-commit, pyright
 ```
 
 ---
@@ -58,7 +59,7 @@ Estimasi: 1-2 hari
 ```
 
 - [x] Inisialisasi repo dengan struktur folder final
-- [x] Setup virtual environment + `requirements.txt`
+- [x] Setup virtual environment + `uv` + `pyproject.toml`
 - [x] Konfigurasi `docker-compose.yml` (PostgreSQL + Redis)
 - [x] Setup LangGraph sebagai workflow engine
 - [x] Buat `core/state.py` — Immutable State Schema

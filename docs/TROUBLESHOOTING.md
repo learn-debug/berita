@@ -20,19 +20,19 @@ Panduan mengatasi error dan masalah umum yang mungkin ditemui saat menjalankan N
 
 ### `ModuleNotFoundError: No module named 'langgraph'`
 ```bash
-pip install -r requirements.txt
+uv sync --extra dev
 # Pastikan virtual environment sudah aktif:
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
+source .venv/bin/activate  # Linux/macOS
+.venv\Scripts\activate     # Windows
 ```
 
 ### `ERROR: Could not find a version that satisfies the requirement`
 ```bash
-# Pastikan Python versinya 3.11+
+# Pastikan Python versinya 3.10+
 python --version
 
-# Upgrade pip
-pip install --upgrade pip
+# Update lock file
+uv sync --upgrade
 ```
 
 ---
@@ -78,7 +78,7 @@ Kemungkinan penyebab:
 
 ```bash
 # Cek log agen
-docker-compose logs -f celery-worker
+docker-compose logs -f newsagent-api
 
 # Cek artikel di DLQ
 python -m newsagent dlq list

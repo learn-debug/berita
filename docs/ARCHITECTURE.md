@@ -160,12 +160,16 @@ Tiga jalur keputusan:
 
 ## Diagram Pipeline LangGraph
 
-Pipeline NewsAgent terdiri dari 10 node LangGraph yang berjalan secara sekuensial:
+Pipeline NewsAgent terdiri dari 11 node LangGraph yang berjalan secara sekuensial:
 
 ```mermaid
 flowchart LR
     subgraph Init["Inisialisasi"]
-        A[Orchestrator<br/>init pipeline] --> B[Draft Agent<br/>tulis artikel]
+        A[Orchestrator<br/>init pipeline] --> RAG[RAG Pipeline<br/>structured evidence]
+    end
+
+    subgraph RAGNode["RAG"]
+        RAG --> B[Draft Agent<br/>tulis artikel]
     end
 
     subgraph Editorial["Editorial"]
@@ -195,6 +199,7 @@ Setiap node membaca field tertentu dari `ArticleState` dan menulis field baru ta
 ```mermaid
 flowchart LR
     O[Orchestrator] --> |"menulis: status, events"| S
+    RA[RAG] --> |"menulis: rag_context, events"| S
     D[Draft] --> |"menulis: draft, events"| S
     E[Editor] --> |"menulis: edited_draft, events"| S
     IN[InputIngestion] --> |"menulis: fact_check_report.claims, events"| S
@@ -220,7 +225,7 @@ flowchart TD
     Score -->|"< 0.50"| Full[full-revision → Publisher<br/>(routing dihitung,<br/>graph masih linear)]
 ```
 
-> **Catatan:** Saat ini graph masih linear ke Publisher untuk semua jalur. Routing conditional (cabang ke agen tertentu untuk revisi) akan diimplementasikan di Fase 2.
+> **Catatan:** Routing conditional saat ini mengirim score ≥ 0.50 ke Publisher, score < 0.50 ke Editor Agent (revisi). Routing penuh (cabang ke agen spesifik) akan disempurnakan di Fase 2.
 
 ### Pipeline Masa Depan (Fase 2+)
 

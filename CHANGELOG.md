@@ -6,6 +6,41 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 
 ---
 
+## [0.3.0] — 2026-05-22
+
+### Added
+- `RAGPipeline` class in `rag/pipeline.py` — full retrieve → rerank → synthesize pipeline
+- RAG node in LangGraph graph (between orchestrator and draft agent)
+- `BaseTool` abstract protocol in `tools/base.py` with lifecycle (`setup`/`close`) + metadata
+- `RAG_LLM` config setting in `Settings` for per-pipeline LLM selection
+- `acquire()` public method on `RateLimiter` for external rate limit checks
+- Pre-commit hooks config (`.pre-commit-config.yaml`) with ruff lint+format
+- `pyrightconfig.json` for type checking via pyright
+- 209 unit/integration tests (from 7 in v0.2.0)
+
+### Changed
+- Dev tooling: `ruff` replaces `black`/`isort`/`flake8` — single tool for lint + format
+- Package manager: `uv` replaces `pip` — deterministic lock via `uv.lock`
+- Python minimum version: 3.11 → 3.10
+- `WebSearchTool` and `CMSClient` now extend `BaseTool` with lazy auto-setup
+- `Retriever` now uses LLM-powered search query generation + web fetch
+- Rate limiter: `_allow()` + manual recording refactored into single `acquire()`
+- `pyproject.toml`: ruff config, uv dependency groups, setuptools package discovery
+
+### Fixed
+- `TokenBudgetExceeded` → `TokenBudgetExceededError` (ruff N818 convention)
+- E501 line-too-long in all agent system prompts
+- DeadLetterQueue: pyright type ignore for redis-py async types
+- RetryPolicy: remove unused `ArticleState` and `Any` imports
+
+### Docs
+- `AGENTS.md`, `CONTRIBUTING.md`, `README.md`, `ROADMAP.md`, `DEPLOYMENT.md`, `TROUBLESHOOTING.md` — sync with new toolchain
+- `.env.example` — add `RAG_LLM=claude`
+- `docs/ARCHITECTURE.md` — add RAG node in pipeline diagram
+- `docs/AGENT_GUIDE.md` — add `RAGPipeline` to agent catalog
+
+---
+
 ## [0.2.0] — 2026-05-22
 
 ### Added
@@ -62,7 +97,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - Tools: `WebSearchTool`, `CMSClient`, scoring engine
 - FastAPI entrypoint (`POST /process`)
 - Docker Compose (PostgreSQL + Redis)
-- `pyproject.toml` (black, isort, mypy, pytest config)
+- `pyproject.toml` (ruff, mypy, pytest config)
 - `.env.example` dengan semua konfigurasi
 - 7 unit test (semua passing)
 - `AGENTS.md` — panduan agent untuk OpenCode sessions

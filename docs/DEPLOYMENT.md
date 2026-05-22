@@ -19,9 +19,10 @@ Panduan lengkap untuk menjalankan NewsAgent di lingkungan lokal.
 ## Lingkungan Lokal (Development)
 
 ### Prasyarat
-- Python 3.11+
+- Python 3.10+
 - Docker & Docker Compose
 - API Key Anthropic
+- `uv` ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
 
 ### Setup
 
@@ -30,22 +31,17 @@ Panduan lengkap untuk menjalankan NewsAgent di lingkungan lokal.
 git clone https://github.com/YOUR_USERNAME/newsagent.git
 cd newsagent
 
-# 2. Buat virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
+# 2. Install semua dependensi
+uv sync --extra dev
 
-# 3. Install dependensi
-pip install -r requirements.txt
-
-# 4. Siapkan konfigurasi
+# 3. Siapkan konfigurasi
 cp .env.example .env
 # Edit .env dan isi ANTHROPIC_API_KEY minimal
 
-# 5. Jalankan infrastruktur (PostgreSQL + Redis)
+# 4. Jalankan infrastruktur (PostgreSQL + Redis)
 docker-compose up -d postgres redis
 
-# 6. Jalankan API server
+# 5. Jalankan API server
 uvicorn newsagent.api.main:app --reload --port 8000
 ```
 
