@@ -184,7 +184,7 @@ docker-compose logs celery-worker | grep "elapsed"
 CELERY_WORKERS=4  # di .env
 
 # 2. Pakai model yang lebih cepat untuk agen non-kritis
-EDITOR_AGENT_LLM=ollama  # lokal, lebih cepat
+EDITOR_AGENT_LLM=gemini   # lebih cepat untuk tugas ringan
 
 # 3. Aktifkan caching (jika sudah diimplementasikan)
 ENABLE_SEMANTIC_CACHE=true

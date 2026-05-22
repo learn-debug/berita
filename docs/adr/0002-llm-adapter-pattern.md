@@ -12,15 +12,11 @@ Semua agen membutuhkan LLM. Tanpa abstraksi, setiap agen akan hardcode ke satu p
 
 ## Keputusan
 
-Mengimplementasikan **LLM Adapter Layer** dengan `BaseLLMAdapter` sebagai abstract interface dan implementasi konkret per provider (`ClaudeAdapter`, `OpenAIAdapter`, `GeminiAdapter`, `OllamaAdapter`).
+Mengimplementasikan **LLM Adapter Layer** dengan `BaseLLMAdapter` sebagai abstract interface dan implementasi konkret per provider (`ClaudeAdapter`, `OpenAIAdapter`, `GeminiAdapter`, `MistralAdapter`, `QwenAdapter`).
 
-Provider dipilih via konfigurasi `.env` per agen — sehingga agen kompleks bisa pakai Claude sementara agen sederhana pakai Ollama lokal yang gratis.
+Provider dipilih via konfigurasi `.env` per agen — sehingga agen kompleks bisa pakai Claude sementara agen sederhana pakai Qwen atau Mistral yang lebih hemat.
 
-## Alasan
-
-1. Menghindari vendor lock-in — jika satu provider naik harga atau down, bisa ganti tanpa ubah kode
-2. Optimasi biaya — agen sederhana tidak perlu model mahal
-3. Fleksibilitas pengujian — bisa pakai model lokal (Ollama) untuk development tanpa biaya API
+3. Fleksibilitas pengujian — bisa gonta-ganti provider tanpa ubah kode agen
 4. Future-proof — model baru bisa ditambahkan tanpa ubah kode agen
 
 ## Konsekuensi

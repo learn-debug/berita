@@ -349,7 +349,7 @@ Sebelum menulis kode, jawab pertanyaan ini:
 - Input dari state    : field apa saja yang dibaca
 - Output ke state     : field apa saja yang ditulis
 - Strategi fallback   : apa yang terjadi jika gagal
-- LLM yang dibutuhkan : claude / gemini / ollama
+- LLM yang dibutuhkan : claude / openai / gemini / mistral / qwen
 ```
 
 ### 2. Buat file agen
@@ -392,7 +392,7 @@ def build_graph(adapters: dict) -> StateGraph:
 
 ```env
 # Tambahkan ke .env.example
-NAMA_AGENT_LLM=claude   # claude | openai | gemini | ollama
+NAMA_AGENT_LLM=claude   # claude | openai | gemini | mistral | qwen
 ```
 
 ### 6. Tulis unit test

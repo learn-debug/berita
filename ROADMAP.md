@@ -95,7 +95,7 @@ Estimasi: 1 hari
 - [x] `llm/adapter_factory.py` — baca config `.env` → return adapter yang tepat
 - [x] Test: ganti provider via config tanpa ubah kode agen
 
-*Adapter lain (OpenAI, Gemini, Ollama) bisa ditambah belakangan — yang penting interface-nya sudah ada.*
+*Adapter lain (Gemini, Mistral, Qwen) ditambah setelahnya — interface-nya sudah siap.*
 
 ---
 
