@@ -5,6 +5,7 @@ from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
+from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +41,4 @@ class AggregatorAgent:
         }
 
     def _system_prompt(self) -> str:
-        return PromptHardener.SYSTEM_GUARD + "\n\n" + (
-            "Kamu adalah aggregator berita. Lakukan debat 2 ronde: "
-            "Ronde 1: nilai artikel secara independen dari sudut pandang yang berbeda. "
-            "Ronde 2: deteksi konflik dan capai konsensus. "
-            "Kembalikan artikel final yang sudah disepakati."
-        )
+        return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("aggregator.md")
