@@ -26,7 +26,6 @@ def route_after_quality(state: ArticleState) -> str:
     if score >= 0.50:
         return "editor_agent"
     return "orchestrator"
-    return "orchestrator"
 
 
 def route_after_draft(state: ArticleState) -> str:
@@ -36,7 +35,7 @@ def route_after_draft(state: ArticleState) -> str:
     return "editor_agent"
 
 
-def build_graph() -> Any:
+def build_graph(cleanup_handlers: list | None = None) -> Any:
     orchestrator = OrchestratorAgent()
     rag_pipeline = RAGPipeline(llm=adapter_factory("rag"))
     draft = DraftAgent(llm=adapter_factory("draft_agent"))
@@ -54,10 +53,8 @@ def build_graph() -> Any:
     )
     publisher = PublisherAgent(llm=adapter_factory("publisher_agent"), cms=cms)
 
-    if cms:
-        from newsagent.api.main import _cleanup_handlers
-
-        _cleanup_handlers.append(cms.close)
+    if cms and cleanup_handlers is not None:
+        cleanup_handlers.append(cms.close)
 
     workflow = StateGraph(ArticleState)
 

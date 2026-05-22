@@ -54,10 +54,10 @@ async def test_with_budget_empty_string() -> None:
 
 
 @pytest.mark.asyncio
-async def test_with_budget_single_long_word() -> None:
+async def test_with_budget_single_long_word_exceeds() -> None:
     @with_budget(max_tokens=1)
     async def long_word() -> str:
         return "a" * 10000
 
-    result = await long_word()
-    assert len(result) == 10000
+    with pytest.raises(TokenBudgetExceededError):
+        await long_word()

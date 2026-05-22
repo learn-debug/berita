@@ -29,11 +29,11 @@ class DeadLetterQueue:
             "error": error,
             "payload": payload,
         }
-        await redis.lpush("dlq:articles", json.dumps(entry))  # type: ignore[arg-type]
+        await redis.lpush("dlq:articles", json.dumps(entry, default=str))
 
     async def pop(self) -> dict[str, Any] | None:
         redis = await self._conn()
-        raw = await redis.rpop("dlq:articles")  # type: ignore[reportGeneralTypeIssues]
+        raw: bytes | None = await redis.rpop("dlq:articles")  # type: ignore[assignment]
         if raw is None:
             return None
-        return json.loads(raw)  # type: ignore[arg-type]
+        return json.loads(raw)

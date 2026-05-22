@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Sequence
 from typing import Any
 
 from mistralai.client import Mistral
@@ -19,14 +18,14 @@ class MistralAdapter(BaseLLMAdapter):
 
     async def complete(self, prompt: str, system: str | None = None) -> str:
         try:
-            messages: Sequence[SystemMessage | UserMessage] = []
+            messages: list[SystemMessage | UserMessage] = []
             if system:
                 messages = [SystemMessage(content=system)]
-            messages = list(messages) + [UserMessage(content=prompt)]
+            messages = messages + [UserMessage(content=prompt)]
 
             response = await self._client.chat.complete_async(
                 model=self._model,
-                messages=messages,  # type: ignore[arg-type]
+                messages=messages,
             )
             choice: ChatCompletionChoice = response.choices[0]
             msg = choice.message
@@ -40,14 +39,14 @@ class MistralAdapter(BaseLLMAdapter):
         self, prompt: str, schema: dict[str, Any], system: str | None = None
     ) -> dict[str, Any]:
         try:
-            messages: Sequence[SystemMessage | UserMessage] = []
+            messages: list[SystemMessage | UserMessage] = []
             if system:
                 messages = [SystemMessage(content=system)]
-            messages = list(messages) + [UserMessage(content=prompt)]
+            messages = messages + [UserMessage(content=prompt)]
 
             response = await self._client.chat.complete_async(
                 model=self._model,
-                messages=messages,  # type: ignore[arg-type]
+                messages=messages,
                 response_format={"type": "json_object"},
             )
             choice: ChatCompletionChoice = response.choices[0]

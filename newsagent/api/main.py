@@ -2,12 +2,12 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
+from typing import Any
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from newsagent.core.graph import build_graph
 from newsagent.core.state import ArticleState
 from newsagent.security.input_sanitizer import InputSanitizer
 from newsagent.security.rate_limiter import RateLimiter
@@ -15,11 +15,18 @@ from newsagent.security.rate_limiter import RateLimiter
 logger = logging.getLogger(__name__)
 
 _cleanup_handlers: list[Callable[[], Awaitable[None]]] = []
+_graph: Any = None
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    from newsagent.core.graph import build_graph
+
+    global _graph
+    _graph = build_graph(cleanup_handlers=_cleanup_handlers)
+
     yield
+
     for handler in _cleanup_handlers:
         try:
             await handler()
@@ -28,8 +35,6 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="NewsAgent API", version="0.1.0", lifespan=lifespan)
-
-graph = build_graph()
 
 limiter = RateLimiter(max_calls=60, window=60.0)
 
@@ -70,8 +75,11 @@ async def process_article(req: ProcessRequest) -> ArticleResponse:
         "events": [],
     }
 
+    if _graph is None:
+        raise HTTPException(status_code=503, detail="Pipeline not initialized")
+
     try:
-        result = await asyncio.wait_for(graph.ainvoke(initial), timeout=120.0)
+        result = await asyncio.wait_for(_graph.ainvoke(initial), timeout=120.0)
         return ArticleResponse(article_id=result["article_id"], status=result["status"])
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="Pipeline timeout")
