@@ -41,7 +41,7 @@ Submit topik atau draf ke pipeline.
 ```
 
 | Field | Tipe | Wajib | Keterangan |
-|---|---|---|---|
+|---|---|---|---|---|
 | `input_type` | string | ❌ | `topic` (default) |
 | `raw_input` | string | ✅ | Topik atau teks draf |
 
@@ -52,6 +52,13 @@ Submit topik atau draf ke pipeline.
   "status": "published"
 }
 ```
+
+| Response Field | Tipe | Keterangan |
+|---|---|---|
+| `article_id` | string | ID unik artikel |
+| `status` | string | `published` / `review` / `revision` / `failed` |
+
+**Catatan:** Publisher Agent kini mendukung integrasi CMS (WordPress via `CMSClient`). Jika `CMS_BASE_URL` dan `CMS_API_KEY` dikonfigurasi di `.env`, artikel akan otomatis dipublikasikan ke CMS. State juga menyertakan `published_title`, `published_body`, dan `published_url`.
 
 ---
 
