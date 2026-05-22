@@ -1,3 +1,4 @@
+import asyncio
 import time
 from collections.abc import Callable
 from functools import wraps
@@ -9,26 +10,27 @@ class RateLimiter:
         self._max_calls = max_calls
         self._window = window
         self._calls: list[float] = []
+        self._lock = asyncio.Lock()
 
     def _prune(self) -> None:
         now = time.monotonic()
         self._calls = [t for t in self._calls if now - t < self._window]
 
     def _allow(self) -> bool:
-        self._prune()
         return len(self._calls) < self._max_calls
 
-    def acquire(self) -> bool:
-        """Check rate limit and record the call if within limit."""
-        if not self._allow():
-            return False
-        self._calls.append(time.monotonic())
-        return True
+    async def acquire(self) -> bool:
+        async with self._lock:
+            self._prune()
+            if not self._allow():
+                return False
+            self._calls.append(time.monotonic())
+            return True
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if not self.acquire():
+            if not await self.acquire():
                 raise RuntimeError("Rate limit exceeded")
             return await func(*args, **kwargs)
 

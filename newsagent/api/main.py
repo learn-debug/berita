@@ -15,6 +15,8 @@ app = FastAPI(title="NewsAgent API", version="0.1.0")
 
 graph = build_graph()
 
+limiter = RateLimiter(max_calls=60, window=60.0)
+
 
 class ProcessRequest(BaseModel):
     input_type: str = "topic"
@@ -28,8 +30,7 @@ class ArticleResponse(BaseModel):
 
 @app.post("/process")
 async def process_article(req: ProcessRequest) -> ArticleResponse:
-    limiter = RateLimiter(max_calls=60, window=60.0)
-    if not limiter.acquire():
+    if not await limiter.acquire():
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
     try:

@@ -6,87 +6,99 @@ from newsagent.security.rate_limiter import RateLimiter
 
 
 class TestAcquire:
-    def test_acquire_returns_true_within_limit(self) -> None:
+    @pytest.mark.asyncio
+    async def test_acquire_returns_true_within_limit(self) -> None:
         rl = RateLimiter(max_calls=5, window=60.0)
-        assert rl.acquire()
+        assert await rl.acquire()
         assert len(rl._calls) == 1
 
-    def test_acquire_records_call(self) -> None:
+    @pytest.mark.asyncio
+    async def test_acquire_records_call(self) -> None:
         rl = RateLimiter(max_calls=5, window=60.0)
-        rl.acquire()
-        rl.acquire()
-        rl.acquire()
+        await rl.acquire()
+        await rl.acquire()
+        await rl.acquire()
         assert len(rl._calls) == 3
 
-    def test_acquire_blocks_when_exceeded(self) -> None:
+    @pytest.mark.asyncio
+    async def test_acquire_blocks_when_exceeded(self) -> None:
         rl = RateLimiter(max_calls=2, window=60.0)
-        assert rl.acquire()
-        assert rl.acquire()
-        assert not rl.acquire()
+        assert await rl.acquire()
+        assert await rl.acquire()
+        assert not await rl.acquire()
         assert len(rl._calls) == 2
 
-    def test_acquire_exactly_at_limit(self) -> None:
+    @pytest.mark.asyncio
+    async def test_acquire_exactly_at_limit(self) -> None:
         rl = RateLimiter(max_calls=3, window=60.0)
-        assert rl.acquire()
-        assert rl.acquire()
-        assert rl.acquire()
-        assert not rl.acquire()
+        assert await rl.acquire()
+        assert await rl.acquire()
+        assert await rl.acquire()
+        assert not await rl.acquire()
 
-    def test_acquire_prunes_old_calls(self) -> None:
+    @pytest.mark.asyncio
+    async def test_acquire_prunes_old_calls(self) -> None:
         rl = RateLimiter(max_calls=2, window=0.001)
         now = time.monotonic()
         rl._calls = [now - 10, now - 10]
-        assert rl.acquire()
+        assert await rl.acquire()
         assert len(rl._calls) == 1
 
-    def test_acquire_zero_window(self) -> None:
+    @pytest.mark.asyncio
+    async def test_acquire_zero_window(self) -> None:
         rl = RateLimiter(max_calls=2, window=0.0)
-        assert rl.acquire()
-        assert rl.acquire()
-        assert rl.acquire()
+        assert await rl.acquire()
+        assert await rl.acquire()
+        assert await rl.acquire()
 
 
 class TestAllow:
     def test_within_limit(self) -> None:
         rl = RateLimiter(max_calls=5, window=60.0)
-        now = time.monotonic()
-        rl._calls = [now - 1, now - 2, now - 3]
+        rl._calls = [1.0, 2.0, 3.0]
         assert rl._allow()
 
     def test_block_when_exceeded(self) -> None:
         rl = RateLimiter(max_calls=2, window=60.0)
-        now = time.monotonic()
-        rl._calls = [now - 1, now - 2]
+        rl._calls = [1.0, 2.0]
         assert not rl._allow()
 
     def test_exactly_at_limit(self) -> None:
         rl = RateLimiter(max_calls=3, window=60.0)
-        now = time.monotonic()
-        rl._calls = [now - 1, now - 2, now - 3]
+        rl._calls = [1.0, 2.0, 3.0]
         assert not rl._allow()
 
-    def test_prune_old_calls(self) -> None:
-        rl = RateLimiter(max_calls=2, window=0.001)
-        now = time.monotonic()
-        rl._calls = [now - 10, now - 10]
-        assert rl._allow()
-
-    def test_prune_empty_list(self) -> None:
+    def test_empty_list_allows(self) -> None:
         rl = RateLimiter(max_calls=5, window=60.0)
         rl._calls = []
         assert rl._allow()
 
-    def test_prune_mixed_calls(self) -> None:
-        rl = RateLimiter(max_calls=2, window=0.1)
-        now = time.monotonic()
-        rl._calls = [now - 10, now - 0.05]
-        assert rl._allow()
-
     def test_allow_zero_window(self) -> None:
         rl = RateLimiter(max_calls=2, window=0.0)
-        now = time.monotonic()
-        rl._calls = [now]
+        rl._calls = [1.0]
         assert rl._allow()
+
+
+class TestPrune:
+    def test_prune_old_calls(self) -> None:
+        rl = RateLimiter(max_calls=2, window=10.0)
+        now = time.monotonic()
+        rl._calls = [now - 20, now - 1]
+        rl._prune()
+        assert len(rl._calls) == 1
+
+    def test_prune_empty_list(self) -> None:
+        rl = RateLimiter(max_calls=5, window=60.0)
+        rl._calls = []
+        rl._prune()
+        assert len(rl._calls) == 0
+
+    def test_prune_keeps_recent(self) -> None:
+        rl = RateLimiter(max_calls=2, window=60.0)
+        now = time.monotonic()
+        rl._calls = [now - 10, now - 5]
+        rl._prune()
+        assert len(rl._calls) == 2
 
 
 class TestDecorator:
