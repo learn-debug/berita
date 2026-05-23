@@ -5,9 +5,17 @@ __pycache__/
 .DS_Store
 .mypy_cache/
 .pytest_cache/
+.ruff_cache/
 *.egg-info/
 .coverage
+
+# Python backend
+backend/node_modules/
+
+# Node / TS
 node_modules/
+.next/
+out/
 
 # Dokumen referensi internal — jangan dipush ke GitHub
 docs/prompt_engineering_referensi_lengkap.md

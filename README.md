@@ -293,86 +293,127 @@ Menerima artikel final dari Quality Gate dan mempublikasikannya ke CMS sesuai ja
 ## Tech Stack
 
 | Komponen | Teknologi |
-|---|---|
+|---|---|---|
 | Framework Multi-Agent | [LangGraph](https://github.com/langchain-ai/langgraph) |
 | **LLM Adapter Layer** | `BaseLLMAdapter` — pluggable: Claude, GPT-4o, Gemini, Mistral, Qwen |
 | LLM Default | Claude API (`claude-sonnet-4-20250514`) via `ClaudeAdapter` |
-| RAG & Evidence Retrieval | LangChain + Anthropic Web Search Tool |
-| Vector Store | PostgreSQL + pgvector |
-| Backend | Python 3.10+ / FastAPI |
+| RAG & Evidence Retrieval | Custom pipeline: Retriever → Synthesizer → Reranker (httpx + BeautifulSoup) |
+| Search Provider | Tavily (default), Serper (alternatif) |
+| Vector Store | PostgreSQL + pgvector (Fase 2) |
+| Backend | Python 3.10+ / FastAPI / Pydantic |
+| Frontend | Next.js 16 + TypeScript (Fase 2-3) |
 | CMS Integration | WordPress REST API / Headless CMS |
-| Task Queue | Redis *(planned)* |
-| Database | PostgreSQL |
-| Containerization | Docker + Docker Compose |
-| **Error Handling** | Tenacity (retry) + Dead Letter Queue (Redis) |
+| Database | PostgreSQL 17 (Docker) |
+| Cache | Redis 7 (Docker) |
+| Infrastructure | Docker + Docker Compose |
+| **Resilience** | Tenacity (retry + backoff) + Circuit Breaker + DLQ |
 | **State Management** | Immutable state schema + event sourcing (LangGraph) |
 | **Security** | Input sanitization + prompt hardening + API rate limiting |
 | **Cost Control** | Token budget per agen + tiered LLM config |
-| Monitoring | LangSmith (tracing agen) |
-| OSINT *(fase berikutnya)* | Wayback Machine, Whois, GDELT, OpenCorporates |
+| Monitoring | LangSmith *(planned)* |
+| OSINT *(Fase 4)* | Wayback Machine, Whois, GDELT, OpenCorporates |
 
 ---
 
 ## Struktur Proyek
 
 ```
-newsagent/
-├── agents/
-│   ├── orchestrator.py              # Koordinator utama
-│   ├── draft_agent.py               # Penulisan artikel
-│   ├── fact_check/
-│   │   ├── input_ingestion.py       # Sub-agen: dekomposisi klaim
-│   │   ├── query_generation.py      # Sub-agen: formulasi subquery
-│   │   ├── evidence_retrieval.py    # Sub-agen: pengambilan bukti
-│   │   └── verdict_prediction.py    # Sub-agen: sintesis putusan
-│   ├── editor_agent.py              # Pengeditan bahasa & gaya
-│   ├── aggregator.py                # Debate + consensus (DelphiAgent pattern)
-│   ├── quality_gate.py              # Credibility scoring (MAFC pattern)
-│   └── publisher_agent.py           # Publikasi ke CMS
-├── rag/
-│   ├── pipeline.py                  # RAG orchestration (retrieve → rerank → synthesize)
-│   ├── retriever.py                 # Document retrieval (LLM-powered search)
-│   ├── synthesizer.py               # Structured evidence summarization
-│   └── reranker.py                  # Source re-ranking
-├── core/
-│   ├── graph.py                     # LangGraph workflow definition
-│   ├── state.py                     # Immutable shared state schema
-│   ├── config.py                    # Konfigurasi sistem
-│   └── events.py                    # Event sourcing per langkah pipeline
-├── llm/
-│   ├── base_adapter.py              # BaseLLMAdapter (abstract interface)
-│   ├── claude_adapter.py            # Implementasi Claude API
-│   ├── openai_adapter.py            # Implementasi OpenAI GPT-4
-│   ├── gemini_adapter.py            # Implementasi Google Gemini
-│   ├── mistral_adapter.py           # Implementasi Mistral AI
-│   ├── qwen_adapter.py              # Implementasi Alibaba Qwen
-│   └── adapter_factory.py           # Factory: baca config -> return adapter
-├── resilience/
-│   ├── retry_policy.py              # Per-agen retry + backoff config
-│   ├── circuit_breaker.py           # Circuit breaker pattern
-│   ├── dead_letter_queue.py         # DLQ untuk artikel gagal
-│   └── fallback.py                  # Fallback strategy per agen
-├── security/
-│   ├── input_sanitizer.py           # Sanitasi input dari luar
-│   ├── prompt_hardening.py          # Prompt injection mitigation
-│   └── rate_limiter.py              # API rate limiting
-├── cost/
-│   ├── token_budget.py              # Token budget per agen
-│   └── cost_tracker.py              # Estimasi & tracking biaya per artikel
-├── tools/
-│   ├── base.py                      # BaseTool protocol (lifecycle + metadata)
-│   ├── web_search.py                # Tool pencarian web
-│   ├── cms_client.py                # Klien CMS
-│   └── scoring.py                   # Credibility scoring engine
-│   # osint/ — dijadwalkan fase berikutnya
-├── api/
-│   └── main.py                      # FastAPI entrypoint
-├── tests/
-│   ├── test_agents/
-│   └── test_integration/
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
+borneo/
+├── backend/
+│   ├── newsagent/
+│   │   ├── agents/
+│   │   │   ├── orchestrator.py              # Koordinator utama
+│   │   │   ├── draft_agent.py               # Penulisan artikel
+│   │   │   ├── fact_check/
+│   │   │   │   ├── input_ingestion.py       # Sub-agen: dekomposisi klaim
+│   │   │   │   ├── query_generation.py      # Sub-agen: formulasi subquery
+│   │   │   │   ├── evidence_retrieval.py    # Sub-agen: pengambilan bukti
+│   │   │   │   └── verdict_prediction.py    # Sub-agen: sintesis putusan
+│   │   │   ├── editor_agent.py              # Pengeditan bahasa & gaya
+│   │   │   ├── aggregator.py                # Debate + consensus (DelphiAgent pattern)
+│   │   │   ├── quality_gate.py              # Credibility scoring (MAFC pattern)
+│   │   │   └── publisher_agent.py           # Publikasi ke CMS
+│   │   ├── rag/
+│   │   │   ├── pipeline.py                  # RAG orchestration (retrieve → rerank → synthesize)
+│   │   │   ├── retriever.py                 # Document retrieval (LLM-powered search)
+│   │   │   ├── synthesizer.py               # Structured evidence summarization
+│   │   │   └── reranker.py                  # Source re-ranking
+│   │   ├── core/
+│   │   │   ├── graph.py                     # LangGraph workflow definition
+│   │   │   ├── state.py                     # Immutable shared state schema
+│   │   │   ├── config.py                    # Konfigurasi sistem
+│   │   │   └── events.py                    # Event sourcing per langkah pipeline
+│   │   ├── llm/
+│   │   │   ├── base_adapter.py              # BaseLLMAdapter (abstract interface)
+│   │   │   ├── claude_adapter.py            # Implementasi Claude API
+│   │   │   ├── openai_adapter.py            # Implementasi OpenAI GPT-4
+│   │   │   ├── gemini_adapter.py            # Implementasi Google Gemini
+│   │   │   ├── mistral_adapter.py           # Implementasi Mistral AI
+│   │   │   ├── qwen_adapter.py              # Implementasi Alibaba Qwen
+│   │   │   └── adapter_factory.py           # Factory: baca config -> return adapter
+│   │   ├── resilience/
+│   │   │   ├── retry_policy.py              # Per-agen retry + backoff config
+│   │   │   ├── circuit_breaker.py           # Circuit breaker pattern
+│   │   │   ├── dead_letter_queue.py         # DLQ untuk artikel gagal
+│   │   │   └── fallback.py                  # Fallback strategy per agen
+│   │   ├── security/
+│   │   │   ├── input_sanitizer.py           # Sanitasi input dari luar
+│   │   │   ├── prompt_hardening.py          # Prompt injection mitigation
+│   │   │   └── rate_limiter.py              # API rate limiting
+│   │   ├── cost/
+│   │   │   ├── token_budget.py              # Token budget per agen
+│   │   │   └── cost_tracker.py              # Estimasi & tracking biaya per artikel
+│   │   ├── tools/
+│   │   │   ├── base.py                      # BaseTool protocol (lifecycle + metadata)
+│   │   │   ├── web_search.py                # Tool pencarian web
+│   │   │   ├── cms_client.py                # Klien CMS
+│   │   │   ├── scoring.py                   # Credibility scoring engine
+│   │   │   ├── search_factory.py            # Factory pattern untuk search provider
+│   │   │   ├── search_provider.py           # Abstract search provider
+│   │   │   ├── tavily_provider.py           # Tavily search implementation
+│   │   │   └── serper_provider.py           # Serper search implementation
+│   │   │   # osint/ — dijadwalkan fase berikutnya
+│   │   ├── api/
+│   │   │   └── main.py                      # FastAPI entrypoint
+│   │   ├── utils/
+│   │   │   └── prompt_loader.py             # Load prompt dari file .md
+│   │   ├── prompts/
+│   │   │   ├── orchestrator_agent.md
+│   │   │   ├── draft_agent.md
+│   │   │   ├── editor_agent.md
+│   │   │   ├── fact_check/
+│   │   │   │   ├── input_ingestion.md
+│   │   │   │   ├── query_generation.md
+│   │   │   │   ├── evidence_retrieval.md
+│   │   │   │   └── verdict_prediction.md
+│   │   │   ├── aggregator_system.md
+│   │   │   ├── aggregator_user.md
+│   │   │   ├── quality_gate_system.md
+│   │   │   ├── quality_gate_user.md
+│   │   │   ├── publisher_system.md
+│   │   │   ├── publisher_user.md
+│   │   │   ├── _system_guard.md
+│   │   │   └── _user_wrapper.md
+│   │   └── tests/                           # In-package tests (269 test cases)
+│   │       ├── test_agents/
+│   │       ├── test_api/
+│   │       ├── test_core/
+│   │       ├── test_cost/
+│   │       ├── test_integration/
+│   │       ├── test_llm/
+│   │       ├── test_rag/
+│   │       ├── test_resilience/
+│   │       ├── test_security/
+│   │       └── test_tools/
+│   ├── pyproject.toml
+│   └── pyrightconfig.json
+├── apps/
+│   └── web/                                 # Next.js 16 + TypeScript (Fase 2 & 3)
+├── packages/                                # Reserved for shared utilities
+├── docs/
+├── pnpm-workspace.yaml
+├── pnpm-lock.yaml
+└── docker-compose.yml
 ```
 
 ---
@@ -391,24 +432,26 @@ newsagent/
 
 ```bash
 # 1. Clone repositori
-git clone https://github.com/YOUR_USERNAME/newsagent.git
-cd newsagent
+git clone https://github.com/YOUR_USERNAME/borneo.git
+cd borneo
 
-# 2. Install semua dependensi (Python + Node)
-uv sync --extra dev
-npm install
+# 2. Install semua dependensi Python
+uv sync --extra dev --directory backend
 
-# 3. Salin file konfigurasi
+# 3. Install semua dependensi frontend
+pnpm install
+
+# 4. Salin file konfigurasi
 cp .env.example .env
 
-# 4. Isi variabel environment (lihat bagian Konfigurasi)
+# 5. Isi variabel environment (lihat bagian Konfigurasi)
 nano .env
 
-# 5. Jalankan infrastruktur (PostgreSQL + Redis)
-docker-compose up -d
+# 6. Jalankan infrastruktur (PostgreSQL + Redis)
+docker compose up -d
 
-# 6. Jalankan API server
-uvicorn newsagent.api.main:app --reload --port 8000
+# 7. Jalankan API server
+uvicorn newsagent.api.main:app --reload --app-dir backend
 ```
 
 ---
@@ -445,76 +488,42 @@ print(response.json())
 
 ## Konfigurasi
 
-Buat file `.env` di root proyek:
+Buat file `.env` di root proyek (isi sesuai `.env.example`):
 
 ```env
-# Anthropic
+# === LLM API Keys (minimal Anthropic) ===
 ANTHROPIC_API_KEY=sk-ant-...
+# OPENAI_API_KEY=sk-...          # opsional
+# GEMINI_API_KEY=...             # opsional
+# MISTRAL_API_KEY=...            # opsional
+# QWEN_API_KEY=...               # opsional (DashScope)
 
-# CMS
+# === Search Provider ===
+TAVILY_API_KEY=tvly-...          # default search provider
+# SERPER_API_KEY=...              # alternatif
+
+# === CMS (WordPress REST API) ===
 CMS_BASE_URL=https://yoursite.com/wp-json/wp/v2
-CMS_USERNAME=admin
-CMS_PASSWORD=app-password
+CMS_API_KEY=
 
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/newsagent
+# === Database & Cache ===
+DATABASE_URL=postgresql+asyncpg://newsagent:newsagent_dev@localhost:5432/newsagent
+REDIS_URL=redis://localhost:6379/0
 
-# Redis
-REDIS_URL=redis://localhost:6379
+# === LLM per Agent ===
+ORCHESTRATOR_LLM=claude
+DRAFT_AGENT_LLM=claude
+EDITOR_AGENT_LLM=claude
+FACT_CHECK_LLM=claude
+RAG_LLM=claude
+PUBLISHER_AGENT_LLM=claude
 
-# Quality Gate (MAFC pattern)
-MIN_CREDIBILITY_SCORE=0.75    # skor minimum untuk auto-publish (0–1)
-PARTIAL_REVISION_THRESHOLD=0.50
-MAX_REVISION_ATTEMPTS=3
-
-# Fact-Check Pipeline (FactAgent pattern)
-MAX_EVIDENCE_SOURCES=5        # jumlah sumber per klaim
-MIN_SOURCE_CREDIBILITY=0.6    # threshold kredibilitas sumber
-
-# DelphiAgent pattern
-MAX_DEBATE_ROUNDS=3           # maksimum putaran debat konsensus
-CONSENSUS_THRESHOLD=0.8       # threshold kesepakatan agen
-
-# LLM Adapter (ganti provider tanpa ubah kode agen)
-ORCHESTRATOR_LLM=claude        # butuh reasoning kuat
-DRAFT_AGENT_LLM=claude         # butuh kreativitas tinggi
-FACT_CHECK_LLM=claude          # butuh akurasi tinggi
-EDITOR_AGENT_LLM=claude        # bisa diganti Gemini/GPT-4/Mistral
-RAG_LLM=claude                 # LLM untuk RAG Pipeline (retrieval + sintesis)
-PUBLISHER_AGENT_LLM=claude     # bisa diganti Qwen untuk hemat biaya
-
-# Adapter credentials
-OPENAI_API_KEY=sk-...          # opsional jika pakai OpenAI
-GEMINI_API_KEY=...             # opsional jika pakai Gemini
-MISTRAL_API_KEY=...            # opsional jika pakai Mistral
-QWEN_API_KEY=...               # opsional jika pakai Qwen (DashScope)
-
-# Error Handling & Resilience
-MAX_RETRY_ATTEMPTS=3           # retry per agen sebelum DLQ
-RETRY_BACKOFF_SECONDS=2        # backoff antar retry
-CIRCUIT_BREAKER_THRESHOLD=5    # gagal N kali -> circuit open
-DLQ_RETENTION_HOURS=24         # artikel di DLQ disimpan berapa lama
-
-# Cost Control
-TOKEN_BUDGET_DRAFT=2000        # maks token untuk Draft Agent
-TOKEN_BUDGET_FACT_CHECK=3000   # maks token untuk Fact-Check Pipeline
-TOKEN_BUDGET_EDITOR=1500       # maks token untuk Editor Agent
-COST_ALERT_PER_ARTICLE=0.50    # alert jika biaya artikel > $0.50
-
-# Security
-INPUT_MAX_LENGTH=10000         # maks karakter input
-PROMPT_INJECTION_DETECTION=true
-API_RATE_LIMIT_PER_MINUTE=60   # request per menit per IP
-
-# Monitoring
-LANGSMITH_API_KEY=ls__...      # opsional, untuk tracing agen
-
-# OSINT Layer (fase berikutnya — belum aktif)
-# WAYBACK_API_URL=http://archive.org/wayback/available
-# SECURITY_TRAILS_API_KEY=st_...
-# GDELT_API_URL=https://api.gdeltproject.org/api/v2
-# OPENCORPORATES_API_KEY=oc_...
+# === Quality Gate ===
+QUALITY_GATE_AUTO_PUBLISH=0.75
+QUALITY_GATE_REVIEW_THRESHOLD=0.50
 ```
+
+Semua variabel lain yang tidak disebut di sini (retry, circuit breaker, token budget, security threshold, OSINT) akan dikonfigurasi di Fase 4 — lihat [ROADMAP.md](./ROADMAP.md).
 
 ---
 
@@ -529,15 +538,15 @@ Lihat [ROADMAP.md](./ROADMAP.md) untuk peta jalan lengkap pengembangan NewsAgent
 Kontribusi sangat disambut! Silakan ikuti langkah berikut:
 
 1. Fork repositori ini
-2. Buat branch baru: `git checkout -b fitur/nama-fitur`
-3. Commit perubahan: `git commit -m "feat: tambah fitur X"`
-4. Push ke branch: `git push origin fitur/nama-fitur`
+2. Buat branch baru: `git checkout -b feat/nama-fitur`
+3. Commit perubahan: `git commit -m "feat: add new feature"`
+4. Push ke branch: `git push origin feat/nama-fitur`
 5. Buka Pull Request
 
 Pastikan semua test lulus sebelum membuka PR:
 
 ```bash
-pytest tests/ -v
+pytest backend/ -v
 ```
 
 ---

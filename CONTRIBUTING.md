@@ -1,18 +1,4 @@
-# 🤝 Panduan Kontribusi — NewsAgent
-
-## Daftar Isi
-
-- [Sebelum Mulai](#sebelum-mulai)
-- [Cara Berkontribusi](#cara-berkontribusi)
-- [Konvensi Pesan Commit](#konvensi-pesan-commit)
-- [Standar Kode](#standar-kode)
-- [Area yang Paling Butuh Kontribusi](#area-yang-paling-butuh-kontribusi)
-- [Review Process](#review-process)
-
-
-Terima kasih sudah tertarik berkontribusi pada NewsAgent! Dokumen ini menjelaskan cara terbaik untuk ikut membangun proyek ini.
-
----
+# Panduan Kontribusi — NewsAgent
 
 ## Sebelum Mulai
 
@@ -21,8 +7,6 @@ Pastikan kamu sudah membaca:
 - [VISION.md](./VISION.md) — visi & nilai proyek
 - [ROADMAP.md](./ROADMAP.md) — prioritas pengembangan saat ini
 - [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) — standar perilaku komunitas
-
----
 
 ## Cara Berkontribusi
 
@@ -53,26 +37,25 @@ git clone https://github.com/YOUR_USERNAME/newsagent.git
 cd newsagent
 
 # 3. Buat branch baru dari main
-git checkout -b fitur/nama-fitur
+git checkout -b feat/nama-fitur
 # atau
 git checkout -b fix/nama-bug
 
 # 4. Kerjakan perubahanmu
+
 # 5. Pastikan semua test lulus
-pytest tests/ -v
+pytest backend/ -v
 
 # 6. Commit dengan pesan yang jelas
-git commit -m "feat: tambah OSINT domain credibility checker"
+git commit -m "feat: add OSINT domain credibility checker"
 # atau
-git commit -m "fix: perbaiki race condition di aggregator agent"
+git commit -m "fix: fix race condition in aggregator agent"
 
 # 7. Push ke fork kamu
-git push origin fitur/nama-fitur
+git push origin feat/nama-fitur
 
 # 8. Buka Pull Request ke branch main
 ```
-
----
 
 ## Konvensi Pesan Commit
 
@@ -96,8 +79,6 @@ docs: perbarui API_REFERENCE dengan endpoint WebSocket baru
 test: tambah unit test untuk credibility scoring engine
 ```
 
----
-
 ## Standar Kode
 
 ### Python
@@ -108,10 +89,10 @@ test: tambah unit test untuk credibility scoring engine
 
 ```bash
 # Format sebelum commit
-ruff check . --fix
-ruff format .
-mypy newsagent/
-npx pyright newsagent/   # type checker alternatif
+ruff check backend/ --fix
+ruff format backend/
+mypy backend/newsagent/
+npx --yes pyright backend/newsagent/
 pre-commit run --all-files
 ```
 
@@ -121,9 +102,9 @@ Jika menambah agen baru, ikuti pola ini:
 
 ```python
 # agents/nama_agent.py
-from core.state import ArticleState
-from llm.base_adapter import BaseLLMAdapter
-from resilience.retry_policy import with_retry
+from newsagent.core.state import ArticleState
+from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.resilience.retry_policy import with_retry
 
 class NamaAgent:
     def __init__(self, llm: BaseLLMAdapter):
@@ -141,20 +122,19 @@ class NamaAgent:
 Setiap fitur baru wajib disertai test:
 
 ```bash
-tests/
-├── test_agents/
-│   └── test_nama_agent.py   # unit test agen baru
-├── test_integration/
-│   └── test_pipeline.py     # integration test pipeline
+backend/
+├── tests/
+│   ├── test_agents/
+│   │   └── test_nama_agent.py
+│   └── test_integration/
+│       └── test_pipeline.py
 ```
 
 Minimal coverage yang diterima: **80%** per modul baru.
 
 ```bash
-pytest tests/ -v --cov=agents --cov-report=term-missing
+pytest backend/ -v --cov=newsagent --cov-report=term-missing
 ```
-
----
 
 ## Area yang Paling Butuh Kontribusi
 
@@ -164,15 +144,11 @@ Berdasarkan [ROADMAP.md](./ROADMAP.md) dan status Fase 1 yang sudah selesai:
 2. **Fase 2 — API & Dashboard** — endpoint REST lengkap, WebSocket pipeline status, dashboard redaksi
 3. **Testing** — tambah coverage test untuk agen yang sudah ada (target 80% per modul)
 
----
-
 ## Review Process
 
 - Setiap PR akan di-review dalam 3-5 hari kerja
 - PR yang mengubah arsitektur inti butuh diskusi lebih dulu di Discussions
 - PR dengan test coverage < 80% akan diminta revisi
 - Gunakan draft PR jika masih work-in-progress
-
----
 
 *Pertanyaan? Buka [Discussion](https://github.com/YOUR_USERNAME/newsagent/discussions) atau hubungi maintainer.*

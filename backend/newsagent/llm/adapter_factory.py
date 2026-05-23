@@ -5,6 +5,7 @@ from newsagent.llm.gemini_adapter import GeminiAdapter
 from newsagent.llm.mistral_adapter import MistralAdapter
 from newsagent.llm.openai_adapter import OpenAIAdapter
 from newsagent.llm.qwen_adapter import QwenAdapter
+from newsagent.llm.deepseek_adapter import DeepSeekAdapter
 
 
 def adapter_factory(agent_key: str) -> BaseLLMAdapter:
@@ -26,6 +27,7 @@ def adapter_factory(agent_key: str) -> BaseLLMAdapter:
         "gemini": GeminiAdapter,
         "mistral": MistralAdapter,
         "qwen": QwenAdapter,
+        "deepseek": DeepSeekAdapter,
     }
     cls = adapters.get(provider)
     if cls is None:

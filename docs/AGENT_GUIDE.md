@@ -39,7 +39,7 @@ Tiga aturan utama yang tidak boleh dilanggar:
 Referensi cepat input/output tiap agen. Sebelum membuat agen baru, pastikan tidak tumpang tindih dengan yang sudah ada.
 
 | Agen | Input State | Output State | LLM Config |
-|---|---|---|---|---|
+|---|---|---|---|
 | `OrchestratorAgent` | `raw_input`, `input_type` | `status`, `events` | `ORCHESTRATOR_LLM` |
 | `RAGPipeline` | `raw_input` | `rag_context` | `RAG_LLM` |
 | `DraftAgent` | `raw_input`, `rag_context` | `draft` | `DRAFT_AGENT_LLM` |
@@ -244,11 +244,31 @@ class DraftAgent:
 
 ## Panduan System Prompt
 
-Sejak refaktor terbaru, seluruh *system prompt* dipisahkan dari kode Python ke dalam file Markdown di folder `newsagent/prompts/`. Hal ini memungkinkan kita menerapkan teknik *Prompt Engineering* tingkat lanjut tanpa membuat kode menjadi berantakan.
+Sejak refaktor terbaru, seluruh *system prompt* dipisahkan dari kode Python ke dalam file Markdown di folder `backend/newsagent/prompts/`. Hal ini memungkinkan kita menerapkan teknik *Prompt Engineering* tingkat lanjut tanpa membuat kode menjadi berantakan.
 
-### Struktur File Markdown Wajib (CoT + Few-Shot)
+Struktur folder `prompts/`:
 
-Setiap file `.md` (misal: `newsagent/prompts/editor_agent.md`) wajib mengikuti struktur berikut:
+```
+prompts/
+├── orchestrator_agent.md
+├── draft_agent.md
+├── editor_agent.md
+├── fact_check/
+│   ├── input_ingestion.md
+│   ├── query_generation.md
+│   ├── evidence_retrieval.md
+│   └── verdict_prediction.md
+├── aggregator_system.md        # split system + user untuk debate
+├── aggregator_user.md
+├── quality_gate_system.md      # split system + user untuk scoring
+├── quality_gate_user.md
+├── publisher_system.md         # split system + user untuk CMS
+├── publisher_user.md
+├── _system_guard.md            # pembungkus keamanan bawaan
+└── _user_wrapper.md            # pembungkus input pengguna
+```
+
+Setiap file `.md` (misal: `backend/newsagent/prompts/editor_agent.md`) wajib mengikuti struktur berikut:
 
 ```markdown
 ## Peran
@@ -368,7 +388,7 @@ class ArticleState(TypedDict):
 
 ```python
 # core/graph.py
-from agents.nama_agent import NamaAgent
+from newsagent.agents.nama_agent import NamaAgent
 
 def build_graph(adapters: dict) -> StateGraph:
     graph = StateGraph(ArticleState)
@@ -394,15 +414,18 @@ NAMA_AGENT_LLM=claude   # claude | openai | gemini | mistral | qwen
 ```python
 # tests/test_agents/test_nama_agent.py
 import pytest
-from agents.nama_agent import NamaAgent
-from tests.fixtures import build_mock_llm, build_sample_state
+from newsagent.agents.nama_agent import NamaAgent
+
+# Gunakan FakeLLM dari conftest yang sudah ada
+# Lihat backend/newsagent/tests/conftest.py untuk detail
+from newsagent.tests.conftest import FakeLLM, sample_state
 
 @pytest.mark.asyncio
 async def test_nama_agent_output_valid():
     """Agen menghasilkan output yang valid dari input normal."""
-    agent = NamaAgent(llm=build_mock_llm(response="output palsu"))
-    state = build_sample_state(draft="Artikel contoh.")
-    result = await agent.run(state)
+    llm = FakeLLM(response="output palsu")
+    agent = NamaAgent(llm=llm)
+    result = await agent.run(sample_state(draft="Artikel contoh."))
 
     assert "nama_agent_output" in result
     assert len(result["nama_agent_output"]) > 0
@@ -468,7 +491,7 @@ LOG_RESPONSES=true   # log semua response dari LLM
 ```python
 # Jalankan satu agen saja, tanpa seluruh pipeline
 import asyncio
-from agents.draft_agent import DraftAgent
+from newsagent.agents.draft_agent import DraftAgent
 from llm.adapter_factory import build_adapter
 from core.state import build_initial_state
 

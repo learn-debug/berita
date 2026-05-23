@@ -1,20 +1,4 @@
-# 🚀 Panduan Deployment — NewsAgent
-
-## Daftar Isi
-
-- [Lingkungan Lokal](#lingkungan-lokal-development)
-- [Docker](#docker-semua-service)
-- [Production *(coming soon)*](#production-coming-soon)
-- [Variabel Environment Wajib](#variabel-environment-wajib)
-- [Health Check](#health-check)
-- [Monitoring](#monitoring)
-
-
-Panduan lengkap untuk menjalankan NewsAgent di lingkungan lokal.
-
-> ⚠️ **Status Fase 1:** Deployment production (Nginx, SSL, CI/CD) akan diatur di Fase 2–3. Saat ini hanya development + Docker Compose yang didukung.
-
----
+# Panduan Deployment — NewsAgent
 
 ## Lingkungan Lokal (Development)
 
@@ -23,26 +7,30 @@ Panduan lengkap untuk menjalankan NewsAgent di lingkungan lokal.
 - Docker & Docker Compose
 - API Key Anthropic
 - `uv` ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
+- Node.js 18+ (untuk pyright)
 
 ### Setup
 
 ```bash
 # 1. Clone & masuk ke direktori
-git clone https://github.com/YOUR_USERNAME/newsagent.git
-cd newsagent
+git clone https://github.com/YOUR_USERNAME/borneo.git
+cd borneo
 
-# 2. Install semua dependensi
-uv sync --extra dev
+# 2. Install semua dependensi Python
+uv sync --extra dev --directory backend
 
-# 3. Siapkan konfigurasi
+# 3. Install frontend dependencies
+pnpm install
+
+# 4. Siapkan konfigurasi
 cp .env.example .env
 # Edit .env dan isi ANTHROPIC_API_KEY minimal
 
-# 4. Jalankan infrastruktur (PostgreSQL + Redis)
-docker-compose up -d postgres redis
+# 5. Jalankan infrastruktur (PostgreSQL + Redis)
+docker compose up -d
 
-# 5. Jalankan API server
-uvicorn newsagent.api.main:app --reload --port 8000
+# 6. Jalankan API server
+uvicorn newsagent.api.main:app --reload --app-dir backend
 ```
 
 Server berjalan di: `http://localhost:8000`
@@ -50,13 +38,7 @@ Docs API: `http://localhost:8000/docs`
 
 ---
 
-## Docker (Semua Service)
-
-Jalankan seluruh sistem sekaligus:
-
-```bash
-docker-compose up -d
-```
+## Docker (Infrastructure Only)
 
 Service yang berjalan:
 - `postgres` → port 5432
@@ -64,15 +46,9 @@ Service yang berjalan:
 
 Cek status:
 ```bash
-docker-compose ps
-docker-compose logs -f newsagent-api
+docker compose ps
+docker compose logs postgres
 ```
-
----
-
-## Production *(coming soon)*
-
-Setup production (Nginx reverse proxy, SSL, CI/CD pipeline) akan ditambahkan di Fase 2–3. Saat ini sistem hanya mendukung lingkungan development dan Docker Compose.
 
 ---
 
@@ -84,9 +60,7 @@ Setup production (Nginx reverse proxy, SSL, CI/CD pipeline) akan ditambahkan di 
 | `DATABASE_URL` | PostgreSQL connection string |
 | `REDIS_URL` | Redis connection string |
 | `CMS_BASE_URL` | URL base WordPress/CMS |
-| `CMS_USERNAME` | Username CMS |
-| `CMS_PASSWORD` | App password CMS |
-| `SECRET_KEY` | Secret key untuk JWT auth |
+| `CMS_API_KEY` | API key CMS |
 
 Lihat `.env.example` untuk daftar lengkap semua variabel.
 
@@ -109,31 +83,26 @@ curl http://localhost:8000/health
 
 ---
 
----
-
 ## Backup Database
 
 ```bash
 # Backup manual
-docker-compose exec postgres pg_dump -U newsagent newsagent > backup_$(date +%Y%m%d).sql
+docker compose exec postgres pg_dump -U newsagent newsagent > backup_$(date +%Y%m%d).sql
 
 # Restore
-docker-compose exec -T postgres psql -U newsagent newsagent < backup_20250601.sql
+docker compose exec -T postgres psql -U newsagent newsagent < backup_20250601.sql
 ```
 
 ---
 
-## Monitoring
+## Production *(coming soon)*
 
-Jika menggunakan LangSmith untuk tracing agen:
-
-```env
-LANGSMITH_API_KEY=ls__...
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_PROJECT=newsagent-production
-```
-
-Dashboard: `https://smith.langchain.com`
+Akan ditambahkan di Fase 2–3:
+- Nginx reverse proxy
+- SSL/TLS
+- CI/CD pipeline
+- Docker Compose production profile
+- API service dalam Docker
 
 ---
 

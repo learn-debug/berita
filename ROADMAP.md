@@ -39,7 +39,7 @@ Selesai (Fase 1 — Fondasi Agen):
      Aggregator, Quality Gate, Publisher
   ✅ RAG Pipeline (pipeline, retriever, synthesizer, reranker)
   ✅ Tools (BaseTool, web search, CMS client, scoring)
-  ✅ FastAPI entrypoint (POST /process)
+   ✅ `backend/newsagent/api/main.py` — FastAPI entrypoint (POST /process)
   ✅ Docker Compose (PostgreSQL + Redis)
   ✅ 209 unit/integration test passing, ruff + mypy + pyright clean
   ✅ Dev tooling: ruff, uv, pre-commit, pyright
@@ -146,7 +146,7 @@ Dikerjakan dari yang paling sederhana agar ada output nyata lebih cepat.
 ```bash
 Estimasi: 1-2 hari | Output: artikel teks dari topik
 ```
-- [x] `agents/draft_agent.py`
+- [x] `backend/newsagent/agents/draft_agent.py`
 - [x] Prompt: terima topik + RAG context → hasilkan artikel berstruktur
 - [x] Test: masukkan topik → lihat draf artikel keluar
 
@@ -154,7 +154,7 @@ Estimasi: 1-2 hari | Output: artikel teks dari topik
 ```bash
 Estimasi: 1 hari | Output: pipeline terhubung
 ```
-- [x] `agents/orchestrator.py`
+- [x] `backend/newsagent/agents/orchestrator.py`
 - [x] Integrasi ke LangGraph graph
 - [x] Test: topik masuk → Draft Agent terpanggil otomatis
 
@@ -162,7 +162,7 @@ Estimasi: 1 hari | Output: pipeline terhubung
 ```bash
 Estimasi: 1 hari | Output: artikel diperbaiki tata bahasanya
 ```
-- [x] `agents/editor_agent.py`
+- [x] `backend/newsagent/agents/editor_agent.py`
 - [x] Prompt: terima draf → perbaiki bahasa & struktur → return artikel final
 - [x] Test: draf kasar masuk → draf bersih keluar
 
@@ -170,26 +170,26 @@ Estimasi: 1 hari | Output: artikel diperbaiki tata bahasanya
 ```bash
 Estimasi: 2 hari | Output: konteks terstruktur dari sumber web
 ```
-- [x] `rag/retriever.py` — ambil dokumen dari web search
-- [x] `rag/synthesizer.py` — sintesis menjadi ringkasan terstruktur
-- [x] `rag/reranker.py` — re-ranking sumber berdasarkan relevansi
+- [x] `backend/newsagent/rag/retriever.py` — ambil dokumen dari web search
+- [x] `backend/newsagent/rag/synthesizer.py` — sintesis menjadi ringkasan terstruktur
+- [x] `backend/newsagent/rag/reranker.py` — re-ranking sumber berdasarkan relevansi
 - [x] Integrasi ke pipeline sebelum Draft Agent
 
 #### Fact-Check Pipeline (4 sub-agen)
 ```bash
 Estimasi: 3-4 hari | Output: laporan verifikasi per klaim
 ```
-- [x] `agents/fact_check/input_ingestion.py`
-- [x] `agents/fact_check/query_generation.py`
-- [x] `agents/fact_check/evidence_retrieval.py`
-- [x] `agents/fact_check/verdict_prediction.py`
+- [x] `backend/newsagent/agents/fact_check/input_ingestion.py`
+- [x] `backend/newsagent/agents/fact_check/query_generation.py`
+- [x] `backend/newsagent/agents/fact_check/evidence_retrieval.py`
+- [x] `backend/newsagent/agents/fact_check/verdict_prediction.py`
 - [x] Test: artikel dengan klaim faktual masuk → laporan verifikasi keluar
 
 #### Review & Aggregator
 ```bash
 Estimasi: 2 hari | Output: artikel final terintegrasi
 ```
-- [x] `agents/aggregator.py` — debate + consensus (DelphiAgent pattern)
+- [x] `backend/newsagent/agents/aggregator.py` — debate + consensus (DelphiAgent pattern)
 - [x] Implementasi 2 ronde: penilaian independen → deteksi konflik → sintesis
 - [x] Test: output 3 agen masuk → artikel final dengan resolusi konflik keluar
 
@@ -197,7 +197,7 @@ Estimasi: 2 hari | Output: artikel final terintegrasi
 ```bash
 Estimasi: 1 hari | Output: credibility score + keputusan routing
 ```
-- [x] `agents/quality_gate.py` — credibility scoring (MAFC pattern)
+- [x] `backend/newsagent/agents/quality_gate.py` — credibility scoring (MAFC pattern)
 - [x] Implementasi 3 jalur: auto-publish (≥0.75) / revisi parsial / revisi penuh
 - [x] Test: artikel dengan skor berbeda → routing yang benar
 
@@ -205,7 +205,7 @@ Estimasi: 1 hari | Output: credibility score + keputusan routing
 ```bash
 Estimasi: 1 hari | Output: artikel tayang di CMS
 ```
-- [x] `agents/publisher_agent.py`
+- [x] `backend/newsagent/agents/publisher_agent.py`
 - [x] Integrasi WordPress REST API
 - [ ] Test: artikel final masuk → tayang di CMS
 
@@ -223,11 +223,12 @@ Estimasi: 1 hari | Output: artikel tayang di CMS
 Estimasi total: 2-3 minggu
 ```
 
-- [ ] `api/main.py` — FastAPI dengan endpoint REST + WebSocket
+- [ ] `backend/newsagent/api/main.py` — FastAPI dengan endpoint REST + WebSocket
 - [ ] Endpoint: `POST /process` (submit topik/draf)
 - [ ] Endpoint: `GET /articles` (daftar artikel + status)
 - [ ] Endpoint: `GET /articles/{id}` (detail + laporan agen)
 - [ ] WebSocket: `ws/pipeline/{id}` (status pipeline real-time)
+- [ ] `apps/web/` — Next.js Dashboard Redaksi (TypeScript)
 - [ ] Dashboard Redaksi — halaman Pipeline (status agen real-time)
 - [ ] Dashboard Redaksi — halaman Detail Artikel (fact-check report + approve)
 - [ ] Dashboard Redaksi — halaman daftar artikel + filter
@@ -246,7 +247,7 @@ Estimasi total: 2-3 minggu
 Estimasi total: 2-3 minggu
 ```
 
-- [ ] Setup Next.js + headless CMS
+- [ ] `apps/web/` — Next.js (TypeScript) + headless CMS
 - [ ] Halaman beranda (artikel terbaru per kategori)
 - [ ] Halaman artikel (dengan label "Terverifikasi AI" + credibility score)
 - [ ] Komponen FactClaimTooltip (klik klaim → lihat sumber verifikasi)
@@ -281,8 +282,16 @@ Catatan: OSINT diparkir ke fase ini agar fase 1-3 bisa berjalan lebih cepat
 - [ ] Fine-tuning model untuk gaya penulisan spesifik
 - [ ] Plugin browser untuk input URL artikel
 
+#### GraphRAG (Knowledge Graph)
+- [ ] `rag/graph_extractor.py` — entity & relationship extraction dari artikel
+- [ ] `rag/graph_store.py` — knowledge graph storage (PostgreSQL + pgvector)
+- [ ] `rag/graph_retriever.py` — graph traversal untuk evidence retrieval
+- [ ] Integrasi ke Fact-Check Pipeline — cross-reference klaim dengan graph
+- [ ] Integrasi ke Situs Publik — halaman entitas, timeline, jaringan berita
+- [ ] Cross-article deduplikasi entity & misinfo pattern detection
+
 ### ✅ Milestone Fase 4
-**OSINT aktif:** artikel melewati verifikasi domain, arsip historis, dan cross-check global sebelum tayang.
+**OSINT aktif + Knowledge Graph:** artikel melewati verifikasi domain, arsip historis, cross-check global, dan cross-reference knowledge graph sebelum tayang.
 
 ---
 
@@ -324,6 +333,7 @@ Sebelum lanjut ke fase berikutnya, pastikan:
 | OSINT diparkir ke Fase 4 | Agar Fase 1-3 lebih cepat & fokus |
 | Human-in-the-loop tetap ada | Artikel skor 0.50-0.74 tetap butuh review |
 | Credibility score bukan biner | Lebih adil untuk artikel kompleks (MAFC) |
+| Frontend publik pakai Next.js + TypeScript | Python dev tapi Next.js standar industri untuk SEO & interaktivitas tinggi |
 
 ---
 

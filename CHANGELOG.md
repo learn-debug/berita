@@ -11,10 +11,14 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 ### Added
 - External markdown prompt files in `newsagent/prompts/`
 - `newsagent.utils.prompt_loader` utility to dynamically load prompts
+- `VISION.md` — project vision, mission, and core values
+- Root monorepo config: `pnpm-workspace.yaml`, `opencode.json`, root `package.json`
 
 ### Changed
 - Refactored all 9 core and fact-check agents' `_system_prompt()` methods to use `load_prompt()`
 - Upgraded all agent prompts with advanced Prompt Engineering techniques: Chain of Thought (CoT), Few-Shot examples, and Multi-Role Debate formatting
+- Restructured from flat project to pnpm monorepo: Python code moved to `backend/newsagent/`, frontend apps in `apps/`
+- Updated all docs (`README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `ROADMAP.md`, `FRONTEND.md`, `docs/*`) to reflect monorepo structure
 
 ### Docs
 - Updated `docs/AGENT_GUIDE.md` to document the new external Markdown prompt structure and CoT requirement

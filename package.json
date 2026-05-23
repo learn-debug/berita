@@ -1,20 +1,9 @@
 {
   "name": "borneo",
-  "version": "1.0.0",
-  "description": "> Sistem multi-agent berbasis AI yang memproses draf artikel secara mandiri, melakukan pengecekan fakta otomatis, dan mempublikasikan konten secara kolaboratif — dibangun di atas landasan riset akademis terkini.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "pyright": "^1.1.409"
+  "private": true,
+  "description": "Monorepo for automated multi-agent news production system",
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "onlyBuiltDependencies": ["sharp", "unrs-resolver"]
   }
 }

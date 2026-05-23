@@ -20,6 +20,6 @@ repos:
         name: pip-audit
         entry: pip-audit
         language: python
-        args: [--strict, --path, .venv]
+        args: [--strict, --path, backend/.venv]
         pass_filenames: false
         stages: [manual]

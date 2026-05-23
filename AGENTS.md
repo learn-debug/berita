@@ -2,7 +2,7 @@
 
 ## Current state
 
-- **Phase 1 complete.** `newsagent/` package, all agents, LangGraph pipeline, LLM adapters, resilience/security/cost layers, FastAPI entrypoint, Docker Compose, and tests exist and pass.
+- **Phase 1 complete.** `backend/newsagent/` package, all agents, LangGraph pipeline, LLM adapters, resilience/security/cost layers, FastAPI entrypoint, Docker Compose, and tests exist and pass.
 - All Phase 1 code has been committed.
 
 ## Authoritative docs
@@ -15,41 +15,41 @@
 | `docs/AGENT_GUIDE.md` | Agent coding templates, patterns, debugging |
 | `docs/adr/` | ADRs for key decisions (LLM Adapter, OSINT deferral, etc.) |
 | `docs/API_REFERENCE.md` | Planned REST + WebSocket endpoints |
+| `FRONTEND.md` | Dashboard & public site frontend specs |
 
 ## Quick start
 
 ```bash
-uv sync --extra dev   # install semua deps (termasuk dev)
-npm install           # install pyright (type checker)
+uv sync --extra dev --directory backend
 ```
 
 ## Commands (via `uv run` or direct after `uv shell`)
 
 ```bash
-# format & lint (replaces black, isort, flake8)
-ruff check . --fix
-ruff format .
+# format & lint
+ruff check backend/ --fix
+ruff format backend/
 
-# type check (two options)
-mypy newsagent/
-npx pyright newsagent/
+# type check
+mypy backend/newsagent/
+npx --yes pyright backend/newsagent/
 
 # security audit
-pip-audit --strict --path .venv
+pip-audit --strict --path backend/.venv
 
 # test (single run or with coverage)
-pytest newsagent/tests/ -v
-pytest newsagent/tests/ -v --cov=newsagent --cov-report=term-missing
+pytest backend/ -v
+pytest backend/ -v --cov=newsagent --cov-report=term-missing
 
 # run API
-uvicorn newsagent.api.main:app --reload
+uvicorn newsagent.api.main:app --reload --app-dir backend
 
 # start services
 docker compose up -d
 
 # pre-commit (run manually or auto on git commit)
 pre-commit run --all-files
-pre-commit install   # aktifkan hook otomatis
+pre-commit install
 ```
 
 - Commit: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`).
@@ -69,7 +69,7 @@ pre-commit install   # aktifkan hook otomatis
 
 - Python 3.10+, type hints on all public functions, docstrings on classes + public functions.
 - Each agent: one class per file, `@with_retry` + `@with_budget` decorators, implements `async def run(state) -> state`.
-- Each feature needs tests in `tests/test_agents/` (unit) or `tests/test_integration/` (integration).
+- Each feature needs tests in `backend/tests/test_agents/` (unit) or `backend/tests/test_integration/` (integration).
 - No generated code, no migrations, no build artifacts yet. Alembic planned for future DB migrations.
 - Human-in-the-loop: scores 0.50–0.74 must route to manual editor review.
 
