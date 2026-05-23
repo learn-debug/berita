@@ -15,6 +15,8 @@ from newsagent.agents.quality_gate import QualityGateAgent
 from newsagent.core.config import settings
 from newsagent.core.state import ArticleState
 from newsagent.llm.adapter_factory import adapter_factory
+from newsagent.memory.draft_memory import DraftMemory
+from newsagent.memory.verdict_cache import VerdictCache
 from newsagent.rag.pipeline import RAGPipeline
 from newsagent.tools.cms_client import CMSClient
 
@@ -36,16 +38,19 @@ def route_after_draft(state: ArticleState) -> str:
 
 
 def build_graph(cleanup_handlers: list | None = None) -> Any:
+    draft_memory = DraftMemory()
+    verdict_cache = VerdictCache()
+
     orchestrator = OrchestratorAgent()
     rag_pipeline = RAGPipeline(llm=adapter_factory("rag"))
-    draft = DraftAgent(llm=adapter_factory("draft_agent"))
+    draft = DraftAgent(llm=adapter_factory("draft_agent"), draft_memory=draft_memory)
     editor = EditorAgent(llm=adapter_factory("editor_agent"))
     input_ingestion = InputIngestionAgent(llm=adapter_factory("fact_check"))
     query_gen = QueryGenerationAgent(llm=adapter_factory("fact_check"))
     evidence_ret = EvidenceRetrievalAgent(llm=adapter_factory("fact_check"))
-    verdict = VerdictPredictionAgent(llm=adapter_factory("fact_check"))
+    verdict = VerdictPredictionAgent(llm=adapter_factory("fact_check"), cache=verdict_cache)
     aggregator = AggregatorAgent(llm=adapter_factory("orchestrator"))
-    quality = QualityGateAgent(llm=adapter_factory("orchestrator"))
+    quality = QualityGateAgent(llm=adapter_factory("orchestrator"), draft_memory=draft_memory)
     cms = (
         CMSClient(base_url=settings.cms_base_url, api_key=settings.cms_api_key)
         if settings.cms_base_url and settings.cms_api_key

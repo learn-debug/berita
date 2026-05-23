@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class QualityGateAgent:
-    def __init__(self, llm: BaseLLMAdapter):
+    def __init__(self, llm: BaseLLMAdapter, draft_memory: DraftMemory | None = None):
         self.llm = llm
-        self._draft_memory = DraftMemory()
+        self._draft_memory = draft_memory
 
     def _parse_scores(self, text: str) -> dict[str, float]:
         scores = {
@@ -71,15 +71,16 @@ class QualityGateAgent:
 
         logger.info("[QualityGate] skor=%.2f routing=%s", score, route)
 
-        try:
-            await self._draft_memory.save(
-                topic=state["raw_input"],
-                draft=article[:1000],
-                credibility_score=score,
-                feedback=route,
-            )
-        except Exception as e:
-            logger.warning("[QualityGate] save memory gagal: %s", e)
+        if self._draft_memory:
+            try:
+                await self._draft_memory.save(
+                    topic=state["raw_input"],
+                    draft=article[:1000],
+                    credibility_score=score,
+                    feedback=route,
+                )
+            except Exception as e:
+                logger.warning("[QualityGate] save memory gagal: %s", e)
 
         return {
             **state,

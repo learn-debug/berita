@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class VerdictPredictionAgent:
-    def __init__(self, llm: BaseLLMAdapter):
+    def __init__(self, llm: BaseLLMAdapter, cache: VerdictCache | None = None):
         self.llm = llm
-        self._cache = VerdictCache()
+        self._cache = cache
 
     @with_retry(max_attempts=3)
     async def run(self, state: ArticleState) -> ArticleState:
@@ -29,13 +29,16 @@ class VerdictPredictionAgent:
         cached_parts: list[str] = []
         uncached_claims: list[str] = []
 
-        for claim in claim_list:
-            cached = await self._cache.get(claim)
-            if cached and cached.get("verdict"):
-                cached_parts.append(f"Klaim: {claim}\nPutusan (dari cache): {cached['verdict']}")
-                logger.info("[VerdictPrediction] cache hit: %.60s...", claim)
-            else:
-                uncached_claims.append(claim)
+        if self._cache:
+            for claim in claim_list:
+                cached = await self._cache.get(claim)
+                if cached and cached.get("verdict"):
+                    cached_parts.append(f"Klaim: {claim}\nPutusan (dari cache): {cached['verdict']}")
+                    logger.info("[VerdictPrediction] cache hit: %.60s...", claim)
+                else:
+                    uncached_claims.append(claim)
+        else:
+            uncached_claims = claim_list
 
         verdict = ""
 
@@ -51,8 +54,9 @@ class VerdictPredictionAgent:
                 )
                 verdict = result
 
-                for claim in uncached_claims:
-                    await self._cache.set(claim, verdict, evidence, 0.5)
+                if self._cache:
+                    for claim in uncached_claims:
+                        await self._cache.set(claim, verdict, evidence, 0.5)
             except Exception as e:
                 logger.error("[VerdictPrediction] gagal: %s", e)
                 verdict = ""

@@ -13,11 +13,13 @@ logger = logging.getLogger(__name__)
 
 
 class DraftAgent:
-    def __init__(self, llm: BaseLLMAdapter):
+    def __init__(self, llm: BaseLLMAdapter, draft_memory: DraftMemory | None = None):
         self.llm = llm
-        self._draft_memory = DraftMemory()
+        self._draft_memory = draft_memory
 
     async def _build_few_shot(self, topic: str) -> str:
+        if not self._draft_memory:
+            return ""
         try:
             examples = await self._draft_memory.find_best(topic, limit=2)
             if not examples:
