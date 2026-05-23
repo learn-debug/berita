@@ -52,6 +52,22 @@ Referensi cepat input/output tiap agen. Sebelum membuat agen baru, pastikan tida
 | `QualityGateAgent` | `aggregated_article`, `fact_check_report` | `credibility_score`, `routing` | `ORCHESTRATOR_LLM` |
 | `PublisherAgent` | `aggregated_article`, `credibility_score` | `published_url` | `PUBLISHER_AGENT_LLM` |
 
+### Memory Layer
+
+Modul `memory/` menyediakan persistent memory antar pipeline via PostgreSQL + pgvector:
+
+| Modul | Fungsi | Digunakan Oleh |
+|---|---|---|
+| `VerdictCache` | Cache hasil fact check per klaim (hash-based) | `VerdictPredictionAgent` |
+| `DraftMemory` | Simpan draft + score + feedback untuk few-shot learning | `DraftAgent`, `QualityGateAgent` |
+
+**Self-improving loop:**
+```
+Pipeline 1 → DraftAgent (tanpa contoh) → QualityGate → save(draft, score, feedback)
+Pipeline 2 → DraftAgent (dapat few-shot dari pipeline 1) → kualitas meningkat
+Pipeline 3 → semakin baik dari pipeline 2
+```
+
 ---
 
 ## Anatomi Sebuah Agen
@@ -266,6 +282,11 @@ prompts/
 ├── publisher_user.md
 ├── _system_guard.md            # pembungkus keamanan bawaan
 └── _user_wrapper.md            # pembungkus input pengguna
+
+memory/
+├── engine.py                   # asyncpg pool + pgvector
+├── verdict_cache.py            # cache klaim fact check
+└── draft_memory.py             # simpan draft untuk few-shot
 ```
 
 Setiap file `.md` (misal: `backend/newsagent/prompts/editor_agent.md`) wajib mengikuti struktur berikut:
