@@ -1,5 +1,9 @@
 # NewsAgent — Agent Guide
 
+## Session logging
+
+Every session must be saved to the knowledge graph as entity `session-YYYY-MM-DD` with entityType `session` and a relation `documents` to `NewsAgent`. Include key work done, files changed, decisions made, and test counts. Do this at the end of every session (or when user explicitly asks).
+
 ## Current state
 
 - **Phase 1 complete.** `backend/newsagent/` package, all agents, LangGraph pipeline, LLM adapters, resilience/security/cost layers, FastAPI entrypoint, Docker Compose, and tests exist and pass.

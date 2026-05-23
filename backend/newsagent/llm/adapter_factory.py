@@ -5,6 +5,7 @@ from newsagent.llm.deepseek_adapter import DeepSeekAdapter
 from newsagent.llm.gemini_adapter import GeminiAdapter
 from newsagent.llm.mistral_adapter import MistralAdapter
 from newsagent.llm.openai_adapter import OpenAIAdapter
+from newsagent.llm.openrouter_adapter import OpenRouterAdapter
 from newsagent.llm.qwen_adapter import QwenAdapter
 
 
@@ -21,6 +22,9 @@ def adapter_factory(agent_key: str) -> BaseLLMAdapter:
     if provider is None:
         raise ValueError(f"Unknown agent key '{agent_key}'. Valid keys: {', '.join(provider_map)}")
 
+    if provider == "openrouter":
+        return OpenRouterAdapter(agent_key)
+
     adapters: dict[str, type[BaseLLMAdapter]] = {
         "claude": ClaudeAdapter,
         "openai": OpenAIAdapter,
@@ -33,6 +37,6 @@ def adapter_factory(agent_key: str) -> BaseLLMAdapter:
     if cls is None:
         raise ValueError(
             f"Unknown LLM provider '{provider}' for agent '{agent_key}'. "
-            f"Valid providers: {', '.join(adapters)}"
+            f"Valid providers: {', '.join(adapters)}, openrouter"
         )
     return cls()

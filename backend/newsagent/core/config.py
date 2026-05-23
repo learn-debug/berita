@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     mistral_api_key: str = ""
     qwen_api_key: str = ""
     deepseek_api_key: str = ""
+    openrouter_api_key: str = ""
     tavily_api_key: str = ""
     serper_api_key: str = ""
 
@@ -22,6 +23,13 @@ class Settings(BaseSettings):
     fact_check_llm: str = "claude"
     publisher_agent_llm: str = "claude"
     rag_llm: str = "claude"
+
+    orchestrator_openrouter_model: str = "openai/gpt-4o"
+    draft_agent_openrouter_model: str = "openai/gpt-4o-mini"
+    editor_agent_openrouter_model: str = "openai/gpt-4o-mini"
+    fact_check_openrouter_model: str = "openai/gpt-4o"
+    publisher_agent_openrouter_model: str = "openai/gpt-4o-mini"
+    rag_openrouter_model: str = "openai/gpt-4o-mini"
 
     quality_gate_auto_publish: float = 0.75
     quality_gate_review_threshold: float = 0.50
