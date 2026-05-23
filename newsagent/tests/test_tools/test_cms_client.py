@@ -5,6 +5,12 @@ import pytest
 from newsagent.tools.cms_client import CMSClient
 
 
+def test_name_and_description() -> None:
+    client = CMSClient(base_url="http://cms.test", api_key="test-key")
+    assert client.name == "cms_client"
+    assert "Publish" in client.description
+
+
 @pytest.mark.asyncio
 async def test_publish_invalid_url() -> None:
     client = CMSClient(base_url="http://localhost:99999", api_key="test")
