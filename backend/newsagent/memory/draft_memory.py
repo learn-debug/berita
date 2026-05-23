@@ -7,7 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 class DraftMemory:
-    async def ensure_table(self) -> None:
+    def __init__(self) -> None:
+        self._ready = False
+
+    async def _ensure(self) -> None:
+        if self._ready:
+            return
         engine = await get_engine()
         await engine.execute("""
             CREATE TABLE IF NOT EXISTS draft_memory (
@@ -23,6 +28,7 @@ class DraftMemory:
         await engine.execute("""
             CREATE INDEX IF NOT EXISTS idx_draft_topic ON draft_memory (topic)
         """)
+        self._ready = True
 
     async def save(
         self,
@@ -31,7 +37,7 @@ class DraftMemory:
         credibility_score: float = 0.0,
         feedback: str = "",
     ) -> None:
-        await self.ensure_table()
+        await self._ensure()
         engine = await get_engine()
         await engine.execute(
             """
@@ -45,7 +51,7 @@ class DraftMemory:
         )
 
     async def find_best(self, topic: str, limit: int = 3) -> list[dict[str, Any]]:
-        await self.ensure_table()
+        await self._ensure()
         engine = await get_engine()
         words = [w for w in topic.lower().split() if len(w) > 2]
         if not words:
@@ -63,7 +69,7 @@ class DraftMemory:
         return [dict(r) for r in rows]
 
     async def find_high_score(self, min_score: float = 0.75, limit: int = 5) -> list[dict[str, Any]]:
-        await self.ensure_table()
+        await self._ensure()
         engine = await get_engine()
         rows = await engine.fetch(
             """
@@ -79,7 +85,7 @@ class DraftMemory:
         return [dict(r) for r in rows]
 
     async def stats(self) -> dict[str, Any]:
-        await self.ensure_table()
+        await self._ensure()
         engine = await get_engine()
         total = await engine.fetchval("SELECT COUNT(*) FROM draft_memory")
         avg_score = await engine.fetchval(

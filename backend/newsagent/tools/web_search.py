@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import httpx
@@ -18,6 +19,7 @@ class WebSearchTool(SearchProvider):
         return self._client
 
     async def search(self, query: str, max_results: int = 5) -> list[str]:
+        await asyncio.sleep(0.5)
         search_url = f"https://duckduckgo.com/html/?q={query.replace(' ', '+')}"
         try:
             client = await self._get_client()

@@ -31,15 +31,17 @@ class PostgresEngine:
         async with p.acquire() as conn:
             return await conn.execute(query, *args)
 
-    async def fetch(self, query: str, *args: Any) -> list[asyncpg.Record]:
+    async def fetch(self, query: str, *args: Any) -> list[dict[str, Any]]:
         p = await self.pool()
         async with p.acquire() as conn:
-            return await conn.fetch(query, *args)
+            rows = await conn.fetch(query, *args)
+            return [dict(r) for r in rows]
 
-    async def fetchrow(self, query: str, *args: Any) -> asyncpg.Record | None:
+    async def fetchrow(self, query: str, *args: Any) -> dict[str, Any] | None:
         p = await self.pool()
         async with p.acquire() as conn:
-            return await conn.fetchrow(query, *args)
+            row = await conn.fetchrow(query, *args)
+            return dict(row) if row else None
 
     async def fetchval(self, query: str, *args: Any) -> Any:
         p = await self.pool()

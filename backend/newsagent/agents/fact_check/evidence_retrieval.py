@@ -53,3 +53,6 @@ class EvidenceRetrievalAgent:
 
     def _system_prompt(self) -> str:
         return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("fact_check/evidence_retrieval.md")
+
+    async def close(self) -> None:
+        await self.search.close()

@@ -45,8 +45,9 @@ class VerdictPredictionAgent:
         if uncached_claims:
             try:
                 user_prompt = (
-                    f"Klaim:\n" + "\n".join(uncached_claims) +
-                    f"\n\nBukti:\n{evidence}\n\nBerikan putusan untuk setiap klaim."
+                    "Klaim:\n"
+                    + "\n".join(uncached_claims)
+                    + f"\n\nBukti:\n{evidence}\n\nBerikan putusan untuk setiap klaim."
                 )
                 result = await self.llm.complete(
                     system=self._system_prompt(),
@@ -63,7 +64,8 @@ class VerdictPredictionAgent:
 
         if cached_parts:
             if verdict:
-                verdict = "--- HASIL DARI CACHE ---\n" + "\n\n".join(cached_parts) + "\n\n--- HASIL BARU ---\n" + verdict
+                combined = "\n\n".join(cached_parts)
+                verdict = f"--- HASIL DARI CACHE ---\n{combined}\n\n--- HASIL BARU ---\n{verdict}"
             else:
                 verdict = "\n\n".join(cached_parts)
 

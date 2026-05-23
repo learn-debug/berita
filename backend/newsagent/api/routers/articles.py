@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
 
-from newsagent.api.schemas import ProcessRequest, ProcessResponse
+from newsagent.api.schemas import PatchRequest, ProcessRequest, ProcessResponse
 from newsagent.core.state import ArticleState
 from newsagent.security.input_sanitizer import InputSanitizer
 from newsagent.security.rate_limiter import RateLimiter
@@ -130,14 +130,14 @@ async def get_article(article_id: str) -> dict:
 
 
 @router.patch("/{article_id}")
-async def patch_article(article_id: str, body: dict) -> dict:
+async def patch_article(article_id: str, body: PatchRequest) -> dict:
     from newsagent.api.main import _store
 
     article = await _store.get(article_id)
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
-    action = body.get("action")
+    action = body.action
     if action == "approve":
         article["status"] = "approved"
     elif action == "reject":
@@ -147,8 +147,8 @@ async def patch_article(article_id: str, body: dict) -> dict:
     else:
         raise HTTPException(status_code=422, detail=f"Unknown action: {action}")
 
-    if "content" in body:
-        article["aggregated_article"] = body["content"]
+    if body.content is not None:
+        article["aggregated_article"] = body.content
 
     await _store.save(article_id, article)
     return article

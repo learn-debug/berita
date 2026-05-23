@@ -39,6 +39,14 @@ async def lifespan(_app: FastAPI):
         except Exception as e:
             logger.warning("[cleanup] error: %s", e)
 
+    try:
+        from newsagent.memory.engine import get_engine
+
+        engine = await get_engine()
+        await engine.close()
+    except Exception as e:
+        logger.warning("[cleanup] engine close: %s", e)
+
 
 app = FastAPI(title="NewsAgent API", version="0.2.0", lifespan=lifespan)
 

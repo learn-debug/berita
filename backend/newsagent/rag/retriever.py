@@ -31,7 +31,7 @@ class Retriever:
                     results = await self._search.search(query)
                     documents.extend(results)
                 except Exception as e:
-                    logger.debug("[Retriever] search gagal untuk query '%s': %s", query, e)
+                    logger.warning("[Retriever] search gagal untuk query '%s': %s", query, e)
 
         except Exception as e:
             logger.error("[Retriever] error: %s", e)

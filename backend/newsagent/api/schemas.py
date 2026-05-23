@@ -28,7 +28,7 @@ class ArticleListResponse(BaseModel):
     total: int
     page: int
     limit: int
-    articles: list[dict[str, Any]]
+    articles: list[ArticleListItem]
 
 
 class ArticleDetailResponse(BaseModel):
@@ -41,6 +41,11 @@ class ArticleDetailResponse(BaseModel):
     events: list[dict[str, Any]]
     created_at: datetime | None = None
     updated_at: datetime | None = None
+
+
+class PatchRequest(BaseModel):
+    action: str  # approve | reject | retry
+    content: str | None = None
 
 
 class ProcessResponse(BaseModel):

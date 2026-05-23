@@ -1,4 +1,4 @@
-import time
+from datetime import datetime, timezone
 from typing import Any
 
 RATES: dict[str, float] = {
@@ -21,7 +21,7 @@ class CostTracker:
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
                 "cost": round(cost, 6),
-                "timestamp": time.time(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
 

@@ -107,6 +107,10 @@ def build_graph(cleanup_handlers: list | None = None, event_bus: Any | None = No
     if cms and cleanup_handlers is not None:
         cleanup_handlers.append(cms.close)
 
+    if cleanup_handlers is not None:
+        cleanup_handlers.append(evidence_ret.close)
+        cleanup_handlers.append(rag_pipeline.close)
+
     workflow = StateGraph(ArticleState)
 
     workflow.add_node("orchestrator", _wrap_node("orchestrator", orchestrator.run, event_bus))

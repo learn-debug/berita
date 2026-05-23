@@ -1,4 +1,4 @@
-import json
+import hashlib
 import logging
 from typing import Any
 
@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class VerdictCache:
-    async def ensure_table(self) -> None:
+    def __init__(self) -> None:
+        self._ready = False
+
+    async def _ensure(self) -> None:
+        if self._ready:
+            return
         engine = await get_engine()
         await engine.execute("""
             CREATE TABLE IF NOT EXISTS verdict_cache (
@@ -25,14 +30,12 @@ class VerdictCache:
         await engine.execute("""
             CREATE INDEX IF NOT EXISTS idx_verdict_hash ON verdict_cache (claim_hash)
         """)
+        self._ready = True
 
     async def get(self, claim_text: str) -> dict[str, Any] | None:
-        import hashlib
         claim_hash = hashlib.sha256(claim_text.encode()).hexdigest()[:32]
         engine = await get_engine()
-        row = await engine.fetchrow(
-            "SELECT * FROM verdict_cache WHERE claim_hash = $1", claim_hash
-        )
+        row = await engine.fetchrow("SELECT * FROM verdict_cache WHERE claim_hash = $1", claim_hash)
         if row:
             await engine.execute(
                 "UPDATE verdict_cache SET accessed_at = NOW() WHERE claim_hash = $1",
@@ -41,12 +44,9 @@ class VerdictCache:
             return dict(row)
         return None
 
-    async def set(
-        self, claim_text: str, verdict: str, evidence: str = "", trust_score: float = 0.0
-    ) -> None:
-        import hashlib
+    async def set(self, claim_text: str, verdict: str, evidence: str = "", trust_score: float = 0.0) -> None:
         claim_hash = hashlib.sha256(claim_text.encode()).hexdigest()[:32]
-        await self.ensure_table()
+        await self._ensure()
         engine = await get_engine()
         await engine.execute(
             """
@@ -66,7 +66,7 @@ class VerdictCache:
         )
 
     async def stats(self) -> dict[str, Any]:
-        await self.ensure_table()
+        await self._ensure()
         engine = await get_engine()
         total = await engine.fetchval("SELECT COUNT(*) FROM verdict_cache")
         return {"total_cached_verdicts": total}

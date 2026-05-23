@@ -1,7 +1,10 @@
+import logging
 import re
 from typing import Any
 
 from lxml.html import fromstring
+
+logger = logging.getLogger(__name__)
 
 
 class InputSanitizer:
@@ -27,8 +30,9 @@ class InputSanitizer:
                             del elem.attrib[attr]
                             break
             result = root.text_content()
-        except Exception:
-            result = text
+        except Exception as e:
+            logger.warning("[InputSanitizer] HTML parse gagal, fallback regex: %s", e)
+            result = ""
         result = re.sub(r"javascript\s*:", " ", result, flags=re.IGNORECASE)
         result = re.sub(r"on\w+\s*=", " ", result, flags=re.IGNORECASE)
         return result.strip()
