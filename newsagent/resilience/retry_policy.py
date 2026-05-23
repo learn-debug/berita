@@ -5,7 +5,7 @@ from typing import Any, ParamSpec, TypeVar
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 P = ParamSpec("P")
-R = TypeVar("R")
+R = TypeVar("R", bound=Awaitable[Any])
 
 
 def with_retry(max_attempts: int = 3, backoff: float = 2.0) -> Callable[[Callable[P, R]], Callable[P, R]]:

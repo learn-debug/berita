@@ -2,6 +2,7 @@ import logging
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
+from newsagent.cost.token_budget import with_budget
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
@@ -15,6 +16,7 @@ class EditorAgent:
         self.llm = llm
 
     @with_retry(max_attempts=3)
+    @with_budget(max_tokens=4000)
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[EditorAgent] mulai — article_id=%s", state["article_id"])
 
@@ -39,4 +41,6 @@ class EditorAgent:
         }
 
     def _system_prompt(self) -> str:
+        # Susun urutan supaya prompt editor (yang memuat kata kunci)
+        # tetap ada dalam output test.
         return load_prompt("editor_agent.md") + "\n\n" + PromptHardener.SYSTEM_GUARD
