@@ -80,6 +80,6 @@ def test_editor_system_prompt() -> None:
     llm = FakeLLM()
     agent = EditorAgent(llm=llm)
     prompt = agent._system_prompt()
-    assert "tata bahasa" in prompt
+    assert "menyempurnakan bahasa" in prompt
     assert "ejaan" in prompt
     assert "mengubah fakta" in prompt

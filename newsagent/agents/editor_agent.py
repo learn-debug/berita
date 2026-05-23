@@ -39,4 +39,4 @@ class EditorAgent:
         }
 
     def _system_prompt(self) -> str:
-        return PromptHardener.SYSTEM_GUARD + "\n\n" + load_prompt("editor_agent.md")
+        return load_prompt("editor_agent.md") + "\n\n" + PromptHardener.SYSTEM_GUARD
