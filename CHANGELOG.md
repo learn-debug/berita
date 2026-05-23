@@ -13,6 +13,11 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - `newsagent.utils.prompt_loader` utility to dynamically load prompts
 - `VISION.md` — project vision, mission, and core values
 - Root monorepo config: `pnpm-workspace.yaml`, `opencode.json`, root `package.json`
+- `backend/newsagent/llm/deepseek_adapter.py` — DeepSeek LLM provider (OpenAI-compatible)
+- `backend/newsagent/memory/` — persistent memory layer with PostgreSQL + pgvector
+  - `VerdictCache` — hash-based claim cache untuk FactCheck
+  - `DraftMemory` — store draft+score+feedback untuk few-shot learning
+- Self-improving loop: DraftAgent injects high-scoring past drafts, QualityGate saves each result
 
 ### Changed
 - Refactored all 9 core and fact-check agents' `_system_prompt()` methods to use `load_prompt()`
@@ -22,6 +27,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 
 ### Docs
 - Updated `docs/AGENT_GUIDE.md` to document the new external Markdown prompt structure and CoT requirement
+- Updated `docs/AGENT_GUIDE.md` with memory layer documentation (katalog + self-improving loop)
 
 ---
 
