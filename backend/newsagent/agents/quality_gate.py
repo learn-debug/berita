@@ -4,6 +4,7 @@ import re
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.memory.draft_memory import DraftMemory
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
 from newsagent.tools.scoring import compute_credibility, routing
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 class QualityGateAgent:
     def __init__(self, llm: BaseLLMAdapter):
         self.llm = llm
+        self._draft_memory = DraftMemory()
 
     def _parse_scores(self, text: str) -> dict[str, float]:
         scores = {
@@ -68,6 +70,16 @@ class QualityGateAgent:
             status = "revision"
 
         logger.info("[QualityGate] skor=%.2f routing=%s", score, route)
+
+        try:
+            await self._draft_memory.save(
+                topic=state["raw_input"],
+                draft=article[:1000],
+                credibility_score=score,
+                feedback=route,
+            )
+        except Exception as e:
+            logger.warning("[QualityGate] save memory gagal: %s", e)
 
         return {
             **state,
