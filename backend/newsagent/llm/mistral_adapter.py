@@ -6,6 +6,7 @@ from mistralai.client.models import ChatCompletionChoice, SystemMessage, UserMes
 
 from newsagent.core.config import settings
 from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.resilience.retry_policy import with_rate_limit_retry
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ class MistralAdapter(BaseLLMAdapter):
     def __init__(self) -> None:
         self._client = Mistral(api_key=settings.mistral_api_key)
 
+    @with_rate_limit_retry(max_attempts=5)
     async def complete(self, prompt: str, system: str | None = None) -> str:
         try:
             messages: list[SystemMessage | UserMessage] = []
@@ -35,6 +37,7 @@ class MistralAdapter(BaseLLMAdapter):
             logger.error("[MistralAdapter] API error: %s", e)
             raise
 
+    @with_rate_limit_retry(max_attempts=5)
     async def complete_structured(
         self, prompt: str, schema: dict[str, Any], system: str | None = None
     ) -> dict[str, Any]:
