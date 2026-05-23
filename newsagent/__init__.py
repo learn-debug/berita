@@ -23,6 +23,5 @@ __all__ = [
     "QualityGateAgent",
     "RateLimiter",
     "adapter_factory",
-    "build_graph",
     "settings",
 ]

@@ -66,7 +66,6 @@ Sebelum merekomendasikan teknik dari riset/paper:
 3. Apakah ada risiko merusak format output yang sudah berjalan?
 4. Apakah biaya token masih dalam budget `@with_budget`?
 
-> Referensi internal: `docs/prompt_engineering_referensi_lengkap.md` (tidak di-push ke GitHub)
 
 ---
 
