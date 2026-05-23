@@ -11,8 +11,15 @@ class Synthesizer:
         self.llm = llm
 
     async def synthesize(self, documents: list[str], topic: str) -> str:
+        system = (
+            PromptHardener.SYSTEM_GUARD
+            + "\n\n"
+            + "Sintesis dokumen-dokumen berikut menjadi ringkasan terstruktur "
+            "yang relevan dengan topik."
+        )
+        docs_text = "\n---\n".join(documents)
+        user_prompt = PromptHardener.wrap_user_input(f"Topik: {topic}\n\nDokumen:\n" + docs_text)
         return await self.llm.complete(
-            system=PromptHardener.SYSTEM_GUARD + "\n\n" + "Sintesis dokumen-dokumen berikut menjadi ringkasan terstruktur "
-            "yang relevan dengan topik.",
-            prompt=PromptHardener.wrap_user_input(f"Topik: {topic}\n\nDokumen:\n" + "\n---\n".join(documents)),
+            system=system,
+            prompt=user_prompt,
         )

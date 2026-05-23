@@ -40,6 +40,10 @@ async def test_process_endpoint_empty_raw_input() -> None:
 
 @pytest.mark.asyncio
 async def test_process_endpoint_valid_request() -> None:
+    import newsagent.api.main as api_main
+
+    api_main._graph = AsyncMock()
+    api_main._graph.ainvoke = AsyncMock(return_value={"article_id": "art_test", "status": "published"})
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post("/process", json={"input_type": "topic", "raw_input": "test article"})
@@ -48,6 +52,10 @@ async def test_process_endpoint_valid_request() -> None:
 
 @pytest.mark.asyncio
 async def test_process_endpoint_xss_input() -> None:
+    import newsagent.api.main as api_main
+
+    api_main._graph = AsyncMock()
+    api_main._graph.ainvoke = AsyncMock(return_value={"article_id": "art_xss", "status": "published"})
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
@@ -84,7 +92,7 @@ async def test_process_endpoint_validation_error_handling() -> None:
 @pytest.mark.asyncio
 async def test_process_endpoint_pipeline_error() -> None:
     transport = ASGITransport(app=app)
-    with patch("newsagent.api.main.graph") as mock_graph:
+    with patch("newsagent.api.main._graph") as mock_graph:
         mock_ainvoke = AsyncMock()
         mock_ainvoke.side_effect = RuntimeError("Pipeline crashed")
         mock_graph.ainvoke = mock_ainvoke
@@ -108,7 +116,7 @@ async def test_process_endpoint_rate_limited() -> None:
 @pytest.mark.asyncio
 async def test_process_endpoint_success() -> None:
     transport = ASGITransport(app=app)
-    with patch("newsagent.api.main.graph") as mock_graph:
+    with patch("newsagent.api.main._graph") as mock_graph:
         mock_ainvoke = AsyncMock()
         mock_ainvoke.return_value = {
             "article_id": "art_mock123",

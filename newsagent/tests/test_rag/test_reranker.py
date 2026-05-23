@@ -32,3 +32,10 @@ def test_reranker_single_doc() -> None:
     r = Reranker()
     result = r.rerank(["only document"], "query")
     assert result == ["only document"]
+
+
+def test_reranker_query_with_only_stop_words() -> None:
+    r = Reranker()
+    docs = ["Doc A", "Doc B"]
+    result = r.rerank(docs, "a in the di dan dari")
+    assert result == docs

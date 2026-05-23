@@ -5,16 +5,17 @@ from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
-from newsagent.tools.web_search import WebSearchTool
+from newsagent.tools.search_factory import search_provider_factory
+from newsagent.tools.search_provider import SearchProvider
 from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
 
 class EvidenceRetrievalAgent:
-    def __init__(self, llm: BaseLLMAdapter):
+    def __init__(self, llm: BaseLLMAdapter, search_provider: SearchProvider | None = None):
         self.llm = llm
-        self.search = WebSearchTool()
+        self.search = search_provider or search_provider_factory()
 
     @with_retry(max_attempts=3)
     async def run(self, state: ArticleState) -> ArticleState:
@@ -26,10 +27,9 @@ class EvidenceRetrievalAgent:
             for q in queries.split("\n"):
                 q = q.strip()
                 if q:
-                    page = await self.search.search(q)
-                    if page:
-                        results.append(page)
-            evidence = "\n\n".join(results[:3]) if results else ""
+                    pages = await self.search.search(q)
+                    results.extend(pages)
+            evidence = "\n\n---\n\n".join(results[:3]) if results else ""
 
             if not evidence:
                 prompt = PromptHardener.wrap_user_input(f"Cari bukti untuk query-query berikut:\n\n{queries}")

@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     mistral_api_key: str = ""
     qwen_api_key: str = ""
+    tavily_api_key: str = ""
+    serper_api_key: str = ""
+
+    search_provider: str = "tavily"
 
     orchestrator_llm: str = "claude"
     draft_agent_llm: str = "claude"

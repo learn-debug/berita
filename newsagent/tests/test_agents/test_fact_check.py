@@ -248,10 +248,22 @@ async def test_verdict_prediction_preserves_existing_keys() -> None:
 # =========== EvidenceRetrieval ===========
 
 
+class FakeSearchProvider:
+    def __init__(self):
+        self.search_calls = []
+
+    async def search(self, query: str, max_results: int = 5) -> list[str]:
+        self.search_calls.append(query)
+        return [f"Bukti untuk: {query}"]
+
+    async def close(self):
+        pass
+
+
 @pytest.mark.asyncio
 async def test_evidence_retrieval_uses_queries() -> None:
     llm = FakeLLM()
-    agent = EvidenceRetrievalAgent(llm=llm)
+    agent = EvidenceRetrievalAgent(llm=llm, search_provider=FakeSearchProvider())
 
     state: ArticleState = {**BASE_FC, "fact_check_report": {"queries": "inflasi Indonesia 2025"}}
     result = await agent.run(state)
@@ -263,7 +275,7 @@ async def test_evidence_retrieval_uses_queries() -> None:
 @pytest.mark.asyncio
 async def test_evidence_retrieval_with_empty_queries() -> None:
     llm = FakeLLM()
-    agent = EvidenceRetrievalAgent(llm=llm)
+    agent = EvidenceRetrievalAgent(llm=llm, search_provider=FakeSearchProvider())
 
     state: ArticleState = {**BASE_FC, "fact_check_report": {"queries": ""}}
     result = await agent.run(state)
@@ -274,20 +286,8 @@ async def test_evidence_retrieval_with_empty_queries() -> None:
 
 @pytest.mark.asyncio
 async def test_evidence_retrieval_skips_blank_query_lines() -> None:
-    class FakeSearch:
-        def __init__(self):
-            self.fetch_calls = []
-
-        async def fetch_page(self, url: str) -> str:
-            self.fetch_calls.append(url)
-            return "some evidence"
-
-        async def close(self):
-            pass
-
     llm = FakeLLM()
-    agent = EvidenceRetrievalAgent(llm=llm)
-    agent.search = FakeSearch()
+    agent = EvidenceRetrievalAgent(llm=llm, search_provider=FakeSearchProvider())
 
     state: ArticleState = {
         **BASE_FC,
@@ -301,7 +301,7 @@ async def test_evidence_retrieval_skips_blank_query_lines() -> None:
 @pytest.mark.asyncio
 async def test_evidence_retrieval_preserves_existing_keys() -> None:
     llm = FakeLLM()
-    agent = EvidenceRetrievalAgent(llm=llm)
+    agent = EvidenceRetrievalAgent(llm=llm, search_provider=FakeSearchProvider())
 
     state: ArticleState = {
         **BASE_FC,
@@ -321,7 +321,7 @@ async def test_fact_check_chain_passes_data() -> None:
     llm = FakeLLM()
     ingestion = InputIngestionAgent(llm=llm)
     query_gen = QueryGenerationAgent(llm=llm)
-    evidence_ret = EvidenceRetrievalAgent(llm=llm)
+    evidence_ret = EvidenceRetrievalAgent(llm=llm, search_provider=FakeSearchProvider())
     verdict = VerdictPredictionAgent(llm=llm)
 
     state: ArticleState = {**BASE_FC}

@@ -2,15 +2,16 @@ import logging
 
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.security.prompt_hardening import PromptHardener
-from newsagent.tools.web_search import WebSearchTool
+from newsagent.tools.search_factory import search_provider_factory
+from newsagent.tools.search_provider import SearchProvider
 
 logger = logging.getLogger(__name__)
 
 
 class Retriever:
-    def __init__(self, llm: BaseLLMAdapter) -> None:
+    def __init__(self, llm: BaseLLMAdapter, search_provider: SearchProvider | None = None) -> None:
         self.llm = llm
-        self._search = WebSearchTool()
+        self._search = search_provider or search_provider_factory()
 
     async def retrieve(self, topic: str) -> list[str]:
         documents: list[str] = []
@@ -19,17 +20,18 @@ class Retriever:
             queries_text = await self.llm.complete(
                 system=PromptHardener.SYSTEM_GUARD + "\n\n" + "Kamu adalah asisten riset. "
                 "Buat 3 query pencarian web yang spesifik untuk riset topik berita.",
-                prompt=PromptHardener.wrap_user_input(f"Topik: {topic}\n\nKembalikan 3 query, satu per baris, tanpa nomor atau bullet."),
+                prompt=PromptHardener.wrap_user_input(
+                    f"Topik: {topic}\n\nKembalikan 3 query, satu per baris, tanpa nomor atau bullet."
+                ),
             )
             queries = [q.strip() for q in queries_text.strip().split("\n") if q.strip()]
 
             for query in queries[:3]:
                 try:
-                    page = await self._search.search(query)
-                    if page and len(page) > 200:
-                        documents.append(f"Sumber ({query}):\n{page}")
+                    results = await self._search.search(query)
+                    documents.extend(results)
                 except Exception as e:
-                    logger.debug("[Retriever] fetch gagal untuk query '%s': %s", query, e)
+                    logger.debug("[Retriever] search gagal untuk query '%s': %s", query, e)
 
         except Exception as e:
             logger.error("[Retriever] error: %s", e)
@@ -39,7 +41,9 @@ class Retriever:
                 fallback = await self.llm.complete(
                     system=PromptHardener.SYSTEM_GUARD + "\n\n" + "Kamu adalah asisten riset. "
                     "Berikan informasi faktual dan konteks yang relevan tentang topik berita berikut.",
-                    prompt=PromptHardener.wrap_user_input(f"Berikan informasi faktual terkini tentang topik ini:\n{topic}"),
+                    prompt=PromptHardener.wrap_user_input(
+                        f"Berikan informasi faktual terkini tentang topik ini:\n{topic}"
+                    ),
                 )
                 documents = [fallback]
             except Exception as e:

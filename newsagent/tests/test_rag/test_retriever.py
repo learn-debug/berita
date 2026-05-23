@@ -20,12 +20,12 @@ class FakeLLM:
         return "fake"
 
 
-class FakeSearch:
+class FakeSearchProvider:
     def __init__(self) -> None:
         self.closed = False
 
-    async def fetch_page(self, url: str) -> str:
-        return "Some relevant web content for the query."
+    async def search(self, query: str, max_results: int = 5) -> list[str]:
+        return [f"Sumber: hasil untuk '{query}'"]
 
     async def close(self) -> None:
         self.closed = True
@@ -34,8 +34,7 @@ class FakeSearch:
 @pytest.mark.asyncio
 async def test_retriever_returns_documents() -> None:
     llm = FakeLLM()
-    retriever = Retriever(llm=llm)
-    retriever._search = FakeSearch()
+    retriever = Retriever(llm=llm, search_provider=FakeSearchProvider())
 
     docs = await retriever.retrieve("test topic")
 
@@ -45,22 +44,18 @@ async def test_retriever_returns_documents() -> None:
 
 @pytest.mark.asyncio
 async def test_retriever_handles_partial_fetch_failure() -> None:
-    class PartiallyFailingSearch:
+    class PartiallyFailingSearch(FakeSearchProvider):
         def __init__(self) -> None:
             self.call_count = 0
 
-        async def fetch_page(self, url: str) -> str:
+        async def search(self, query: str, max_results: int = 5) -> list[str]:
             self.call_count += 1
             if self.call_count == 2:
-                raise RuntimeError("fetch failed")
-            return "Some content for query."
-
-        async def close(self) -> None:
-            pass
+                raise RuntimeError("search failed")
+            return [f"Sumber: hasil untuk '{query}'"]
 
     llm = FakeLLM()
-    retriever = Retriever(llm=llm)
-    retriever._search = PartiallyFailingSearch()
+    retriever = Retriever(llm=llm, search_provider=PartiallyFailingSearch())
 
     docs = await retriever.retrieve("test topic")
 
@@ -69,16 +64,12 @@ async def test_retriever_handles_partial_fetch_failure() -> None:
 
 @pytest.mark.asyncio
 async def test_retriever_llm_fallback_when_web_empty() -> None:
-    class EmptySearch:
-        async def fetch_page(self, url: str) -> str:
-            return ""
-
-        async def close(self) -> None:
-            pass
+    class EmptySearch(FakeSearchProvider):
+        async def search(self, query: str, max_results: int = 5) -> list[str]:
+            return []
 
     llm = FakeLLM()
-    retriever = Retriever(llm=llm)
-    retriever._search = EmptySearch()
+    retriever = Retriever(llm=llm, search_provider=EmptySearch())
 
     docs = await retriever.retrieve("test topic")
 
@@ -104,8 +95,7 @@ async def test_retriever_fallback_to_topic() -> None:
             return "broken"
 
     llm = BrokenLLM()
-    retriever = Retriever(llm=llm)
-    retriever._search = FakeSearch()
+    retriever = Retriever(llm=llm, search_provider=FakeSearchProvider())
 
     docs = await retriever.retrieve("topic fallback")
 
@@ -115,7 +105,8 @@ async def test_retriever_fallback_to_topic() -> None:
 @pytest.mark.asyncio
 async def test_retriever_close() -> None:
     llm = FakeLLM()
-    retriever = Retriever(llm=llm)
-    retriever._search = FakeSearch()
+    search = FakeSearchProvider()
+    retriever = Retriever(llm=llm, search_provider=search)
 
     await retriever.close()
+    assert search.closed

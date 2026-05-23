@@ -59,10 +59,71 @@ async def test_search_constructs_url_and_fetches() -> None:
     mock_client.get.return_value = mock_response
     tool._client = mock_client
 
-    result = await tool.search("apa itu AI di Indonesia")
+    results = await tool.search("apa itu AI di Indonesia")
 
-    assert "Hasil pencarian" in result
-    mock_client.get.assert_awaited_once_with("https://duckduckgo.com/html/?q=apa+itu+AI+di+Indonesia")
+    assert len(results) > 0
+    assert "Hasil pencarian" in results[0]
+    mock_client.get.assert_awaited_once()
+    await tool.close()
+
+
+@pytest.mark.asyncio
+async def test_search_returns_structured_results() -> None:
+    tool = WebSearchTool()
+    mock_response = MagicMock()
+    mock_response.text = """
+    <html><body>
+    <div class="result__body">
+      <a class="result__url" href="https://example.com/1">https://example.com/1</a>
+      <span class="result__snippet">Ini adalah hasil pencarian pertama.</span>
+    </div>
+    <div class="result__body">
+      <a class="result__url" href="https://example.com/2">https://example.com/2</a>
+      <span class="result__snippet">Ini adalah hasil pencarian kedua.</span>
+    </div>
+    </body></html>
+    """
+    mock_response.raise_for_status = MagicMock()
+    mock_client = AsyncMock()
+    mock_client.get.return_value = mock_response
+    tool._client = mock_client
+
+    results = await tool.search("test query")
+
+    assert len(results) == 2
+    assert "hasil pencarian pertama" in results[0]
+    assert "hasil pencarian kedua" in results[1]
+    await tool.close()
+
+
+@pytest.mark.asyncio
+async def test_search_returns_empty_on_no_content() -> None:
+    tool = WebSearchTool()
+    mock_response = MagicMock()
+    mock_response.text = "<html><body></body></html>"
+    mock_response.raise_for_status = MagicMock()
+    mock_client = AsyncMock()
+    mock_client.get.return_value = mock_response
+    tool._client = mock_client
+
+    results = await tool.search("test query")
+
+    assert results == []
+    await tool.close()
+
+
+@pytest.mark.asyncio
+async def test_search_handles_http_error() -> None:
+    tool = WebSearchTool()
+    mock_response = MagicMock()
+    mock_response.raise_for_status.side_effect = RuntimeError("HTTP error")
+    mock_client = AsyncMock()
+    mock_client.get.return_value = mock_response
+    tool._client = mock_client
+
+    results = await tool.search("test query")
+
+    assert results == []
     await tool.close()
 
 
