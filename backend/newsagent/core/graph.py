@@ -1,3 +1,5 @@
+import time
+from collections.abc import Callable
 from typing import Any
 
 from langgraph.graph import END, StateGraph
@@ -37,7 +39,51 @@ def route_after_draft(state: ArticleState) -> str:
     return "editor_agent"
 
 
-def build_graph(cleanup_handlers: list | None = None) -> Any:
+def _wrap_node(
+    name: str,
+    fn: Callable[[ArticleState], Any],
+    event_bus: Any | None,
+) -> Callable[[ArticleState], Any]:
+    if event_bus is None:
+        return fn
+
+    async def wrapped(state: ArticleState) -> Any:
+        article_id = state.get("article_id", "")
+        await event_bus.publish(
+            article_id,
+            {
+                "type": "agent_start",
+                "agent": name,
+                "timestamp": time.time(),
+            },
+        )
+        try:
+            result = await fn(state)
+            await event_bus.publish(
+                article_id,
+                {
+                    "type": "agent_complete",
+                    "agent": name,
+                    "timestamp": time.time(),
+                },
+            )
+            return result
+        except Exception as e:
+            await event_bus.publish(
+                article_id,
+                {
+                    "type": "agent_error",
+                    "agent": name,
+                    "error": str(e),
+                    "timestamp": time.time(),
+                },
+            )
+            raise
+
+    return wrapped
+
+
+def build_graph(cleanup_handlers: list | None = None, event_bus: Any | None = None) -> Any:
     draft_memory = DraftMemory()
     verdict_cache = VerdictCache()
 
@@ -63,17 +109,17 @@ def build_graph(cleanup_handlers: list | None = None) -> Any:
 
     workflow = StateGraph(ArticleState)
 
-    workflow.add_node("orchestrator", orchestrator.run)
-    workflow.add_node("rag_pipeline", rag_pipeline.run)
-    workflow.add_node("draft_agent", draft.run)
-    workflow.add_node("editor_agent", editor.run)
-    workflow.add_node("input_ingestion", input_ingestion.run)
-    workflow.add_node("query_generation", query_gen.run)
-    workflow.add_node("evidence_retrieval", evidence_ret.run)
-    workflow.add_node("verdict_prediction", verdict.run)
-    workflow.add_node("aggregator", aggregator.run)
-    workflow.add_node("quality_gate", quality.run)
-    workflow.add_node("publisher", publisher.run)
+    workflow.add_node("orchestrator", _wrap_node("orchestrator", orchestrator.run, event_bus))
+    workflow.add_node("rag_pipeline", _wrap_node("rag_pipeline", rag_pipeline.run, event_bus))
+    workflow.add_node("draft_agent", _wrap_node("draft_agent", draft.run, event_bus))
+    workflow.add_node("editor_agent", _wrap_node("editor_agent", editor.run, event_bus))
+    workflow.add_node("input_ingestion", _wrap_node("input_ingestion", input_ingestion.run, event_bus))
+    workflow.add_node("query_generation", _wrap_node("query_generation", query_gen.run, event_bus))
+    workflow.add_node("evidence_retrieval", _wrap_node("evidence_retrieval", evidence_ret.run, event_bus))
+    workflow.add_node("verdict_prediction", _wrap_node("verdict_prediction", verdict.run, event_bus))
+    workflow.add_node("aggregator", _wrap_node("aggregator", aggregator.run, event_bus))
+    workflow.add_node("quality_gate", _wrap_node("quality_gate", quality.run, event_bus))
+    workflow.add_node("publisher", _wrap_node("publisher", publisher.run, event_bus))
 
     workflow.set_entry_point("orchestrator")
 

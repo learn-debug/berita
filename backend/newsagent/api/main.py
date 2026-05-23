@@ -6,8 +6,12 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 
+from newsagent.api.event_bus import EventBus
+from newsagent.api.routers.articles import router as articles_router
+from newsagent.api.routers.ws import router as ws_router
+from newsagent.api.schemas import ArticleResponse, ProcessRequest
+from newsagent.api.store import ArticleStore
 from newsagent.core.state import ArticleState
 from newsagent.security.input_sanitizer import InputSanitizer
 from newsagent.security.rate_limiter import RateLimiter
@@ -16,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 _cleanup_handlers: list[Callable[[], Awaitable[None]]] = []
 _graph: Any = None
+_store: ArticleStore = ArticleStore()
+_event_bus: EventBus = EventBus()
 
 
 @asynccontextmanager
@@ -23,7 +29,7 @@ async def lifespan(_app: FastAPI):
     from newsagent.core.graph import build_graph
 
     global _graph
-    _graph = build_graph(cleanup_handlers=_cleanup_handlers)
+    _graph = build_graph(cleanup_handlers=_cleanup_handlers, event_bus=_event_bus)
 
     yield
 
@@ -34,19 +40,12 @@ async def lifespan(_app: FastAPI):
             logger.warning("[cleanup] error: %s", e)
 
 
-app = FastAPI(title="NewsAgent API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="NewsAgent API", version="0.2.0", lifespan=lifespan)
+
+app.include_router(articles_router)
+app.include_router(ws_router)
 
 limiter = RateLimiter(max_calls=60, window=60.0)
-
-
-class ProcessRequest(BaseModel):
-    input_type: str = "topic"
-    raw_input: str
-
-
-class ArticleResponse(BaseModel):
-    article_id: str
-    status: str
 
 
 @app.post("/process")
