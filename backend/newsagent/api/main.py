@@ -80,6 +80,7 @@ async def process_article(req: ProcessRequest, _auth: None = Depends(verify_api_
         "aggregated_article": "",
         "credibility_score": 0.0,
         "status": "processing",
+        "revision_count": 0,
         "events": [],
     }
 
