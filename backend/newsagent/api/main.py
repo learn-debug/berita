@@ -5,8 +5,9 @@ from contextlib import asynccontextmanager
 from typing import Any
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 
+from newsagent.api.auth import verify_api_key
 from newsagent.api.event_bus import EventBus
 from newsagent.api.routers.articles import router as articles_router
 from newsagent.api.routers.ws import router as ws_router
@@ -57,7 +58,7 @@ limiter = RateLimiter(max_calls=60, window=60.0)
 
 
 @app.post("/process")
-async def process_article(req: ProcessRequest) -> ArticleResponse:
+async def process_article(req: ProcessRequest, _auth: None = Depends(verify_api_key)) -> ArticleResponse:
     if not await limiter.acquire():
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 

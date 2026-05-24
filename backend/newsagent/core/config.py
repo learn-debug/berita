@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     quality_gate_auto_publish: float = 0.75
     quality_gate_review_threshold: float = 0.50
 
+    api_key: str = ""
+
     cms_base_url: str = ""
     cms_api_key: str = ""
 

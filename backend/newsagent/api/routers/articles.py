@@ -3,8 +3,9 @@ import logging
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from newsagent.api.auth import verify_api_key
 from newsagent.api.schemas import PatchRequest, ProcessRequest, ProcessResponse
 from newsagent.core.state import ArticleState
 from newsagent.security.input_sanitizer import InputSanitizer
@@ -21,7 +22,7 @@ def _make_title(raw: str) -> str:
 
 
 @router.post("/process", status_code=202)
-async def process_article(req: ProcessRequest) -> ProcessResponse:
+async def process_article(req: ProcessRequest, _auth: None = Depends(verify_api_key)) -> ProcessResponse:
     if not await limiter.acquire():
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
@@ -109,6 +110,7 @@ async def _run_pipeline(
 
 @router.get("")
 async def list_articles(
+    _auth: None = Depends(verify_api_key),
     status: str | None = Query(None),
     min_score: float | None = Query(None, ge=0.0, le=1.0),
     page: int = Query(1, ge=1),
@@ -120,7 +122,7 @@ async def list_articles(
 
 
 @router.get("/{article_id}")
-async def get_article(article_id: str) -> dict:
+async def get_article(article_id: str, _auth: None = Depends(verify_api_key)) -> dict:
     from newsagent.api.main import _store
 
     article = await _store.get(article_id)
@@ -130,7 +132,7 @@ async def get_article(article_id: str) -> dict:
 
 
 @router.patch("/{article_id}")
-async def patch_article(article_id: str, body: PatchRequest) -> dict:
+async def patch_article(article_id: str, body: PatchRequest, _auth: None = Depends(verify_api_key)) -> dict:
     from newsagent.api.main import _store
 
     article = await _store.get(article_id)

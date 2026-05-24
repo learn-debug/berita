@@ -12,8 +12,15 @@ router = APIRouter()
 
 
 @router.websocket("/ws/{article_id}")
-async def pipeline_ws(websocket: WebSocket, article_id: str) -> None:
+async def pipeline_ws(websocket: WebSocket, article_id: str, token: str | None = None) -> None:
     from newsagent.api.main import _event_bus, _store
+    from newsagent.core.config import settings
+
+    if settings.api_key:
+        q_token = token or websocket.query_params.get("token")
+        if q_token != settings.api_key:
+            await websocket.close(code=4001)
+            return
 
     event_bus: EventBus = _event_bus
     store: ArticleStore = _store

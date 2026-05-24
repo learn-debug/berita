@@ -4,6 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from newsagent.api.main import app
+from newsagent.core.config import settings
 from newsagent.security.rate_limiter import RateLimiter
 
 
@@ -111,6 +112,69 @@ async def test_process_endpoint_rate_limited() -> None:
             response = await client.post("/process", json={"input_type": "topic", "raw_input": "test"})
             assert response.status_code == 429
             assert "Rate limit exceeded" in response.text
+
+
+@pytest.mark.asyncio
+async def test_auth_missing_key_returns_401() -> None:
+    original = settings.api_key
+    settings.api_key = "secret-123"
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/articles/process",
+            json={"input_type": "topic", "raw_input": "test"},
+        )
+        assert response.status_code == 401
+    settings.api_key = original
+
+
+@pytest.mark.asyncio
+async def test_auth_wrong_key_returns_401() -> None:
+    original = settings.api_key
+    settings.api_key = "secret-123"
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/articles/process",
+            json={"input_type": "topic", "raw_input": "test"},
+            headers={"Authorization": "Bearer wrong-key"},
+        )
+        assert response.status_code == 401
+    settings.api_key = original
+
+
+@pytest.mark.asyncio
+async def test_auth_valid_key_passes() -> None:
+    import newsagent.api.main as api_main
+
+    api_main._graph = AsyncMock()
+    api_main._graph.ainvoke = AsyncMock(return_value={"article_id": "art_test", "status": "published"})
+
+    original = settings.api_key
+    settings.api_key = "secret-123"
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/articles/process",
+            json={"input_type": "topic", "raw_input": "test"},
+            headers={"Authorization": "Bearer secret-123"},
+        )
+        assert response.status_code == 202
+    settings.api_key = original
+
+
+@pytest.mark.asyncio
+async def test_auth_disabled_when_no_key() -> None:
+    original = settings.api_key
+    settings.api_key = ""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/articles/process",
+            json={"input_type": "topic", "raw_input": "test"},
+        )
+        assert response.status_code in (202, 500)
+    settings.api_key = original
 
 
 @pytest.mark.asyncio
