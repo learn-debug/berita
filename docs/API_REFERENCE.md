@@ -12,7 +12,7 @@ Dokumentasi endpoint REST API dan WebSocket NewsAgent.
 
 **Base URL:** `http://localhost:8000`
 
-> ⚠️ **Status Fase 1:** Saat ini hanya endpoint `POST /process` yang sudah diimplementasikan. Seluruh endpoint di bawah ini direncanakan untuk Fase 2 (API & Dashboard Redaksi).
+> ✅ **Semua endpoint REST + WebSocket sudah diimplementasikan.** Tabel di bawah adalah dokumentasi live.
 
 ---
 
@@ -26,11 +26,12 @@ Authorization: Bearer your_api_key_here
 
 ---
 
-## Saat Ini (Fase 1)
+## Endpoints
 
-### `POST /process`
+### Articles
 
-Submit topik atau draf ke pipeline.
+#### `POST /api/v1/articles/process`
+Submit topik atau draf ke pipeline secara async. Mengembalikan `article_id` segera; pipeline berjalan di background dengan event real-time via WebSocket.
 
 **Request Body:**
 ```json
@@ -39,6 +40,102 @@ Submit topik atau draf ke pipeline.
   "raw_input": "Dampak AI terhadap industri media Indonesia"
 }
 ```
+
+| Field | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `input_type` | string | ❌ | `topic` (default), `draft`, `url` |
+| `raw_input` | string | ✅ | Topik atau teks draf |
+
+**Response `202 Accepted`:**
+```json
+{
+  "article_id": "a1b2c3d4e5f6"
+}
+```
+
+Pipeline berjalan via `asyncio.create_task`. Pantau status via WebSocket atau `GET /api/v1/articles/{id}`.
+
+---
+
+#### `GET /api/v1/articles`
+Daftar semua artikel dengan filter.
+
+**Query Parameters:**
+
+| Parameter | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `status` | string | ❌ | Filter: `processing` / `review` / `published` / `failed` |
+| `min_score` | float | ❌ | Filter credibility score minimum |
+| `page` | integer | ❌ | Halaman (default: 1) |
+| `limit` | integer | ❌ | Jumlah per halaman (default: 20, max: 100) |
+
+**Response `200 OK`:**
+```json
+{
+  "total": 5,
+  "page": 1,
+  "limit": 20,
+  "articles": [
+    {
+      "article_id": "a1b2c3d4e5f6",
+      "status": "published",
+      "credibility_score": 0.96,
+      "draft": "...",
+      "events": [...]
+    }
+  ]
+}
+```
+
+---
+
+#### `GET /api/v1/articles/{article_id}`
+Detail artikel lengkap beserta laporan semua agen.
+
+**Response `200 OK`:**
+```json
+{
+  "article_id": "a1b2c3d4e5f6",
+  "input_type": "topic",
+  "raw_input": "Topik",
+  "rag_context": "...",
+  "draft": "...",
+  "fact_check_report": {
+    "claims": "...",
+    "queries": "...",
+    "evidence": "...",
+    "verdict": "..."
+  },
+  "edited_draft": "...",
+  "aggregated_article": "...",
+  "credibility_score": 0.96,
+  "status": "published",
+  "events": [
+    {"agent": "Orchestrator", "action": "init", "detail": "..."}
+  ],
+  "created_at": 1716518400.0,
+  "updated_at": 1716518500.0
+}
+```
+
+---
+
+#### `PATCH /api/v1/articles/{article_id}`
+Update status artikel (approve/reject/retry) atau edit konten.
+
+**Request Body:**
+```json
+{
+  "action": "approve",
+  "content": "...(opsional, konten yang sudah diedit editor)..."
+}
+```
+
+| `action` | Efek |
+|---|---|
+| `approve` | Ubah status ke `approved` |
+| `reject` | Ubah status ke `rejected` |
+| `retry` | Ubah status ke `processing` (kirim ulang ke pipeline) |
 
 | Field | Tipe | Wajib | Keterangan |
 |---|---|---|---|---|
@@ -258,37 +355,34 @@ Metrik sistem keseluruhan.
 
 ---
 
-## WebSocket API (Fase 2)
+## WebSocket API
 
-### `ws://localhost:8000/ws/pipeline/{article_id}` *(planned)*
-Stream status pipeline secara real-time.
+### `ws://localhost:8000/ws/{article_id}`
+Stream status pipeline secara real-time untuk artikel tertentu.
 
 **Koneksi:**
 ```javascript
-const ws = new WebSocket(
-  `ws://localhost:8000/ws/pipeline/art_abc123`,
-  [],
-  { headers: { Authorization: "Bearer your_api_key_here" } }
-);
+const ws = new WebSocket(`ws://localhost:8000/ws/a1b2c3d4e5f6`);
 ```
 
 **Format pesan (server → client):**
 ```json
 {
-  "type": "agent_update",
-  "agent": "fact_check",
-  "status": "running",
-  "message": "Memverifikasi klaim ke-7 dari 14...",
-  "timestamp": "2025-06-01T07:45:47Z"
+  "type": "connected",
+  "article_id": "a1b2c3d4e5f6",
+  "status": "processing"
 }
 ```
 
+Event `pipeline_complete` atau `pipeline_error` akan menutup koneksi. Server juga mengirim `ping` setiap 30 detik.
+
 | `type` | Keterangan |
 |---|---|
-| `agent_update` | Status agen berubah |
+| `connected` | Koneksi berhasil |
+| `pipeline_start` | Pipeline mulai |
 | `pipeline_complete` | Pipeline selesai |
 | `pipeline_error` | Pipeline error |
-| `quality_gate_result` | Hasil Quality Gate |
+| `ping` | Keepalive |
 
 ---
 

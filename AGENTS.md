@@ -7,7 +7,10 @@ Every session must be saved to the knowledge graph as entity `session-YYYY-MM-DD
 ## Current state
 
 - **Phase 1 complete.** `backend/newsagent/` package, all agents, LangGraph pipeline, LLM adapters, resilience/security/cost layers, FastAPI entrypoint, Docker Compose, and tests exist and pass.
-- All Phase 1 code has been committed.
+- **Phase 2 API complete.** REST endpoints (`POST /api/v1/articles/process`, `GET /api/v1/articles`, `GET /api/v1/articles/{id}`, `PATCH /api/v1/articles/{id}`) and WebSocket (`ws/{article_id}`) all live. Frontend dashboard belum dikerjakan.
+- **Semua agen menggunakan `complete_structured()` + JSON Schema.** 8 agen single-text pakai `TEXT_OUTPUT_SCHEMA` (`{"output": "string"}`), 3 agen multi-field pakai schema spesifik (QualityGate 4 scores, Publisher judul+konten, VerdictPrediction 8-field per claim). Zero parsing error.
+- **257 tests passing**, ruff + mypy + pyright clean.
+- All code committed. Working tree clean.
 
 ## Authoritative docs
 
@@ -42,8 +45,8 @@ npx --yes pyright backend/newsagent/
 pip-audit --strict --path backend/.venv
 
 # test (single run or with coverage)
-pytest backend/ -v
-pytest backend/ -v --cov=newsagent --cov-report=term-missing
+pytest backend/newsagent/ -v
+pytest backend/newsagent/ -v --cov=newsagent --cov-report=term-missing
 
 # run API
 uvicorn newsagent.api.main:app --reload --app-dir backend
@@ -64,6 +67,7 @@ pre-commit install
 - **HMAS**, not flat MAS — `OrchestratorAgent` at top, specialist agents below. LangGraph (not CrewAI/AutoGen) because graph-based control + immutable state.
 - **State is immutable** — agents return a new state dict, never mutate in place. Event log is append-only.
 - **LLM Adapter Pattern** — agents never call an LLM directly; they use `BaseLLMAdapter`. Provider chosen per-agent via config.
+- **Structured Output** — all agents use `complete_structured()` with JSON Schema instead of raw `complete()`. Single-text agents use `TEXT_OUTPUT_SCHEMA` (`{"output": "string"}`). Multi-field agents define custom schemas. Zero parsing error.
 - **Fact-Check** is 4 sub-agents: `InputIngestion → QueryGeneration → EvidenceRetrieval → VerdictPrediction`.
 - **Aggregator** runs 2-round Delphi debate, not a mechanical merge.
 - **Quality Gate** scores 0.0–1.0: ≥0.75 auto-publish, 0.50–0.74 editor review, <0.50 full revision.
@@ -73,7 +77,7 @@ pre-commit install
 
 - Python 3.10+, type hints on all public functions, docstrings on classes + public functions.
 - Each agent: one class per file, `@with_retry` + `@with_budget` decorators, implements `async def run(state) -> state`.
-- Each feature needs tests in `backend/tests/test_agents/` (unit) or `backend/tests/test_integration/` (integration).
+- Each feature needs tests in `backend/newsagent/tests/test_agents/` (unit) or `backend/newsagent/tests/test_integration/` (integration).
 - No generated code, no migrations, no build artifacts yet. Alembic planned for future DB migrations.
 - Human-in-the-loop: scores 0.50–0.74 must route to manual editor review.
 

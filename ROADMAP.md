@@ -41,8 +41,9 @@ Selesai (Fase 1 — Fondasi Agen):
   ✅ Tools (BaseTool, web search, CMS client, scoring)
    ✅ `backend/newsagent/api/main.py` — FastAPI entrypoint (POST /process)
   ✅ Docker Compose (PostgreSQL + Redis)
-  ✅ 209 unit/integration test passing, ruff + mypy + pyright clean
-  ✅ Dev tooling: ruff, uv, pre-commit, pyright
+   ✅ 257 unit/integration test passing, ruff + mypy + pyright clean
+   ✅ Semua agen ganti `complete()` → `complete_structured()` + JSON Schema (0 parsing error)
+   ✅ Dev tooling: ruff, uv, pre-commit, pyright
 ```
 
 ---
@@ -207,7 +208,7 @@ Estimasi: 1 hari | Output: artikel tayang di CMS
 ```
 - [x] `backend/newsagent/agents/publisher_agent.py`
 - [x] Integrasi WordPress REST API
-- [ ] Test: artikel final masuk → tayang di CMS
+- [x] Test: artikel final masuk → tayang di CMS
 
 ---
 
@@ -221,14 +222,18 @@ Estimasi: 1 hari | Output: artikel tayang di CMS
 
 ```bash
 Estimasi total: 2-3 minggu
+Status backend API ✅ — frontend dashboard belum dimulai
 ```
 
-- [ ] `backend/newsagent/api/main.py` — FastAPI dengan endpoint REST + WebSocket
-- [ ] Endpoint: `POST /process` (submit topik/draf)
-- [ ] Endpoint: `GET /articles` (daftar artikel + status)
-- [ ] Endpoint: `GET /articles/{id}` (detail + laporan agen)
-- [ ] WebSocket: `ws/pipeline/{id}` (status pipeline real-time)
-- [ ] `apps/web/` — Next.js Dashboard Redaksi (TypeScript)
+- [x] `backend/newsagent/api/main.py` — FastAPI dengan endpoint REST + WebSocket
+- [x] Endpoint: `POST /api/v1/articles/process` (submit topik/draf) — async dengan EventBus
+- [x] Endpoint: `GET /api/v1/articles` (daftar artikel + filter status/min_score + pagination)
+- [x] Endpoint: `GET /api/v1/articles/{id}` (detail + laporan agen)
+- [x] Endpoint: `PATCH /api/v1/articles/{id}` (approve/reject/retry)
+- [x] WebSocket: `ws/{article_id}` (status pipeline real-time via EventBus)
+- [x] `backend/newsagent/api/event_bus.py` — pub/sub untuk pipeline event
+- [x] `backend/newsagent/api/store.py` — ArticleStore (masih in-memory)
+- [ ] `apps/web/` — Next.js Dashboard Redaksi (TypeScript) — boilerplate exist, belum konten
 - [ ] Dashboard Redaksi — halaman Pipeline (status agen real-time)
 - [ ] Dashboard Redaksi — halaman Detail Artikel (fact-check report + approve)
 - [ ] Dashboard Redaksi — halaman daftar artikel + filter
