@@ -5,10 +5,10 @@ from newsagent.core.state import ArticleState
 
 
 class FakeLLM:
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Ini adalah artikel yang sudah diedit dengan tata bahasa yang baik."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -46,10 +46,10 @@ async def test_editor_agent_returns_edited_draft() -> None:
 @pytest.mark.asyncio
 async def test_editor_agent_fallback_on_error() -> None:
     class BrokenLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

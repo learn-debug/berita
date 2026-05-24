@@ -5,10 +5,10 @@ from newsagent.core.state import ArticleState
 
 
 class FakeLLM:
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "JUDUL: Artikel Test\n\nKONTEN: Ini adalah artikel yang siap publikasi."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -16,10 +16,10 @@ class FakeLLM:
 
 
 class FakeLLMNoTitle:
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Ini adalah artikel tanpa judul."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -106,10 +106,10 @@ async def test_publisher_agent_fallback_to_draft() -> None:
 @pytest.mark.asyncio
 async def test_publisher_agent_handles_llm_error() -> None:
     class BrokenLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

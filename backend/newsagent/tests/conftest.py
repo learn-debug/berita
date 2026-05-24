@@ -7,7 +7,7 @@ from newsagent.llm.base_adapter import BaseLLMAdapter
 
 
 class FakeLLM(BaseLLMAdapter):
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Fake LLM response"
 
     async def complete_structured(
@@ -37,5 +37,6 @@ def base_state() -> ArticleState:
         aggregated_article="",
         credibility_score=0.0,
         status="processing",
+        revision_count=0,
         events=[],
     )

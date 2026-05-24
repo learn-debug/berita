@@ -5,7 +5,7 @@ from newsagent.core.state import ArticleState
 
 
 class FakeLLM:
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return (
             "fact_accuracy: 0.85\n"
             "narrative_consistency: 0.90\n"
@@ -13,7 +13,7 @@ class FakeLLM:
             "source_quality: 0.80"
         )
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -50,7 +50,7 @@ async def test_quality_gate_auto_publish_high_score() -> None:
 @pytest.mark.asyncio
 async def test_quality_gate_editor_review() -> None:
     class MediumScoreLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return (
                 "fact_accuracy: 0.70\n"
                 "narrative_consistency: 0.65\n"
@@ -58,7 +58,7 @@ async def test_quality_gate_editor_review() -> None:
                 "source_quality: 0.55"
             )
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             return {"raw": "test"}
 
         def model_name(self) -> str:
@@ -77,7 +77,7 @@ async def test_quality_gate_editor_review() -> None:
 @pytest.mark.asyncio
 async def test_quality_gate_full_revision() -> None:
     class VeryLowScoreLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return (
                 "fact_accuracy: 0.20\n"
                 "narrative_consistency: 0.30\n"
@@ -85,7 +85,7 @@ async def test_quality_gate_full_revision() -> None:
                 "source_quality: 0.00"
             )
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             return {"raw": "test"}
 
         def model_name(self) -> str:
@@ -103,7 +103,7 @@ async def test_quality_gate_full_revision() -> None:
 @pytest.mark.asyncio
 async def test_quality_gate_score_at_auto_publish_boundary() -> None:
     class BoundaryLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return (
                 "fact_accuracy: 0.875\n"
                 "narrative_consistency: 0.875\n"
@@ -111,7 +111,7 @@ async def test_quality_gate_score_at_auto_publish_boundary() -> None:
                 "source_quality: 0.875"
             )
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             return {"raw": "test"}
 
         def model_name(self) -> str:
@@ -128,7 +128,7 @@ async def test_quality_gate_score_at_auto_publish_boundary() -> None:
 @pytest.mark.asyncio
 async def test_quality_gate_score_at_full_revision_boundary() -> None:
     class BoundaryLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return (
                 "fact_accuracy: 0.2\n"
                 "narrative_consistency: 0.2\n"
@@ -136,7 +136,7 @@ async def test_quality_gate_score_at_full_revision_boundary() -> None:
                 "source_quality: 0.2"
             )
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             return {"raw": "test"}
 
         def model_name(self) -> str:
@@ -214,10 +214,10 @@ def test_parse_scores_tab_delimiter() -> None:
 @pytest.mark.asyncio
 async def test_quality_gate_fallback_on_error() -> None:
     class BrokenLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

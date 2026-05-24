@@ -7,13 +7,13 @@ class FakeLLM:
     def __init__(self) -> None:
         self.call_count = 0
 
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         self.call_count += 1
         if self.call_count == 1:
             return "query 1\nquery 2\nquery 3"
         return "Fallback information about the topic."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -82,13 +82,13 @@ async def test_retriever_fallback_to_topic() -> None:
         def __init__(self) -> None:
             self.call_count = 0
 
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             self.call_count += 1
             if self.call_count <= 2:
                 raise RuntimeError("API error")
             return "fallback"
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

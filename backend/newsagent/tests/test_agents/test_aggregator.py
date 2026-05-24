@@ -5,10 +5,10 @@ from newsagent.core.state import ArticleState
 
 
 class FakeLLM:
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Artikel final hasil debat dan konsensus."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -70,10 +70,10 @@ async def test_aggregator_with_empty_fact_check() -> None:
 @pytest.mark.asyncio
 async def test_aggregator_fallback_on_error() -> None:
     class BrokenLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:
@@ -92,10 +92,10 @@ async def test_aggregator_fallback_on_error() -> None:
 @pytest.mark.asyncio
 async def test_aggregator_fallback_to_draft_when_no_edited() -> None:
     class BrokenLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

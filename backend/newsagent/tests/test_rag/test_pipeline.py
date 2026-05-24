@@ -8,13 +8,13 @@ class FakeLLMRAG:
     def __init__(self) -> None:
         self.call_count = 0
 
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         self.call_count += 1
         if self.call_count == 1:
             return "query 1\nquery 2\nquery 3"
         return "Ringkasan hasil sintesis."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -50,10 +50,10 @@ async def test_rag_pipeline_sets_rag_context() -> None:
 @pytest.mark.asyncio
 async def test_rag_pipeline_fallback_on_error() -> None:
     class BrokenLLM:
-        async def complete(self, prompt: str, system: str | None = None) -> str:
+        async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None) -> dict:
+        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:
