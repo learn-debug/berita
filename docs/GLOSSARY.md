@@ -52,7 +52,7 @@ Skor 0–1 yang dihasilkan Quality Gate untuk mengukur kelayakan artikel. Skor �
 Antrian khusus untuk menyimpan artikel yang gagal diproses setelah beberapa kali retry. Artikel di DLQ bisa diinspeksi dan diproses ulang secara manual.
 
 **DelphiAgent Pattern**
-Pola dari paper DelphiAgent (2025) di mana beberapa LLM agent memberikan penilaian independen lalu mencapai konsensus melalui putaran debat — terinspirasi dari metode Delphi dalam riset sosial.
+Pola di mana beberapa LLM agent memberikan penilaian independen lalu mencapai konsensus melalui putaran debat — terinspirasi dari metode Delphi.
 
 ---
 
@@ -69,7 +69,7 @@ Proses mengambil bukti dari sumber-sumber eksternal untuk mendukung atau menyang
 ## F
 
 **FactAgent Pattern**
-Pola dari paper FactAgent (2025) yang memecah proses fact-checking menjadi 4 sub-agen: Input Ingestion, Query Generation, Evidence Retrieval, Verdict Prediction. Terbukti meningkatkan akurasi 12.3%.
+Pola yang memecah proses fact-checking menjadi 4 sub-agen: Input Ingestion, Query Generation, Evidence Retrieval, Verdict Prediction. Terbukti meningkatkan akurasi secara signifikan.
 
 **Fact-Check Pipeline**
 Kumpulan 4 sub-agen yang berjalan sekuensial untuk memverifikasi klaim faktual dalam artikel. Merupakan komponen terkompleks dalam arsitektur NewsAgent.
@@ -106,7 +106,7 @@ Lapisan abstraksi yang memisahkan kode agen dari provider LLM tertentu. Implemen
 ## M
 
 **MAFC Pattern**
-Pola dari paper MAFC (2026) yang menggunakan credibility scoring berbasis kepercayaan tiap agen — lebih nuanced dari keputusan biner lolos/gagal.
+Pola credibility scoring berbasis kepercayaan tiap agen — lebih nuanced dari keputusan biner lolos/gagal.
 
 **MAS (Multi-Agent System)**
 Sistem yang terdiri dari beberapa agen AI yang bekerja bersama. Bisa flat (semua setara) atau hierarki (HMAS).
@@ -156,7 +156,7 @@ Kumpulan mekanisme yang membuat sistem tahan terhadap kegagalan: retry policy, c
 ## S
 
 **Structured Evidence Summarization**
-Pendekatan RAG dari Frontiers AI (2025) di mana dokumen yang diambil diproses dulu menjadi ringkasan terstruktur sebelum dikirim ke agen, bukan dikirim sebagai dokumen mentah. Mengurangi risiko halusinasi LLM.
+Pendekatan RAG di mana dokumen yang diambil diproses dulu menjadi ringkasan terstruktur sebelum dikirim ke agen, bukan dikirim sebagai dokumen mentah. Mengurangi risiko halusinasi LLM.
 
 **State Schema**
 Definisi formal semua data yang mengalir antar agen dalam pipeline. Di NewsAgent, `ArticleState` adalah TypedDict yang mendefinisikan semua field state.

@@ -355,7 +355,7 @@ Untuk task kompleks, pecah menjadi sub-agen yang berjalan sekuensial. Ini pola y
 class FactCheckPipeline:
     """
     Pipeline 4 sub-agen untuk verifikasi fakta.
-    Berdasarkan FactAgent (arxiv:2506.17878).
+    Berdasarkan pendekatan multi-agent fact-checking.
 
     Input  : draft (artikel yang akan diverifikasi)
     Output : fact_check_report (laporan per klaim)
@@ -380,7 +380,7 @@ class FactCheckPipeline:
 - Task terlalu kompleks untuk satu prompt
 - Tiap tahap butuh tool atau sumber data berbeda
 - Ingin bisa mengganti satu tahap tanpa menyentuh yang lain
-- Terbukti lebih akurat (FactAgent: +12.3% Macro F1)
+- Terbukti lebih akurat dibanding agen monolitik
 
 ---
 

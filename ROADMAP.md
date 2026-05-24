@@ -189,7 +189,7 @@ Estimasi: 3-4 hari | Output: laporan verifikasi per klaim
 ```bash
 Estimasi: 2 hari | Output: artikel final terintegrasi
 ```
-- [x] `backend/newsagent/agents/aggregator.py` — debate + consensus (DelphiAgent pattern)
+- [x] `backend/newsagent/agents/aggregator.py` — debate + consensus
 - [x] Implementasi 2 ronde: penilaian independen → deteksi konflik → sintesis
 - [x] Test: output 3 agen masuk → artikel final dengan resolusi konflik keluar
 
@@ -197,7 +197,7 @@ Estimasi: 2 hari | Output: artikel final terintegrasi
 ```bash
 Estimasi: 1 hari | Output: credibility score + keputusan routing
 ```
-- [x] `backend/newsagent/agents/quality_gate.py` — credibility scoring (MAFC pattern)
+- [x] `backend/newsagent/agents/quality_gate.py` — credibility scoring
 - [x] Implementasi 3 jalur: auto-publish (≥0.75) / revisi parsial / revisi penuh
 - [x] Test: artikel dengan skor berbeda → routing yang benar
 
@@ -333,7 +333,7 @@ Sebelum lanjut ke fase berikutnya, pastikan:
 | LLM Adapter dari awal | Hindari vendor lock-in |
 | OSINT diparkir ke Fase 4 | Agar Fase 1-3 lebih cepat & fokus |
 | Human-in-the-loop tetap ada | Artikel skor 0.50-0.74 tetap butuh review |
-| Credibility score bukan biner | Lebih adil untuk artikel kompleks (MAFC) |
+| Credibility score bukan biner | Lebih adil untuk artikel kompleks |
 | Frontend publik pakai Next.js + TypeScript | Python dev tapi Next.js standar industri untuk SEO & interaktivitas tinggi |
 
 ---

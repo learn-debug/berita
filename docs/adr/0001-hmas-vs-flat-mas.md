@@ -21,7 +21,7 @@ Menggunakan **HMAS (Hierarchical Multi-Agent System)** dengan struktur:
 
 1. Pipeline produksi berita bersifat kompleks dan multi-tahap — cocok untuk hierarki
 2. Flat MAS sulit di-debug saat ada masalah karena tidak jelas agen mana yang bertanggung jawab
-3. FactAgent (2025) dan DelphiAgent (2025) — paper referensi utama — keduanya menggunakan pola hierarki
+3. Kedua pola ini sudah terbukti efektif di sistem multi-agent lain
 4. Skalabilitas: menambah agen baru di flat MAS membuat koordinasi makin kompleks secara eksponensial
 
 ## Konsekuensi

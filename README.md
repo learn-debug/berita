@@ -1,13 +1,12 @@
 # 🤖 NewsAgent — Multi-Agent System untuk Otomatisasi Situs Berita
 
-> Sistem multi-agent berbasis AI yang memproses draf artikel secara mandiri, melakukan pengecekan fakta otomatis, dan mempublikasikan konten secara kolaboratif — dibangun di atas landasan riset akademis terkini.
+> Sistem multi-agent berbasis AI yang memproses draf artikel secara mandiri, melakukan pengecekan fakta otomatis, dan mempublikasikan konten secara kolaboratif.
 
 ---
 
 ## 📌 Daftar Isi
 
 - [Gambaran Umum](#gambaran-umum)
-- [Landasan Riset](#landasan-riset)
 - [Arsitektur Sistem](#arsitektur-sistem)
 - [Daftar Agen](#daftar-agen)
 - [Alur Kerja](#alur-kerja)
@@ -17,7 +16,6 @@
 - [Cara Penggunaan](#cara-penggunaan)
 - [Konfigurasi](#konfigurasi)
 - [Kontribusi](#kontribusi)
-- [Referensi](#referensi)
 - [Lisensi](#lisensi)
 
 ---
@@ -25,8 +23,6 @@
 ## Gambaran Umum
 
 **NewsAgent** adalah sistem multi-agent yang dirancang untuk mengotomatisasi alur produksi konten berita. Sistem ini terdiri dari beberapa agen AI yang bekerja secara **paralel dan kolaboratif** — mulai dari penulisan draf, pengecekan fakta berbasis bukti, pengeditan, hingga publikasi otomatis ke CMS.
-
-Arsitektur NewsAgent tidak dirancang dari nol — setiap keputusan desain didasarkan pada temuan empiris dari riset peer-reviewed di bidang multi-agent systems dan automated journalism.
 
 ### Masalah yang Diselesaikan
 
@@ -46,60 +42,13 @@ Arsitektur NewsAgent tidak dirancang dari nol — setiap keputusan desain didasa
 
 ---
 
-## Landasan Riset
-
-Arsitektur NewsAgent disusun berdasarkan **5 paper akademis** yang telah melalui proses peer-review:
-
-### [1] AI-Press `arxiv:2410.07561`
-**Trinh et al., 2024** — *AI-Press: A Multi-Agent News Generating and Feedback Simulation System Powered by Large Language Models*
-
-Paper ini membuktikan bahwa pipeline kolaborasi multi-agent + RAG secara signifikan mengungguli metode prompt tunggal dalam produksi berita. NewsAgent mengadopsi pola pipeline RAG-to-draft-to-polish yang diperkenalkan AI-Press.
-
-> *"AI-Press, an automated news drafting and polishing system based on multi-agent collaboration and Retrieval-Augmented Generation... shows significant improvements in news-generating capabilities."*
-
----
-
-### [2] FactAgent `arxiv:2506.17878`
-**Tam Trinh et al., 2025** — *Towards Robust Fact-Checking: A Multi-Agent System with Advanced Evidence Retrieval*
-
-Menjadi referensi utama desain Fact-Check Pipeline NewsAgent. Paper ini membuktikan bahwa memecah proses fact-checking menjadi 4 sub-agen spesialis menghasilkan peningkatan **12,3% Macro F1-score** dibanding metode baseline pada benchmark FEVEROUS, HOVER, dan SciFact.
-
-Pola 4 sub-agen yang diadopsi:
-- **Input Ingestion Agent** → dekomposisi klaim
-- **Query Generation Agent** → formulasi subquery terarah
-- **Evidence Retrieval Agent** → pengambilan bukti dari sumber kredibel
-- **Verdict Prediction Agent** → sintesis putusan dengan penjelasan
-
----
-
-### [3] DelphiAgent `Information Processing & Management, Vol. 62, 2025`
-**Xiong, Zheng, Ma, Li & Zeng, 2025** — *DelphiAgent: A Trustworthy Multi-Agent Verification Framework for Automated Fact Verification*
-
-Menginspirasi desain Review & Aggregator. DelphiAgent menggunakan pola *Delphi Method* — beberapa agen LLM dengan kepribadian berbeda memberi penilaian independen, lalu mencapai konsensus melalui beberapa putaran debat. Hasilnya mengungguli baseline LLM-enhanced supervised dengan peningkatan macF1 hingga **6,84% pada dataset RAWFC** tanpa memerlukan training regime tambahan.
-
----
-
-### [4] MAFC — Multi-Agent Fact-Checking `Scientific Reports, 2026`
-**Nature Publishing Group, 2026** — *Multi-agent systems and credibility-based advanced scoring mechanism in fact-checking*
-
-Menjadi fondasi sistem credibility scoring pada Quality Gate NewsAgent. MAFC memperkenalkan mekanisme penilaian baru yang menghitung skor kredibilitas berdasarkan hasil penilaian dan tingkat kepercayaan tiap agen secara individual — menggantikan pendekatan biner (lolos/gagal) yang terbukti tidak cukup untuk teks dengan kompleksitas tinggi.
-
----
-
-### [5] Frontiers AI — Multi-Agent Credibility Pipeline `Frontiers in Artificial Intelligence, 2025`
-**Frontiers, 2025** — *Development and validation of a multi-agent AI pipeline for automated credibility assessment*
-
-Menginspirasi pola RAG terstruktur NewsAgent. Berbeda dari RAG konvensional yang menyuntikkan dokumen mentah ke prompt, pipeline ini memproses dan mensintesis bukti terlebih dahulu menjadi ringkasan terstruktur sebelum diteruskan ke agen berikutnya — terbukti mengurangi risiko halusinasi LLM secara signifikan.
-
----
-
 ## Arsitektur Sistem
 
-Arsitektur NewsAgent direvisi berdasarkan temuan riset di atas. Perubahan kunci dari desain naif:
-- Fact-Check Agent dipecah menjadi **4 sub-agen** (pola FactAgent)
-- Review & Aggregator menggunakan **debate + consensus** (pola DelphiAgent)
-- Quality Gate menggunakan **credibility score 0–1** (pola MAFC)
-- RAG pipeline menggunakan **structured evidence summarization** (pola Frontiers AI)
+Arsitektur NewsAgent terdiri dari pipeline multi-agent dengan spesialisasi per peran:
+- Fact-Check Agent dipecah menjadi **4 sub-agen** spesialis
+- Review & Aggregator menggunakan **debate + consensus**
+- Quality Gate menggunakan **credibility score 0–1**
+- RAG pipeline menggunakan **structured evidence summarization
 
 ```mermaid
 flowchart TB
@@ -107,12 +56,12 @@ flowchart TB
         I[Topik / Draf Mentah / URL]
     end
 
-    I --> RAG[RAG Pipeline<br/>Structured Evidence<br/>Frontiers AI 2025]
+    I --> RAG[RAG Pipeline<br/>Structured Evidence]
 
     RAG --> O[Orchestrator Agent<br/>Koordinasi & Pembagian Tugas]
 
     O --> D[Draft Agent<br/>Tulis & Susun Artikel]
-    O --> FC[Fact-Check Pipeline<br/>FactAgent 2025]
+    O --> FC[Fact-Check Pipeline]
     O --> E[Editor Agent<br/>Tata Bahasa & Gaya]
 
     subgraph FCP["Fact-Check Pipeline"]
@@ -125,9 +74,9 @@ flowchart TB
 
     FC --> FC4
 
-    D & FC4 & E --> AG[Aggregator<br/>Debate + Consensus<br/>DelphiAgent 2025]
+    D & FC4 & E --> AG[Aggregator<br/>Debate + Consensus]
 
-    AG --> QG[Quality Gate<br/>Credibility Score 0-1<br/>MAFC 2026]
+    AG --> QG[Quality Gate<br/>Credibility Score 0-1]
 
     QG -->|>= 0.75| Pub[Publisher Agent<br/>Publikasi ke CMS]
     QG -->|0.50 - 0.74| Review[⚠️ Review Editor<br/>Human-in-the-loop]
@@ -551,25 +500,7 @@ pytest backend/ -v
 
 ---
 
-## Referensi
 
-Arsitektur NewsAgent dibangun di atas riset-riset berikut:
-
-1. **AI-Press** — Trinh et al. (2024). *AI-Press: A Multi-Agent News Generating and Feedback Simulation System Powered by Large Language Models.* arXiv:2410.07561. https://arxiv.org/abs/2410.07561
-
-2. **FactAgent** — Tam Trinh et al. (2025). *Towards Robust Fact-Checking: A Multi-Agent System with Advanced Evidence Retrieval.* arXiv:2506.17878. https://arxiv.org/abs/2506.17878
-
-3. **DelphiAgent** — Xiong, C., Zheng, G., Ma, X., Li, C. & Zeng, J. (2025). *DelphiAgent: A Trustworthy Multi-Agent Verification Framework for Automated Fact Verification.* Information Processing & Management, 62(6), 104241. https://doi.org/10.1016/j.ipm.2025.104241
-
-4. **MAFC** — (2026). *Multi-agent systems and credibility-based advanced scoring mechanism in fact-checking.* Scientific Reports. https://www.nature.com/articles/s41598-026-41862-z
-
-5. **Frontiers AI** — (2025). *Development and validation of a multi-agent AI pipeline for automated credibility assessment.* Frontiers in Artificial Intelligence. https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2025.1659861/full
-
-6. **Agentic RAG Survey** — Singh et al. (2025). *Agentic Retrieval-Augmented Generation: A Survey on Agentic RAG.* arXiv:2501.09136. https://arxiv.org/abs/2501.09136
-
-7. **OSINT & AI Journalism** — Reuters Institute for the Study of Journalism (2025). *AI is undermining OSINT's core assumptions. Here's how journalists should adapt.* https://reutersinstitute.politics.ox.ac.uk/news/ai-undermining-osints-core-assumptions
-
-8. **Multimodal Verification** — ACM Multimedia (2025). *Fact-Checking at Scale: Multimodal AI for Authenticity and Context Verification in Online Media.* arXiv:2508.08592. https://arxiv.org/pdf/2508.08592
 
 ---
 

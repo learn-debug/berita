@@ -28,7 +28,7 @@ Level 2: Agen Spesialis      (reporter & editor)
 Level 3: Sub-Agen            (asisten spesifik)
 ```
 
-Keputusan ini juga diperkuat oleh paper FactAgent (2025) dan DelphiAgent (2025) yang keduanya menggunakan pola hierarki.
+Pola hierarki ini memberikan struktur komando yang jelas tanpa bottleneck di satu titik.
 
 ---
 
@@ -116,7 +116,7 @@ Mengapa immutable? Karena pipeline multi-agen yang paralel rentan race condition
 
 ## Desain Fact-Check Pipeline
 
-Dipecah menjadi 4 sub-agen (bukan 1 agen monolitik) berdasarkan FactAgent (arxiv:2506.17878):
+Dipecah menjadi 4 sub-agen spesialis (bukan 1 agen monolitik):
 
 ```
 Input Ingestion → Query Generation → Evidence Retrieval → Verdict Prediction
@@ -126,13 +126,13 @@ Mengapa 4 sub-agen lebih baik dari 1?
 - Tiap sub-agen punya satu tanggung jawab (Single Responsibility)
 - Lebih mudah di-debug: tahu persis di mana pipeline gagal
 - Lebih mudah diganti: bisa swap Evidence Retrieval tanpa sentuh yang lain
-- Terbukti: peningkatan 12.3% Macro F1 vs monolitik (FactAgent, 2025)
+- Terbukti lebih akurat vs monolitik (pendekatan multi-agent)
 
 ---
 
 ## Desain Debate + Consensus (Aggregator)
 
-Terinspirasi dari DelphiAgent (2025). Alih-alih merge output secara mekanis, Aggregator menjalankan "ronde debat":
+Alih-alih merge output secara mekanis, Aggregator menjalankan "ronde debat":
 
 ```
 Ronde 1: Setiap agen beri penilaian INDEPENDEN
@@ -151,7 +151,7 @@ Hasilnya lebih akurat karena konflik terdeteksi sebelum artikel tayang, bukan se
 
 ## Desain Credibility Scoring (Quality Gate)
 
-Terinspirasi MAFC (Scientific Reports, 2026). Skor 0–1 dihitung dari 4 komponen:
+Skor 0–1 dihitung dari 4 komponen:
 
 ```python
 credibility_score = (
