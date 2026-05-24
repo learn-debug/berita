@@ -301,20 +301,7 @@ Catatan: OSINT diparkir ke fase ini agar fase 1-3 bisa berjalan lebih cepat
 
 ---
 
-## Timeline Estimasi
 
-```
-Minggu 1-2   → Fase 1.1 - 1.5  (setup + fondasi teknis)
-Minggu 3-5   → Fase 1.6         (coding semua agen)
-Minggu 6-7   → Fase 1 testing   (integrasi + end-to-end test)
-Minggu 8-10  → Fase 2           (API + Dashboard Redaksi)
-Minggu 11-13 → Fase 3           (Situs Publik)
-Minggu 14+   → Fase 4           (OSINT + Advanced)
-```
-
-*Estimasi ini untuk 1 developer aktif. Tim 2-3 orang bisa mempersingkat 30-40%.*
-
----
 
 ## Cara Validasi Tiap Fase
 
