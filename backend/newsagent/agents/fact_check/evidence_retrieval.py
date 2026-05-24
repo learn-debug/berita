@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
@@ -11,6 +12,12 @@ from newsagent.tools.search_provider import SearchProvider
 from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
+
+TEXT_OUTPUT_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {"output": {"type": "string"}},
+    "required": ["output"],
+}
 
 
 class EvidenceRetrievalAgent:
@@ -44,11 +51,12 @@ class EvidenceRetrievalAgent:
 
             if not evidence:
                 prompt = PromptHardener.wrap_user_input(f"Cari bukti untuk query-query berikut:\n\n{queries}")
-                result = await self.llm.complete(
+                result = await self.llm.complete_structured(
                     system=self._system_prompt(),
                     prompt=prompt,
+                    schema=TEXT_OUTPUT_SCHEMA,
                 )
-                evidence = result
+                evidence = result.get("output", "") if isinstance(result, dict) else ""
         except Exception as e:
             logger.error("[EvidenceRetrieval] gagal: %s", e)
             evidence = ""
