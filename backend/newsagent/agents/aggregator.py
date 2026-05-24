@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
@@ -9,6 +10,12 @@ from newsagent.security.prompt_hardening import PromptHardener
 from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
+
+TEXT_OUTPUT_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {"output": {"type": "string"}},
+    "required": ["output"],
+}
 
 
 class AggregatorAgent:
@@ -27,16 +34,17 @@ class AggregatorAgent:
                 article_source = article_source[:10000] + "\n...[truncated]"
             if len(report_raw) > 10000:
                 report_raw = report_raw[:10000] + "\n...[truncated]"
-            result = await self.llm.complete(
+            result = await self.llm.complete_structured(
                 system=self._system_prompt(),
                 prompt=(
                     f"Artikel (edited):\n{article_source}\n\n"
                     f"Laporan Fact-Check:\n{report_raw}\n\n"
                     "Lakukan debat 2 ronde dan berikan artikel final."
                 ),
+                schema=TEXT_OUTPUT_SCHEMA,
                 max_tokens=4096,
             )
-            article = result
+            article = result.get("output", "") if isinstance(result, dict) else ""
         except Exception as e:
             logger.error("[Aggregator] gagal: %s", e)
             article = state.get("edited_draft") or state["draft"]

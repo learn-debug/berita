@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
@@ -10,6 +11,12 @@ from newsagent.security.prompt_hardening import PromptHardener
 from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
+
+TEXT_OUTPUT_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {"output": {"type": "string"}},
+    "required": ["output"],
+}
 
 
 class DraftAgent:
@@ -45,12 +52,13 @@ class DraftAgent:
             if few_shot:
                 context += few_shot
 
-            result = await self.llm.complete(
+            result = await self.llm.complete_structured(
                 system=self._system_prompt(),
                 prompt=PromptHardener.wrap_user_input(context),
+                schema=TEXT_OUTPUT_SCHEMA,
                 max_tokens=4096,
             )
-            draft = result
+            draft = result.get("output", "") if isinstance(result, dict) else ""
             logger.info("[DraftAgent] selesai — %d karakter", len(draft))
         except Exception as e:
             logger.error("[DraftAgent] gagal: %s", e)

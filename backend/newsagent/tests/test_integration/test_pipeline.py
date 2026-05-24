@@ -18,7 +18,7 @@ class FakeLLMDraft:
         return "Ini adalah draft artikel yang dihasilkan."
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {"output": "Ini adalah draft artikel yang dihasilkan."}
 
     def model_name(self) -> str:
         return "fake"
@@ -29,7 +29,7 @@ class FakeLLMEditor:
         return "Ini adalah artikel yang sudah diedit dengan baik."
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {"output": "Ini adalah artikel yang sudah diedit dengan baik."}
 
     def model_name(self) -> str:
         return "fake"
@@ -43,6 +43,8 @@ class FakeLLMGeneric:
         required = schema.get("required", [])
         if "judul" in required:
             return {"judul": "Judul Artikel", "konten": "Respon dari LLM."}
+        if "output" in required:
+            return {"output": "Respon dari LLM."}
         if "claims" in required:
             return {
                 "claims": [

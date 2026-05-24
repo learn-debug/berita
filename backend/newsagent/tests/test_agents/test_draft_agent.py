@@ -9,7 +9,7 @@ class FakeLLM:
         return "Judul: Test\n\nIni adalah artikel test."
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {"output": "Judul: Test\n\nIni adalah artikel test."}
 
     def model_name(self) -> str:
         return "fake"

@@ -13,6 +13,7 @@ class FakeLLM:
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
         return {
+            "output": "Fake output for TEXT_OUTPUT_SCHEMA.",
             "claims": [
                 {
                     "claim": "Test claim",
@@ -24,7 +25,7 @@ class FakeLLM:
                     "alasan": "Test alasan",
                     "keyakinan": "TINGGI",
                 }
-            ]
+            ],
         }
 
     def model_name(self) -> str:

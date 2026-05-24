@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
@@ -9,6 +10,12 @@ from newsagent.security.prompt_hardening import PromptHardener
 from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
+
+TEXT_OUTPUT_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {"output": {"type": "string"}},
+    "required": ["output"],
+}
 
 
 class EditorAgent:
@@ -24,12 +31,13 @@ class EditorAgent:
             prompt = PromptHardener.wrap_user_input(
                 f"Berikut adalah draf artikel yang perlu diedit:\n\n{state['draft']}"
             )
-            result = await self.llm.complete(
+            result = await self.llm.complete_structured(
                 system=self._system_prompt(),
                 prompt=prompt,
+                schema=TEXT_OUTPUT_SCHEMA,
                 max_tokens=4096,
             )
-            edited = result
+            edited = result.get("output", "") if isinstance(result, dict) else ""
         except Exception as e:
             logger.error("[EditorAgent] gagal: %s", e)
             edited = state["draft"]
