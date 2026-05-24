@@ -16,7 +16,16 @@ def with_budget(
         @wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> Any:
             result = await func(*args, **kwargs)
-            if isinstance(result, str) and len(result) > max_tokens * 4:
+            text_to_check = ""
+            if isinstance(result, str):
+                text_to_check = result
+            elif isinstance(result, dict):
+                for key in ["draft", "edited_draft", "published_body", "aggregated_article"]:
+                    if key in result and isinstance(result[key], str):
+                        text_to_check = result[key]
+                        break
+
+            if text_to_check and len(text_to_check) > max_tokens * 4:
                 raise TokenBudgetExceededError(f"Output exceeds budget of {max_tokens} tokens")
             return result
 

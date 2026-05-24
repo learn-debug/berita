@@ -61,3 +61,23 @@ async def test_with_budget_single_long_word_exceeds() -> None:
 
     with pytest.raises(TokenBudgetExceededError):
         await long_word()
+
+
+@pytest.mark.asyncio
+async def test_with_budget_dict_within_limit() -> None:
+    @with_budget(max_tokens=10)
+    async def get_state() -> dict:
+        return {"draft": "hello world"}
+
+    result = await get_state()
+    assert result == {"draft": "hello world"}
+
+
+@pytest.mark.asyncio
+async def test_with_budget_dict_exceeded() -> None:
+    @with_budget(max_tokens=2)
+    async def get_long_state() -> dict:
+        return {"draft": "a b c d e f g"}
+
+    with pytest.raises(TokenBudgetExceededError):
+        await get_long_state()
