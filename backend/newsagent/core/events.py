@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any, TypedDict
 
-from typing_extensions import NotRequired
-
 
 class EventDict(TypedDict):
     agent: str

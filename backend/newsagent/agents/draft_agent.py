@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
