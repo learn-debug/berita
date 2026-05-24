@@ -3,6 +3,7 @@ from typing import Any, cast
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState, FactCheckReport
+from newsagent.cost.token_budget import with_budget
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.memory.verdict_cache import VerdictCache
 from newsagent.resilience.retry_policy import with_retry
@@ -32,8 +33,14 @@ VERDICT_SCHEMA: dict[str, object] = {
                     "keyakinan": {"type": "string", "enum": ["TINGGI", "SEDANG", "RENDAH"]},
                 },
                 "required": [
-                    "claim", "premis_fakta", "premis_bukti", "premis_sumber",
-                    "analisis", "putusan", "alasan", "keyakinan",
+                    "claim",
+                    "premis_fakta",
+                    "premis_bukti",
+                    "premis_sumber",
+                    "analisis",
+                    "putusan",
+                    "alasan",
+                    "keyakinan",
                 ],
             },
         },
@@ -64,6 +71,7 @@ class VerdictPredictionAgent:
         self._cache = cache
 
     @with_retry(max_attempts=3)
+    @with_budget(max_tokens=4000)
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[VerdictPrediction] mulai — article_id=%s", state["article_id"])
 

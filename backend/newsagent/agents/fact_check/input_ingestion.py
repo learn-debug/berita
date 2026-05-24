@@ -3,6 +3,7 @@ from typing import cast
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState, FactCheckReport
+from newsagent.cost.token_budget import with_budget
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
@@ -22,6 +23,7 @@ class InputIngestionAgent:
         self.llm = llm
 
     @with_retry(max_attempts=3)
+    @with_budget(max_tokens=1024)
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[InputIngestion] mulai — article_id=%s", state["article_id"])
 
