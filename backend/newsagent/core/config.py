@@ -14,15 +14,16 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     tavily_api_key: str = ""
     serper_api_key: str = ""
+    hf_api_key: str = ""
 
     search_provider: str = "tavily"
 
-    orchestrator_llm: str = "claude"
-    draft_agent_llm: str = "claude"
-    editor_agent_llm: str = "claude"
-    fact_check_llm: str = "claude"
-    publisher_agent_llm: str = "claude"
-    rag_llm: str = "claude"
+    orchestrator_llm: str = "mistral"
+    draft_agent_llm: str = "mistral"
+    editor_agent_llm: str = "mistral"
+    fact_check_llm: str = "mistral"
+    publisher_agent_llm: str = "mistral"
+    rag_llm: str = "mistral"
 
     orchestrator_openrouter_model: str = "openai/gpt-4o"
     draft_agent_openrouter_model: str = "openai/gpt-4o-mini"
@@ -30,6 +31,15 @@ class Settings(BaseSettings):
     fact_check_openrouter_model: str = "openai/gpt-4o"
     publisher_agent_openrouter_model: str = "openai/gpt-4o-mini"
     rag_openrouter_model: str = "openai/gpt-4o-mini"
+
+    orchestrator_hf_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    draft_agent_hf_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    editor_agent_hf_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    fact_check_hf_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    publisher_agent_hf_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    rag_hf_model: str = "Qwen/Qwen2.5-7B-Instruct"
+
+    llm_fallback_chain: str = ""
 
     quality_gate_auto_publish: float = 0.75
     quality_gate_review_threshold: float = 0.50
