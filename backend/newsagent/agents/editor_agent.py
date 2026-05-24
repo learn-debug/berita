@@ -27,6 +27,7 @@ class EditorAgent:
             result = await self.llm.complete(
                 system=self._system_prompt(),
                 prompt=prompt,
+                max_tokens=4096,
             )
             edited = result
         except Exception as e:

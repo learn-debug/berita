@@ -26,6 +26,7 @@ class QueryGenerationAgent:
             result = await self.llm.complete(
                 system=self._system_prompt(),
                 prompt=prompt,
+                max_tokens=1024,
             )
             queries = result
         except Exception as e:

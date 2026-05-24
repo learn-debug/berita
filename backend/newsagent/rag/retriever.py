@@ -23,6 +23,7 @@ class Retriever:
                 prompt=PromptHardener.wrap_user_input(
                     f"Topik: {topic}\n\nKembalikan 3 query, satu per baris, tanpa nomor atau bullet."
                 ),
+                max_tokens=1024,
             )
             queries = [q.strip() for q in queries_text.strip().split("\n") if q.strip()]
 
@@ -44,6 +45,7 @@ class Retriever:
                     prompt=PromptHardener.wrap_user_input(
                         f"Berikan informasi faktual terkini tentang topik ini:\n{topic}"
                     ),
+                    max_tokens=2048,
                 )
                 documents = [fallback]
             except Exception as e:

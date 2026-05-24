@@ -48,6 +48,7 @@ class DraftAgent:
             result = await self.llm.complete(
                 system=self._system_prompt(),
                 prompt=PromptHardener.wrap_user_input(context),
+                max_tokens=4096,
             )
             draft = result
             logger.info("[DraftAgent] selesai — %d karakter", len(draft))
