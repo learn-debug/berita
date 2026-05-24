@@ -5,19 +5,25 @@ from google import genai
 
 from newsagent.core.config import settings
 from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.resilience.retry_policy import RateLimiter, with_rate_limit_retry
 
 logger = logging.getLogger(__name__)
 
 
 class GeminiAdapter(BaseLLMAdapter):
-    _model = "gemini-2.0-flash"
+    _model = "gemini-2.5-flash-lite"
+
+    def __init__(self) -> None:
+        self._rate_limiter = RateLimiter(provider="gemini", max_concurrent=1, min_interval=1.0)
 
     def _get_client(self) -> genai.Client:
         if not hasattr(self, "_client"):
             self._client = genai.Client(api_key=settings.gemini_api_key)
         return self._client
 
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    @with_rate_limit_retry()
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
+        await self._rate_limiter.acquire()
         client = self._get_client()
         try:
             response = await client.aio.models.generate_content(
@@ -29,10 +35,14 @@ class GeminiAdapter(BaseLLMAdapter):
         except Exception as e:
             logger.error("[GeminiAdapter] API error: %s", e)
             raise
+        finally:
+            self._rate_limiter.release()
 
+    @with_rate_limit_retry()
     async def complete_structured(
-        self, prompt: str, schema: dict[str, Any], system: str | None = None
+        self, prompt: str, schema: dict[str, Any], system: str | None = None, max_tokens: int = 2048
     ) -> dict[str, Any]:
+        await self._rate_limiter.acquire()
         client = self._get_client()
         try:
             response = await client.aio.models.generate_content(
@@ -48,6 +58,8 @@ class GeminiAdapter(BaseLLMAdapter):
         except Exception as e:
             logger.error("[GeminiAdapter] structured API error: %s", e)
             raise
+        finally:
+            self._rate_limiter.release()
 
     def model_name(self) -> str:
         return self._model
