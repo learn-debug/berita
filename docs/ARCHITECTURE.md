@@ -262,4 +262,4 @@ Pipeline maksimal melalui 2 siklus revisi sebelum dipublikasikan (dengan skor ap
 
 ---
 
-*Untuk keputusan arsitektur individual, lihat [docs/adr/](./adr/).**
+*Untuk keputusan arsitektur individual, lihat [docs/adr/](./adr/).*

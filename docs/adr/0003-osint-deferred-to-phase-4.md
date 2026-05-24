@@ -1,7 +1,7 @@
 # ADR-0003: OSINT Layer Ditunda ke Fase 4
 
 **Status:** Diterima
-**Tanggal:** *(isi tanggal keputusan diambil)*
+**Tanggal:** 2026-05-22
 **Penulis:** Tim NewsAgent
 
 ---

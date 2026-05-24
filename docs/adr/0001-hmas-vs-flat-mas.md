@@ -1,7 +1,7 @@
 # ADR-0001: Menggunakan HMAS, Bukan Flat MAS
 
 **Status:** Diterima
-**Tanggal:** *(isi tanggal keputusan diambil)*
+**Tanggal:** 2026-05-22
 **Penulis:** Tim NewsAgent
 
 ---

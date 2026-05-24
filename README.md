@@ -48,7 +48,7 @@ Arsitektur NewsAgent terdiri dari pipeline multi-agent dengan spesialisasi per p
 - Fact-Check Agent dipecah menjadi **4 sub-agen** spesialis
 - Review & Aggregator menggunakan **debate + consensus**
 - Quality Gate menggunakan **credibility score 0–1**
-- RAG pipeline menggunakan **structured evidence summarization
+- RAG pipeline menggunakan **structured evidence summarization**
 
 ```mermaid
 flowchart TB
@@ -86,7 +86,7 @@ flowchart TB
     Revise --> D
 ```
 
-> **Catatan:** Pipeline saat ini berjalan sekuensial (10 node LangGraph). Routing conditional untuk review/revisi akan aktif di Fase 2. Lihat [Diagram Pipeline](docs/ARCHITECTURE.md#diagram-pipeline-langgraph) untuk detail implementasi.
+> **Catatan:** Pipeline berjalan sekuensial (11 node LangGraph) dengan routing conditional untuk review/revisi. Lihat [Diagram Pipeline](docs/ARCHITECTURE.md#diagram-pipeline-langgraph) untuk detail implementasi.
 
 ---
 
@@ -242,7 +242,7 @@ Menerima artikel final dari Quality Gate dan mempublikasikannya ke CMS sesuai ja
 ## Tech Stack
 
 | Komponen | Teknologi |
-|---|---|---|
+|---|---|
 | Framework Multi-Agent | [LangGraph](https://github.com/langchain-ai/langgraph) |
 | **LLM Adapter Layer** | `BaseLLMAdapter` — pluggable: Claude, GPT-4o, Gemini, Mistral, Qwen |
 | LLM Default | Claude API (`claude-sonnet-4-20250514`) via `ClaudeAdapter` |
@@ -250,7 +250,7 @@ Menerima artikel final dari Quality Gate dan mempublikasikannya ke CMS sesuai ja
 | Search Provider | Tavily (default), Serper (alternatif) |
 | Vector Store | PostgreSQL + pgvector (Fase 2) |
 | Backend | Python 3.10+ / FastAPI / Pydantic |
-| Frontend | Next.js 16 + TypeScript (Fase 2-3) |
+| Frontend | Next.js 14 + TypeScript (Fase 2-3) |
 | CMS Integration | WordPress REST API / Headless CMS |
 | Database | PostgreSQL 17 (Docker) |
 | Cache | Redis 7 (Docker) |
@@ -327,23 +327,24 @@ borneo/
 │   │   ├── utils/
 │   │   │   └── prompt_loader.py             # Load prompt dari file .md
 │   │   ├── prompts/
-│   │   │   ├── orchestrator_agent.md
-│   │   │   ├── draft_agent.md
-│   │   │   ├── editor_agent.md
-│   │   │   ├── fact_check/
-│   │   │   │   ├── input_ingestion.md
-│   │   │   │   ├── query_generation.md
-│   │   │   │   ├── evidence_retrieval.md
-│   │   │   │   └── verdict_prediction.md
 │   │   │   ├── aggregator_system.md
 │   │   │   ├── aggregator_user.md
+│   │   │   ├── draft_agent.md
+│   │   │   ├── editor_agent.md
+│   │   │   ├── evidence_retrieval_system.md
+│   │   │   ├── evidence_retrieval_user.md
+│   │   │   ├── input_ingestion_system.md
+│   │   │   ├── input_ingestion_user.md
+│   │   │   ├── publisher_agent.md
 │   │   │   ├── quality_gate_system.md
 │   │   │   ├── quality_gate_user.md
-│   │   │   ├── publisher_system.md
-│   │   │   ├── publisher_user.md
+│   │   │   ├── query_generation_system.md
+│   │   │   ├── query_generation_user.md
+│   │   │   ├── verdict_prediction_system.md
+│   │   │   ├── verdict_prediction_user.md
 │   │   │   ├── _system_guard.md
 │   │   │   └── _user_wrapper.md
-│   │   └── tests/                           # In-package tests (269 test cases)
+│   │       └── tests/                           # In-package tests (261 test cases)
 │   │       ├── test_agents/
 │   │       ├── test_api/
 │   │       ├── test_core/

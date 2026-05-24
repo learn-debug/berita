@@ -9,7 +9,7 @@ Every session must be saved to the knowledge graph as entity `session-YYYY-MM-DD
 - **Phase 1 complete.** `backend/newsagent/` package, all agents, LangGraph pipeline, LLM adapters, resilience/security/cost layers, FastAPI entrypoint, Docker Compose, and tests exist and pass.
 - **Phase 2 API complete.** REST endpoints (`POST /api/v1/articles/process`, `GET /api/v1/articles`, `GET /api/v1/articles/{id}`, `PATCH /api/v1/articles/{id}`) and WebSocket (`ws/{article_id}`) all live. Frontend dashboard belum dikerjakan.
 - **Semua agen menggunakan `complete_structured()` + JSON Schema.** 8 agen single-text pakai `TEXT_OUTPUT_SCHEMA` (`{"output": "string"}`), 3 agen multi-field pakai schema spesifik (QualityGate 4 scores, Publisher judul+konten, VerdictPrediction 8-field per claim). Zero parsing error.
-- **257 tests passing**, ruff + mypy + pyright clean.
+- **261 tests passing**, ruff + mypy + pyright clean.
 - All code committed. Working tree clean.
 
 ## Authoritative docs
@@ -83,7 +83,7 @@ pre-commit install
 
 ## References to preserve
 
-- `docs/AGENT_GUIDE.md` — full agent anatomy, prompt patterns, debugging, pre-merge checklist (525 lines).
+- `docs/AGENT_GUIDE.md` — full agent anatomy, prompt patterns, debugging, pre-merge checklist (576 lines).
 - `docs/adr/0001-hmas-vs-flat-mas.md` — why HMAS.
 - `docs/adr/0002-llm-adapter-pattern.md` — why adapter pattern.
 - `docs/adr/0003-osint-deferred-to-phase-4.md` — OSINT is explicitly deferred to Phase 4; do not implement in earlier phases.

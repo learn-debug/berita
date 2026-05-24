@@ -1,7 +1,7 @@
 # ADR-0002: LLM Adapter Pattern untuk Multi-Provider
 
 **Status:** Diterima
-**Tanggal:** *(isi tanggal keputusan diambil)*
+**Tanggal:** 2026-05-22
 **Penulis:** Tim NewsAgent
 
 ---

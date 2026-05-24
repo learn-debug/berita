@@ -138,7 +138,7 @@ Update status artikel (approve/reject/retry) atau edit konten.
 | `retry` | Ubah status ke `processing` (kirim ulang ke pipeline) |
 
 | Field | Tipe | Wajib | Keterangan |
-|---|---|---|---|---|
+|---|---|---|---|
 | `input_type` | string | ❌ | `topic` (default) |
 | `raw_input` | string | ✅ | Topik atau teks draf |
 
@@ -159,199 +159,15 @@ Update status artikel (approve/reject/retry) atau edit konten.
 
 ---
 
-## Rencana Endpoint (Fase 2)
+## Endpoint Mendatang
 
-Endpoint berikut direncanakan untuk Fase 2 dan **belum diimplementasikan**.
+Endpoint berikut **belum diimplementasikan** dan direncanakan untuk rilis selanjutnya:
 
-### Articles
-
-#### `POST /api/v1/articles/process` *(planned)*
-Submit topik atau draf ke pipeline.
-
-**Request Body:**
-```json
-{
-  "input_type": "topic",
-  "content": "Dampak AI terhadap industri media Indonesia",
-  "target_length": 800,
-  "publish_schedule": "2025-06-01T08:00:00Z",
-  "category": "teknologi"
-}
-```
-
-| Field | Tipe | Wajib | Keterangan |
-|---|---|---|---|
-| `input_type` | string | ✅ | `topic` / `draft` / `url` |
-| `content` | string | ✅ | Topik, teks draf, atau URL |
-| `target_length` | integer | ❌ | Target jumlah kata (default: 600) |
-| `publish_schedule` | string (ISO 8601) | ❌ | Jadwal publikasi |
-| `category` | string | ❌ | Kategori artikel |
-
-**Response `202 Accepted`:**
-```json
-{
-  "article_id": "art_abc123",
-  "status": "processing",
-  "estimated_completion_seconds": 120,
-  "pipeline_url": "/api/v1/pipeline/art_abc123"
-}
-```
-
----
-
-#### `GET /api/v1/articles` *(planned)*
-Daftar semua artikel.
-
-**Query Parameters:**
-
-| Parameter | Tipe | Keterangan |
+| Method | Endpoint | Fungsi |
 |---|---|---|
-| `status` | string | Filter: `processing` / `review` / `published` / `failed` |
-| `min_score` | float | Filter credibility score minimum |
-| `page` | integer | Halaman (default: 1) |
-| `limit` | integer | Jumlah per halaman (default: 20, max: 100) |
-
-**Response `200 OK`:**
-```json
-{
-  "total": 142,
-  "page": 1,
-  "articles": [
-    {
-      "article_id": "art_abc123",
-      "title": "Dampak AI terhadap Industri Media",
-      "status": "published",
-      "credibility_score": 0.91,
-      "word_count": 823,
-      "created_at": "2025-06-01T07:45:00Z",
-      "published_url": "https://example.com/berita/dampak-ai-media"
-    }
-  ]
-}
-```
-
----
-
-#### `GET /api/v1/articles/{article_id}` *(planned)*
-Detail artikel beserta laporan agen.
-
-**Response `200 OK`:**
-```json
-{
-  "article_id": "art_abc123",
-  "title": "Dampak AI terhadap Industri Media",
-  "content": "...",
-  "status": "review",
-  "credibility_score": 0.68,
-  "fact_check_report": {
-    "total_claims": 14,
-    "verified": 11,
-    "unverified": 2,
-    "false": 1,
-    "claims": [
-      {
-        "text": "AI menggantikan 30% pekerjaan jurnalis di 2024",
-        "verdict": "unverified",
-        "confidence": 0.45,
-        "sources": []
-      }
-    ]
-  },
-  "debate_rounds": 2,
-  "editor_changes": 8,
-  "created_at": "2025-06-01T07:45:00Z"
-}
-```
-
----
-
-#### `PATCH /api/v1/articles/{article_id}` *(planned)*
-Update artikel (edit konten atau ubah status).
-
-**Request Body:**
-```json
-{
-  "action": "approve",
-  "content": "...(opsional, konten yang sudah diedit editor)..."
-}
-```
-
-| `action` | Efek |
-|---|---|
-| `approve` | Kirim ke Publisher Agent |
-| `reject` | Tandai sebagai rejected |
-| `retry` | Kirim ulang ke pipeline |
-
----
-
-### Pipeline
-
-#### `GET /api/v1/pipeline/{article_id}` *(planned)*
-Status pipeline real-time (snapshot).
-
-**Response `200 OK`:**
-```json
-{
-  "article_id": "art_abc123",
-  "current_stage": "fact_check",
-  "agents": {
-    "orchestrator": "completed",
-    "rag_pipeline": "completed",
-    "draft_agent": "completed",
-    "fact_check": "running",
-    "editor_agent": "waiting",
-    "aggregator": "idle",
-    "quality_gate": "idle",
-    "publisher": "idle"
-  },
-  "started_at": "2025-06-01T07:45:00Z",
-  "elapsed_seconds": 47
-}
-```
-
----
-
-### Agents
-
-#### `GET /api/v1/agents/status` *(planned)*
-Status semua agen saat ini.
-
-**Response `200 OK`:**
-```json
-{
-  "agents": [
-    {
-      "name": "orchestrator",
-      "status": "idle",
-      "llm_provider": "claude",
-      "articles_processed_today": 42,
-      "avg_latency_ms": 1240
-    }
-  ]
-}
-```
-
----
-
-### Metrics
-
-#### `GET /api/v1/metrics` *(planned)*
-Metrik sistem keseluruhan.
-
-**Response `200 OK`:**
-```json
-{
-  "today": {
-    "articles_processed": 87,
-    "avg_credibility_score": 0.83,
-    "auto_published": 61,
-    "sent_to_review": 22,
-    "failed": 4,
-    "avg_processing_time_seconds": 94,
-    "total_api_cost_usd": 12.40
-  }
-}
-```
+| `GET` | `/api/v1/pipeline/{article_id}` | Status pipeline real-time per artikel |
+| `GET` | `/api/v1/agents/status` | Status dan metrik semua agen |
+| `GET` | `/api/v1/metrics` | Metrik sistem keseluruhan |
 
 ---
 
