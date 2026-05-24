@@ -283,7 +283,7 @@ Catatan: OSINT diparkir ke fase ini agar fase 1-3 bisa berjalan lebih cepat
 - [ ] Integrasi ke Evidence Retrieval Agent
 - [ ] Multimodal fact-checking — analisis gambar & video
 - [ ] Dukungan multi-bahasa (EN, ID, AR)
-- [ ] Integrasi media sosial (auto-post setelah publish)
+- [ ] **Multi-channel Publisher** — adapter pattern untuk auto-post ke X, Telegram, LinkedIn, newsletter email setelah artikel tayang di CMS
 - [ ] Caching Layer (semantic cache untuk query serupa)
 - [ ] Fine-tuning model untuk gaya penulisan spesifik
 - [ ] Plugin browser untuk input URL artikel
@@ -297,7 +297,7 @@ Catatan: OSINT diparkir ke fase ini agar fase 1-3 bisa berjalan lebih cepat
 - [ ] Cross-article deduplikasi entity & misinfo pattern detection
 
 ### ✅ Milestone Fase 4
-**OSINT aktif + Knowledge Graph:** artikel melewati verifikasi domain, arsip historis, cross-check global, dan cross-reference knowledge graph sebelum tayang.
+**OSINT aktif + Knowledge Graph + Multi-Channel:** artikel melewati verifikasi domain, arsip historis, cross-check global, dan cross-reference knowledge graph sebelum tayang, lalu auto-publish ke multi-platform (sosial media, newsletter).
 
 ---
 
