@@ -576,7 +576,3 @@ Arsitektur NewsAgent dibangun di atas riset-riset berikut:
 ## Lisensi
 
 Didistribusikan di bawah lisensi **MIT**. Lihat file `LICENSE` untuk detail lebih lanjut.
-
----
-
-<p align="center">Dibangun di atas riset akademis · Didukung Claude API · Anthropic</p>
