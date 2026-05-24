@@ -37,12 +37,18 @@ class QualityGateAgent:
         logger.info("[QualityGate] mulai — article_id=%s", state["article_id"])
 
         article = state.get("aggregated_article") or state.get("edited_draft") or state["draft"]
-        report = state.get("fact_check_report", {})
+        report = str(state.get("fact_check_report", {}))
+
+        if len(article) > 10000:
+            article = article[:10000] + "\n...[truncated]"
+        if len(report) > 10000:
+            report = report[:10000] + "\n...[truncated]"
 
         try:
             result = await self.llm.complete(
                 system=self._system_prompt(),
                 prompt=f"Artikel:\n{article}\n\nLaporan Fact-Check:\n{report}",
+                max_tokens=1024,
             )
             scores = self._parse_scores(result)
         except Exception as e:

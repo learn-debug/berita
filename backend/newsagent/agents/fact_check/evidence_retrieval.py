@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from newsagent.core.events import make_event
@@ -23,13 +24,23 @@ class EvidenceRetrievalAgent:
 
         queries = state.get("fact_check_report", {}).get("queries", "")
         try:
-            results = []
-            for q in queries.split("\n"):
-                q = q.strip()
-                if q:
-                    pages = await self.search.search(q)
-                    results.extend(pages)
-            evidence = "\n\n---\n\n".join(results[:3]) if results else ""
+            query_list = [q.strip() for q in queries.split("\n") if q.strip()]
+
+            if query_list:
+                tasks = [self.search.search(q) for q in query_list]
+                results_nested = await asyncio.gather(*tasks, return_exceptions=True)
+                results: list[str] = []
+                for pages in results_nested:
+                    if isinstance(pages, Exception):
+                        logger.warning("[EvidenceRetrieval] search gagal: %s", pages)
+                        continue
+                    for p in pages:
+                        if len(p) > 2000:
+                            p = p[:2000] + "\n...[truncated]"
+                        results.append(p)
+                evidence = "\n\n---\n\n".join(results[:15]) if results else ""
+            else:
+                evidence = ""
 
             if not evidence:
                 prompt = PromptHardener.wrap_user_input(f"Cari bukti untuk query-query berikut:\n\n{queries}")

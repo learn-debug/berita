@@ -22,13 +22,19 @@ class AggregatorAgent:
 
         try:
             article_source = state.get("edited_draft") or state["draft"]
+            report_raw = str(state.get("fact_check_report", {}))
+            if len(article_source) > 10000:
+                article_source = article_source[:10000] + "\n...[truncated]"
+            if len(report_raw) > 10000:
+                report_raw = report_raw[:10000] + "\n...[truncated]"
             result = await self.llm.complete(
                 system=self._system_prompt(),
                 prompt=(
                     f"Artikel (edited):\n{article_source}\n\n"
-                    f"Laporan Fact-Check:\n{state.get('fact_check_report', {})}\n\n"
+                    f"Laporan Fact-Check:\n{report_raw}\n\n"
                     "Lakukan debat 2 ronde dan berikan artikel final."
                 ),
+                max_tokens=4096,
             )
             article = result
         except Exception as e:
