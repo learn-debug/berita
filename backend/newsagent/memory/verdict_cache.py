@@ -33,6 +33,7 @@ class VerdictCache:
         self._ready = True
 
     async def get(self, claim_text: str) -> dict[str, Any] | None:
+        await self._ensure()
         claim_hash = hashlib.sha256(claim_text.encode()).hexdigest()[:32]
         engine = await get_engine()
         row = await engine.fetchrow("SELECT * FROM verdict_cache WHERE claim_hash = $1", claim_hash)

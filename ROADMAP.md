@@ -234,6 +234,7 @@ Estimasi total: 2-3 minggu
 - [ ] Dashboard Redaksi — halaman daftar artikel + filter
 - [ ] Dashboard Redaksi — halaman input artikel baru
 - [ ] Dashboard Redaksi — halaman pengaturan threshold
+- [ ] Article state machine + atomic claim — cegah duplicate processing saat multi-worker, resume after crash, `article_id` + `revision_count` sebagai unique key
 
 ### ✅ Milestone Fase 2
 **Dashboard berjalan:** editor bisa submit topik, pantau pipeline, review laporan fact-check, dan approve/tolak artikel — semua dari browser.
