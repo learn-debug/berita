@@ -27,7 +27,7 @@ class OpenRouterAdapter(BaseLLMAdapter):
         self._model = _MODEL_MAP.get(agent_key, "openai/gpt-4o")
         self._agent_key = agent_key
 
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         try:
             response = await self._client.chat.completions.create(
                 model=self._model,
@@ -43,7 +43,7 @@ class OpenRouterAdapter(BaseLLMAdapter):
             raise
 
     async def complete_structured(
-        self, prompt: str, schema: dict[str, Any], system: str | None = None
+        self, prompt: str, schema: dict[str, Any], system: str | None = None, max_tokens: int = 2048
     ) -> dict[str, Any]:
         try:
             response = await self._client.chat.completions.create(

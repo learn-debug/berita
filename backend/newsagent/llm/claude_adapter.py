@@ -22,7 +22,7 @@ class ClaudeAdapter(BaseLLMAdapter):
                 return block.text
         return ""
 
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         try:
             response = await self._client.messages.create(
                 model=self._model,
@@ -36,7 +36,7 @@ class ClaudeAdapter(BaseLLMAdapter):
             raise
 
     async def complete_structured(
-        self, prompt: str, schema: dict[str, Any], system: str | None = None
+        self, prompt: str, schema: dict[str, Any], system: str | None = None, max_tokens: int = 2048
     ) -> dict[str, Any]:
         try:
             response = await self._client.messages.create(
