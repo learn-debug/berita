@@ -12,7 +12,20 @@ class FakeLLM:
         return "Fake response for testing."
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {
+            "claims": [
+                {
+                    "claim": "Test claim",
+                    "premis_fakta": "Test premis fakta",
+                    "premis_bukti": "Test premis bukti",
+                    "premis_sumber": "Test sumber — TINGGI",
+                    "analisis": "Test analisis",
+                    "putusan": "SUPPORTED",
+                    "alasan": "Test alasan",
+                    "keyakinan": "TINGGI",
+                }
+            ]
+        }
 
     def model_name(self) -> str:
         return "fake"

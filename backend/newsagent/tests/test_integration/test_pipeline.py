@@ -40,7 +40,25 @@ class FakeLLMGeneric:
         return "Respon dari LLM."
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"judul": "Judul Artikel", "konten": "Respon dari LLM."}
+        required = schema.get("required", [])
+        if "judul" in required:
+            return {"judul": "Judul Artikel", "konten": "Respon dari LLM."}
+        if "claims" in required:
+            return {
+                "claims": [
+                    {
+                        "claim": "Test claim",
+                        "premis_fakta": "Test premis fakta",
+                        "premis_bukti": "Test premis bukti",
+                        "premis_sumber": "Test sumber — TINGGI",
+                        "analisis": "Test analisis",
+                        "putusan": "SUPPORTED",
+                        "alasan": "Test alasan",
+                        "keyakinan": "TINGGI",
+                    }
+                ]
+            }
+        return {}
 
     def model_name(self) -> str:
         return "fake"

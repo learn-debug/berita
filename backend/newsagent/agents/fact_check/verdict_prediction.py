@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
@@ -9,6 +10,52 @@ from newsagent.security.prompt_hardening import PromptHardener
 from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
+
+VERDICT_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {
+        "claims": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "claim": {"type": "string"},
+                    "premis_fakta": {"type": "string"},
+                    "premis_bukti": {"type": "string"},
+                    "premis_sumber": {"type": "string"},
+                    "analisis": {"type": "string"},
+                    "putusan": {
+                        "type": "string",
+                        "enum": ["SUPPORTED", "REFUTED", "NOT_ENOUGH_EVIDENCE"],
+                    },
+                    "alasan": {"type": "string"},
+                    "keyakinan": {"type": "string", "enum": ["TINGGI", "SEDANG", "RENDAH"]},
+                },
+                "required": [
+                    "claim", "premis_fakta", "premis_bukti", "premis_sumber",
+                    "analisis", "putusan", "alasan", "keyakinan",
+                ],
+            },
+        },
+    },
+    "required": ["claims"],
+}
+
+
+def _format_verdict(data: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for i, c in enumerate(data.get("claims", []), 1):
+        parts.append(
+            f"KLAIM_{i}: {c.get('claim', '')}\n"
+            f"  PREMIS_FAKTA:   {c.get('premis_fakta', '')}\n"
+            f"  PREMIS_BUKTI:   {c.get('premis_bukti', '')}\n"
+            f"  PREMIS_SUMBER:  {c.get('premis_sumber', '')}\n"
+            f"  ANALISIS:       {c.get('analisis', '')}\n"
+            f"  PUTUSAN:        {c.get('putusan', '')}\n"
+            f"  ALASAN:         {c.get('alasan', '')}\n"
+            f"  KEYAKINAN:      {c.get('keyakinan', '')}"
+        )
+    return "\n\n".join(parts)
 
 
 class VerdictPredictionAgent:
@@ -40,7 +87,7 @@ class VerdictPredictionAgent:
         else:
             uncached_claims = claim_list
 
-        verdict = ""
+        verdict_text = ""
 
         if uncached_claims:
             try:
@@ -49,34 +96,35 @@ class VerdictPredictionAgent:
                     + "\n".join(uncached_claims)
                     + f"\n\nBukti:\n{evidence}\n\nBerikan putusan untuk setiap klaim."
                 )
-                result = await self.llm.complete(
+                result = await self.llm.complete_structured(
                     system=self._system_prompt(),
                     prompt=PromptHardener.wrap_user_input(user_prompt),
+                    schema=VERDICT_SCHEMA,
                     max_tokens=4096,
                 )
-                verdict = result
+                verdict_text = _format_verdict(result)
 
                 if self._cache:
                     for claim in uncached_claims:
-                        await self._cache.set(claim, verdict, evidence, 0.5)
+                        await self._cache.set(claim, verdict_text, evidence, 0.5)
             except Exception as e:
                 logger.error("[VerdictPrediction] gagal: %s", e)
-                verdict = ""
+                verdict_text = ""
 
         if cached_parts:
-            if verdict:
+            if verdict_text:
                 combined = "\n\n".join(cached_parts)
-                verdict = f"--- HASIL DARI CACHE ---\n{combined}\n\n--- HASIL BARU ---\n{verdict}"
+                verdict_text = f"--- HASIL DARI CACHE ---\n{combined}\n\n--- HASIL BARU ---\n{verdict_text}"
             else:
-                verdict = "\n\n".join(cached_parts)
+                verdict_text = "\n\n".join(cached_parts)
 
-        fact_check = {**report, "verdict": verdict}
+        fact_check = {**report, "verdict": verdict_text}
 
         return {
             **state,
             "fact_check_report": fact_check,
             "events": state["events"]
-            + [make_event("VerdictPrediction", "predict_verdict", f"{len(verdict)} chars")],
+            + [make_event("VerdictPrediction", "predict_verdict", f"{len(verdict_text)} chars")],
         }
 
     def _system_prompt(self) -> str:
