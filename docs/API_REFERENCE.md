@@ -2,9 +2,10 @@
 
 ## Daftar Isi
 
-- [Saat Ini (Fase 1)](#saat-ini-fase-1)
-- [Rencana Endpoint (Fase 2)](#rencana-endpoint-fase-2)
-- [WebSocket API (Fase 2)](#websocket-api-fase-2)
+- [Autentikasi](#autentikasi)
+- [Endpoints](#endpoints)
+- [Endpoint Mendatang](#endpoint-mendatang)
+- [WebSocket API](#websocket-api)
 - [Error Codes](#error-codes)
 
 

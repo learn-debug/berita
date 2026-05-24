@@ -38,7 +38,7 @@ Kode etik ini berlaku di semua ruang proyek — GitHub Issues, Pull Requests, Di
 
 ## Pelaporan
 
-Laporkan perilaku yang melanggar kode etik ini ke: **conduct@YOUR_DOMAIN.com *(ganti dengan email aktif)***
+Laporkan perilaku yang melanggar kode etik ini ke: *(isi email aktif untuk pelaporan)*
 
 Semua laporan akan ditangani dengan kerahasiaan penuh.
 

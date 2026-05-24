@@ -12,7 +12,7 @@ Pastikan kamu sudah membaca:
 
 ### 1. Laporkan Bug
 
-Sebelum membuat issue baru, cari dulu di [Issues](https://github.com/YOUR_USERNAME/newsagent/issues) apakah sudah ada yang melaporkan hal serupa.
+Sebelum membuat issue baru, cari dulu di [Issues](https://github.com/YOUR_USERNAME/borneo/issues) apakah sudah ada yang melaporkan hal serupa.
 
 Saat membuat bug report, sertakan:
 - Versi Python dan sistem operasi
@@ -23,7 +23,7 @@ Saat membuat bug report, sertakan:
 
 ### 2. Usulkan Fitur
 
-Buka [Discussions](https://github.com/YOUR_USERNAME/newsagent/discussions) dan jelaskan:
+Buka [Discussions](https://github.com/YOUR_USERNAME/borneo/discussions) dan jelaskan:
 - Masalah apa yang ingin diselesaikan
 - Solusi yang kamu bayangkan
 - Apakah ada alternatif lain yang kamu pertimbangkan
@@ -33,8 +33,8 @@ Buka [Discussions](https://github.com/YOUR_USERNAME/newsagent/discussions) dan j
 ```bash
 # 1. Fork repositori
 # 2. Clone fork kamu
-git clone https://github.com/YOUR_USERNAME/newsagent.git
-cd newsagent
+git clone https://github.com/YOUR_USERNAME/borneo.git
+cd borneo
 
 # 3. Buat branch baru dari main
 git checkout -b feat/nama-fitur
@@ -151,4 +151,4 @@ Berdasarkan [ROADMAP.md](./ROADMAP.md) dan status Fase 1 yang sudah selesai:
 - PR dengan test coverage < 80% akan diminta revisi
 - Gunakan draft PR jika masih work-in-progress
 
-*Pertanyaan? Buka [Discussion](https://github.com/YOUR_USERNAME/newsagent/discussions) atau hubungi maintainer.*
+*Pertanyaan? Buka [Discussion](https://github.com/YOUR_USERNAME/borneo/discussions) atau hubungi maintainer.*

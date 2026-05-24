@@ -573,4 +573,4 @@ asyncio.run(debug_draft_agent())
 
 ---
 
-*Pertanyaan tentang pengembangan agen? Buka [Discussion](https://github.com/YOUR_USERNAME/newsagent/discussions).*
+*Pertanyaan tentang pengembangan agen? Buka [Discussion](https://github.com/YOUR_USERNAME/borneo/discussions).*

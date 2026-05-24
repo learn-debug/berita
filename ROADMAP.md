@@ -41,7 +41,7 @@ Selesai (Fase 1 — Fondasi Agen):
   ✅ Tools (BaseTool, web search, CMS client, scoring)
    ✅ `backend/newsagent/api/main.py` — FastAPI entrypoint (POST /process)
   ✅ Docker Compose (PostgreSQL + Redis)
-   ✅ 257 unit/integration test passing, ruff + mypy + pyright clean
+   ✅ 261 unit/integration test passing, ruff + mypy + pyright clean
    ✅ Semua agen ganti `complete()` → `complete_structured()` + JSON Schema (0 parsing error)
    ✅ Dev tooling: ruff, uv, pre-commit, pyright
 ```

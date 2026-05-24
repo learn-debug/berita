@@ -151,8 +151,8 @@ docker compose up -d
 
 Jika masalah tidak ada di panduan ini:
 
-1. Cari di [GitHub Issues](https://github.com/YOUR_USERNAME/newsagent/issues)
-2. Buka [Discussion](https://github.com/YOUR_USERNAME/newsagent/discussions) dengan:
+1. Cari di [GitHub Issues](https://github.com/YOUR_USERNAME/borneo/issues)
+2. Buka [Discussion](https://github.com/YOUR_USERNAME/borneo/discussions) dengan:
    - Versi NewsAgent (`git log --oneline -1`)
    - Log error lengkap
    - Langkah untuk mereproduksi masalah

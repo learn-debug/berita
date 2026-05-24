@@ -4,8 +4,7 @@
 
 | Versi | Dukungan Keamanan |
 |---|---|
-| 1.x (terbaru) | ✅ Didukung penuh |
-| < 1.0 | ❌ Tidak didukung |
+| 0.x (terbaru) | ✅ Didukung penuh |
 
 ---
 
@@ -15,7 +14,7 @@
 
 Jika kamu menemukan celah keamanan, kirim laporan secara privat ke:
 
-**Email:** security@YOUR_DOMAIN.com *(ganti dengan email aktif)*
+**Email:** *(isi email aktif untuk laporan keamanan)*
 
 Sertakan informasi berikut dalam laporan:
 - Jenis celah keamanan (misal: prompt injection, SQL injection, SSRF)
