@@ -38,7 +38,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - `EvidenceRetrieval`: parallel search via `asyncio.gather` (runtime ~30s→2s), truncate 2000 chars/result, top 15 hasil
 - `Synthesizer`: truncate tiap dokumen ke 3000 chars sebelum sintesis
 - `OrchestratorAgent`: increment `revision_count` setiap pipeline dimulai
-- `Verfit_cache.get()`: tambah `await self._ensure()` yang terlewat
+- `VerdictCache.get()`: tambah `await self._ensure()` yang terlewat
 - `pyproject.toml` + `uv.lock`: update google-genai, mistralai, langgraph deps
 
 ### Fixed
