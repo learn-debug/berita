@@ -14,20 +14,42 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - `VISION.md` — project vision, mission, and core values
 - Root monorepo config: `pnpm-workspace.yaml`, `opencode.json`, root `package.json`
 - `backend/newsagent/llm/deepseek_adapter.py` — DeepSeek LLM provider (OpenAI-compatible)
+- `backend/newsagent/llm/hf_adapter.py` — HuggingFace Inference Provider adapter via OpenAI-compatible API
+- `backend/newsagent/llm/fallback_adapter.py` — auto fallback antar provider saat quota habis (gemini→openrouter→hf)
 - `backend/newsagent/memory/` — persistent memory layer with PostgreSQL + pgvector
   - `VerdictCache` — hash-based claim cache untuk FactCheck
   - `DraftMemory` — store draft+score+feedback untuk few-shot learning
 - Self-improving loop: DraftAgent injects high-scoring past drafts, QualityGate saves each result
+- `RateLimiter` async semaphore per-provider + minimum interval antar request
+- Config HF model: 6 field `*_hf_model` per-agent (default Qwen2.5-7B-Instruct)
+- Config fallback: `LLM_FALLBACK_CHAIN` env var untuk chain provider per-agent
+- Per-agent `max_tokens` budget: Draft/Editor/Aggregator/Publisher/Verdict=4096, RAG/InputIngestion/QueryGen/QualityGate=1024-2048
 
 ### Changed
 - Refactored all 9 core and fact-check agents' `_system_prompt()` methods to use `load_prompt()`
 - Upgraded all agent prompts with advanced Prompt Engineering techniques: Chain of Thought (CoT), Few-Shot examples, and Multi-Role Debate formatting
 - Restructured from flat project to pnpm monorepo: Python code moved to `backend/newsagent/`, frontend apps in `apps/`
 - Updated all docs (`README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `ROADMAP.md`, `FRONTEND.md`, `docs/*`) to reflect monorepo structure
+- `max_tokens` parameter di `BaseLLMAdapter.complete()` dan `complete_structured()` — default 2048
+- `GeminiAdapter`: model default `gemini-2.0-flash` → `gemini-2.5-flash-lite` + tambah `@with_rate_limit_retry` + `RateLimiter`
+- `MistralAdapter`: tambah `RateLimiter` interval 62 detik (sesuai batas free tier ~1 req/min)
+- `adapter_factory.py`: refactor ekstrak `_build_single_adapter()`, dukungan `hf` provider dan fallback chain
+- Prompt draft agent: dari "2-3 paragraf" → "6-10 paragraf, 500-800 kata" — artikel 4.3x lebih panjang
+- `EvidenceRetrieval`: parallel search via `asyncio.gather` (runtime ~30s→2s), truncate 2000 chars/result, top 15 hasil
+- `Synthesizer`: truncate tiap dokumen ke 3000 chars sebelum sintesis
+- `OrchestratorAgent`: increment `revision_count` setiap pipeline dimulai
+- `Verfit_cache.get()`: tambah `await self._ensure()` yang terlewat
+- `pyproject.toml` + `uv.lock`: update google-genai, mistralai, langgraph deps
+
+### Fixed
+- **Infinite pipeline loop**: `route_after_quality()` sekarang pakai `MAX_REVISIONS=2` — pipeline selalu selesai maksimal 2 revisi
+- **Token overflow (422)**: `Aggregator` + `QualityGate` truncate article+report ke 10k chars masing-masing sebelum LLM call
+- **Evidence cache crash**: `VerdictCache.get()` SQL query gagal karena `_ensure()` tidak di-await
 
 ### Docs
 - Updated `docs/AGENT_GUIDE.md` to document the new external Markdown prompt structure and CoT requirement
 - Updated `docs/AGENT_GUIDE.md` with memory layer documentation (katalog + self-improving loop)
+- `ROADMAP.md`: tambah checklist "Article state machine + atomic claim" di Fase 2
 
 ---
 
