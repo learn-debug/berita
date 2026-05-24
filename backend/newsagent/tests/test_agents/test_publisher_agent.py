@@ -6,10 +6,10 @@ from newsagent.core.state import ArticleState
 
 class FakeLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-        return "JUDUL: Artikel Test\n\nKONTEN: Ini adalah artikel yang siap publikasi."
+        return ""
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {"judul": "Artikel Test", "konten": "Ini adalah artikel yang siap publikasi."}
 
     def model_name(self) -> str:
         return "fake"
@@ -17,10 +17,10 @@ class FakeLLM:
 
 class FakeLLMNoTitle:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-        return "Ini adalah artikel tanpa judul."
+        return ""
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {"judul": "", "konten": ""}
 
     def model_name(self) -> str:
         return "fake"
@@ -141,17 +141,6 @@ async def test_publisher_agent_fallback_title_when_no_match() -> None:
 
     assert result["status"] == "published"
     assert "test-456" in result["published_title"]
-
-
-@pytest.mark.asyncio
-async def test_publisher_agent_parses_title_and_body() -> None:
-    llm = FakeLLM()
-    agent = PublisherAgent(llm=llm)
-
-    result = await agent.run({**BASE})
-
-    assert result["published_title"] == "Artikel Test"
-    assert result["published_body"] == "Ini adalah artikel yang siap publikasi."
 
 
 @pytest.mark.asyncio

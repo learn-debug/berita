@@ -1,5 +1,4 @@
 import logging
-import re
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
@@ -11,6 +10,15 @@ from newsagent.tools.cms_client import CMSClient
 from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
+
+PUBLISHER_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {
+        "judul": {"type": "string", "description": "Judul artikel, maks 12 kata, akurat dan menarik"},
+        "konten": {"type": "string", "description": "Isi artikel lengkap siap tayang"},
+    },
+    "required": ["judul", "konten"],
+}
 
 
 class PublisherAgent:
@@ -26,20 +34,21 @@ class PublisherAgent:
         content = state.get("aggregated_article") or state.get("edited_draft") or state["draft"]
 
         try:
-            prompt = PromptHardener.wrap_user_input(
-                f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}"
-            )
-            result = await self.llm.complete(
+            result = await self.llm.complete_structured(
                 system=self._system_prompt(),
-                prompt=prompt,
+                prompt=PromptHardener.wrap_user_input(
+                    f"Buat judul dan siapkan artikel berikut untuk publikasi:\n\n{content}"
+                ),
+                schema=PUBLISHER_SCHEMA,
                 max_tokens=4096,
             )
-            logger.info("[PublisherAgent] LLM selesai — %d karakter", len(result))
+            title = result.get("judul", "")
+            body = result.get("konten", "")
+            logger.info("[PublisherAgent] LLM selesai — judul=%s, body=%d karakter", title[:50], len(body))
         except Exception as e:
             logger.error("[PublisherAgent] LLM gagal: %s", e)
             return self._fail(state, str(e))
 
-        title, body = self._parse_result(result)
         if not title or not body:
             logger.warning(
                 "[PublisherAgent] parse gagal (title=%s, body=%s), fallback ke raw",
@@ -68,14 +77,6 @@ class PublisherAgent:
             "events": state["events"]
             + [make_event("PublisherAgent", "publish_article", "artikel dipublikasikan")],
         }
-
-    def _parse_result(self, text: str) -> tuple[str, str]:
-        title_match = re.search(r"JUDUL:\s*(.+)$", text, re.IGNORECASE | re.MULTILINE)
-        konten_match = re.search(r"KONTEN:\s*(.+)", text, re.IGNORECASE | re.DOTALL)
-
-        title = title_match.group(1).strip() if title_match else ""
-        body = konten_match.group(1).strip() if konten_match else ""
-        return title, body
 
     def _fail(self, state: ArticleState, reason: str) -> ArticleState:
         return {
