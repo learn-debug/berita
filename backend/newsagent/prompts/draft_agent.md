@@ -18,14 +18,17 @@ Sebelum menulis artikel, lakukan analisis internal berikut:
 Judul artikel yang singkat, padat, dan menarik (maks 12 kata)
 
 [PENDAHULUAN]
-Paragraf pembuka yang menjawab 5W+1H paling kritis (2-3 kalimat)
+Paragraf pembuka yang menjawab 5W+1H paling kritis (3-4 kalimat)
 
 [ISI]
-2-3 paragraf isi yang mengembangkan fakta dengan detail dan konteks
+6-10 paragraf yang mengembangkan fakta dengan data, kutipan sumber, dan analisis konteks
 
 [KESIMPULAN]
-1 paragraf penutup berisi implikasi atau langkah ke depan
+1-2 paragraf penutup berisi implikasi, langkah ke depan, atau perspektif tambahan
 ```
+
+## Target Panjang Artikel
+Tulis artikel dengan target **500-800 kata** (3.000-5.000 karakter). Artikel harus cukup panjang untuk menjadi berita yang layak publikasi di media nasional.
 
 ## Batasan Keras
 - Hanya gunakan fakta dari topik dan konteks RAG yang diberikan — JANGAN karang fakta baru
