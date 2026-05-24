@@ -15,13 +15,19 @@ class OrchestratorAgent:
             if "article_id" not in state or not state["article_id"]:
                 state = {**state, "article_id": uuid4().hex[:12]}
 
+            rev = state.get("revision_count", 0) + 1
+            logger.info("[Orchestrator] revision_count=%d (MAX=%d)", rev, 2)
+
             return {
                 **state,
                 "status": "processing",
+                "revision_count": rev,
                 "events": state["events"]
                 + [
                     make_event(
-                        "Orchestrator", "init_pipeline", f"pipeline dimulai untuk {state['input_type']}"
+                        "Orchestrator",
+                        "init_pipeline",
+                        f"pipeline dimulai untuk {state['input_type']} (rev={rev})",
                     )
                 ],
             }

@@ -22,14 +22,21 @@ from newsagent.memory.verdict_cache import VerdictCache
 from newsagent.rag.pipeline import RAGPipeline
 from newsagent.tools.cms_client import CMSClient
 
+MAX_REVISIONS = 2
+
 
 def route_after_quality(state: ArticleState) -> str:
     score = state.get("credibility_score", 0.0)
+    revisions = state.get("revision_count", 0)
     if score >= 0.75:
         return "publisher"
     if score >= 0.50:
-        return "editor_agent"
-    return "orchestrator"
+        if revisions < MAX_REVISIONS:
+            return "editor_agent"
+        return "publisher"
+    if revisions < MAX_REVISIONS:
+        return "orchestrator"
+    return "publisher"
 
 
 def route_after_draft(state: ArticleState) -> str:

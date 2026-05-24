@@ -14,6 +14,7 @@ class ArticleState(TypedDict):
     aggregated_article: str
     credibility_score: float
     status: str
+    revision_count: int
     events: list[dict]
     published_title: NotRequired[str]
     published_body: NotRequired[str]
