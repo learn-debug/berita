@@ -88,6 +88,7 @@ class VerdictPredictionAgent:
             uncached_claims = claim_list
 
         verdict_text = ""
+        verdict_raw: list[dict[str, Any]] = []
 
         if uncached_claims:
             try:
@@ -103,6 +104,7 @@ class VerdictPredictionAgent:
                     max_tokens=4096,
                 )
                 verdict_text = _format_verdict(result)
+                verdict_raw = result.get("claims", [])
 
                 if self._cache:
                     for claim in uncached_claims:
@@ -110,6 +112,7 @@ class VerdictPredictionAgent:
             except Exception as e:
                 logger.error("[VerdictPrediction] gagal: %s", e)
                 verdict_text = ""
+                verdict_raw = []
 
         if cached_parts:
             if verdict_text:
@@ -118,7 +121,7 @@ class VerdictPredictionAgent:
             else:
                 verdict_text = "\n\n".join(cached_parts)
 
-        fact_check = {**report, "verdict": verdict_text}
+        fact_check = {**report, "verdict": verdict_text, "verdict_raw": verdict_raw}
 
         return {
             **state,
