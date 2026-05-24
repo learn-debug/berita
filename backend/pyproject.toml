@@ -30,6 +30,7 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.36",
     "tavily-python>=0.7.24",
     "uvicorn[standard]>=0.34.0",
+    "huggingface-hub>=1.16.1",
 ]
 
 [project.optional-dependencies]
