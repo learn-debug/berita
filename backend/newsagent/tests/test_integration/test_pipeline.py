@@ -40,7 +40,7 @@ class FakeLLMGeneric:
         return "Respon dari LLM."
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {"judul": "Judul Artikel", "konten": "Respon dari LLM."}
 
     def model_name(self) -> str:
         return "fake"
@@ -48,15 +48,15 @@ class FakeLLMGeneric:
 
 class FakeLLMQuality:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-        return (
-            "fact_accuracy: 0.80\n"
-            "narrative_consistency: 0.75\n"
-            "conflict_resolution: 0.70\n"
-            "source_quality: 0.65"
-        )
+        return ""
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {
+            "fact_accuracy": 0.80,
+            "narrative_consistency": 0.75,
+            "conflict_resolution": 0.70,
+            "source_quality": 0.65,
+        }
 
     def model_name(self) -> str:
         return "fake"
@@ -64,15 +64,15 @@ class FakeLLMQuality:
 
 class HighScoreLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-        return (
-            "fact_accuracy: 0.90\n"
-            "narrative_consistency: 0.85\n"
-            "conflict_resolution: 0.80\n"
-            "source_quality: 0.95"
-        )
+        return ""
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {
+            "fact_accuracy": 0.90,
+            "narrative_consistency": 0.85,
+            "conflict_resolution": 0.80,
+            "source_quality": 0.95,
+        }
 
     def model_name(self) -> str:
         return "fake"

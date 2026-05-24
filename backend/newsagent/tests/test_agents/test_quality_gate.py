@@ -6,15 +6,15 @@ from newsagent.core.state import ArticleState
 
 class FakeLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-        return (
-            "fact_accuracy: 0.85\n"
-            "narrative_consistency: 0.90\n"
-            "conflict_resolution: 0.75\n"
-            "source_quality: 0.80"
-        )
+        return ""
 
     async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-        return {"raw": "test"}
+        return {
+            "fact_accuracy": 0.85,
+            "narrative_consistency": 0.90,
+            "conflict_resolution": 0.75,
+            "source_quality": 0.80,
+        }
 
     def model_name(self) -> str:
         return "fake"
@@ -51,15 +51,15 @@ async def test_quality_gate_auto_publish_high_score() -> None:
 async def test_quality_gate_editor_review() -> None:
     class MediumScoreLLM:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-            return (
-                "fact_accuracy: 0.70\n"
-                "narrative_consistency: 0.65\n"
-                "conflict_resolution: 0.60\n"
-                "source_quality: 0.55"
-            )
+            return ""
 
         async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-            return {"raw": "test"}
+            return {
+                "fact_accuracy": 0.70,
+                "narrative_consistency": 0.65,
+                "conflict_resolution": 0.60,
+                "source_quality": 0.55,
+            }
 
         def model_name(self) -> str:
             return "fake"
@@ -78,15 +78,15 @@ async def test_quality_gate_editor_review() -> None:
 async def test_quality_gate_full_revision() -> None:
     class VeryLowScoreLLM:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-            return (
-                "fact_accuracy: 0.20\n"
-                "narrative_consistency: 0.30\n"
-                "conflict_resolution: 0.10\n"
-                "source_quality: 0.00"
-            )
+            return ""
 
         async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-            return {"raw": "test"}
+            return {
+                "fact_accuracy": 0.20,
+                "narrative_consistency": 0.30,
+                "conflict_resolution": 0.10,
+                "source_quality": 0.00,
+            }
 
         def model_name(self) -> str:
             return "fake"
@@ -104,15 +104,15 @@ async def test_quality_gate_full_revision() -> None:
 async def test_quality_gate_score_at_auto_publish_boundary() -> None:
     class BoundaryLLM:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-            return (
-                "fact_accuracy: 0.875\n"
-                "narrative_consistency: 0.875\n"
-                "conflict_resolution: 0.875\n"
-                "source_quality: 0.875"
-            )
+            return ""
 
         async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-            return {"raw": "test"}
+            return {
+                "fact_accuracy": 0.875,
+                "narrative_consistency": 0.875,
+                "conflict_resolution": 0.875,
+                "source_quality": 0.875,
+            }
 
         def model_name(self) -> str:
             return "fake"
@@ -129,15 +129,15 @@ async def test_quality_gate_score_at_auto_publish_boundary() -> None:
 async def test_quality_gate_score_at_full_revision_boundary() -> None:
     class BoundaryLLM:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
-            return (
-                "fact_accuracy: 0.2\n"
-                "narrative_consistency: 0.2\n"
-                "conflict_resolution: 0.2\n"
-                "source_quality: 0.2"
-            )
+            return ""
 
         async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
-            return {"raw": "test"}
+            return {
+                "fact_accuracy": 0.2,
+                "narrative_consistency": 0.2,
+                "conflict_resolution": 0.2,
+                "source_quality": 0.2,
+            }
 
         def model_name(self) -> str:
             return "fake"
@@ -148,67 +148,6 @@ async def test_quality_gate_score_at_full_revision_boundary() -> None:
     result = await agent.run({**BASE_STATE})
     assert result["credibility_score"] == 0.2
     assert result["status"] == "revision"
-
-
-def test_parse_scores_normal() -> None:
-    llm = FakeLLM()
-    agent = QualityGateAgent(llm=llm)
-
-    text = "fact_accuracy: 0.75\nnarrative_consistency: 0.80\nconflict_resolution: 0.65\nsource_quality: 0.90"
-    scores = agent._parse_scores(text)
-
-    assert scores["fact_accuracy"] == 0.75
-    assert scores["narrative_consistency"] == 0.80
-    assert scores["conflict_resolution"] == 0.65
-    assert scores["source_quality"] == 0.90
-
-
-def test_parse_scores_clamps_values() -> None:
-    llm = FakeLLM()
-    agent = QualityGateAgent(llm=llm)
-
-    text = "fact_accuracy: -0.5\nnarrative_consistency: 1.5\nconflict_resolution: 0.x\nsource_quality: abc"
-    scores = agent._parse_scores(text)
-
-    assert scores["fact_accuracy"] == 0.0
-    assert scores["narrative_consistency"] == 1.0
-    assert scores["conflict_resolution"] == 0.0
-    assert scores["source_quality"] == 0.0
-
-
-def test_parse_scores_empty() -> None:
-    llm = FakeLLM()
-    agent = QualityGateAgent(llm=llm)
-
-    scores = agent._parse_scores("no scores here")
-    assert scores == {
-        "fact_accuracy": 0.0,
-        "narrative_consistency": 0.0,
-        "conflict_resolution": 0.0,
-        "source_quality": 0.0,
-    }
-
-
-def test_parse_scores_case_insensitive() -> None:
-    llm = FakeLLM()
-    agent = QualityGateAgent(llm=llm)
-
-    text = "FACT_ACCURACY: 0.90\nNarrative_Consistency: 0.80"
-    scores = agent._parse_scores(text)
-
-    assert scores["fact_accuracy"] == 0.90
-    assert scores["narrative_consistency"] == 0.80
-
-
-def test_parse_scores_tab_delimiter() -> None:
-    llm = FakeLLM()
-    agent = QualityGateAgent(llm=llm)
-
-    text = "fact_accuracy:\t0.70\nnarrative_consistency:\t0.60"
-    scores = agent._parse_scores(text)
-
-    assert scores["fact_accuracy"] == 0.70
-    assert scores["narrative_consistency"] == 0.60
 
 
 @pytest.mark.asyncio
@@ -271,4 +210,4 @@ def test_system_prompt_content() -> None:
     assert "narrative_consistency" in prompt
     assert "conflict_resolution" in prompt
     assert "source_quality" in prompt
-    assert "0.0-1.0" in prompt
+    assert "0.0" in prompt

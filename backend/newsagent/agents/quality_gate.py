@@ -1,5 +1,4 @@
 import logging
-import re
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
@@ -12,25 +11,22 @@ from newsagent.utils.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
+QUALITY_GATE_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {
+        "fact_accuracy": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "narrative_consistency": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "conflict_resolution": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "source_quality": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    },
+    "required": ["fact_accuracy", "narrative_consistency", "conflict_resolution", "source_quality"],
+}
+
 
 class QualityGateAgent:
     def __init__(self, llm: BaseLLMAdapter, draft_memory: DraftMemory | None = None):
         self.llm = llm
         self._draft_memory = draft_memory
-
-    def _parse_scores(self, text: str) -> dict[str, float]:
-        scores = {
-            "fact_accuracy": 0.0,
-            "narrative_consistency": 0.0,
-            "conflict_resolution": 0.0,
-            "source_quality": 0.0,
-        }
-        for key in scores:
-            match = re.search(rf"{key}[:\s]+([0-9]*\.?[0-9]+)", text, re.IGNORECASE)
-            if match:
-                val = float(match.group(1))
-                scores[key] = max(0.0, min(1.0, val))
-        return scores
 
     @with_retry(max_attempts=3)
     async def run(self, state: ArticleState) -> ArticleState:
@@ -45,12 +41,13 @@ class QualityGateAgent:
             report = report[:10000] + "\n...[truncated]"
 
         try:
-            result = await self.llm.complete(
+            result = await self.llm.complete_structured(
                 system=self._system_prompt(),
                 prompt=f"Artikel:\n{article}\n\nLaporan Fact-Check:\n{report}",
+                schema=QUALITY_GATE_SCHEMA,
                 max_tokens=1024,
             )
-            scores = self._parse_scores(result)
+            scores = result
         except Exception as e:
             logger.error("[QualityGate] gagal: %s", e)
             scores = {}
