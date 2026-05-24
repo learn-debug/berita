@@ -66,7 +66,7 @@ async def test_complete_structured_returns_raw() -> None:
 
     result = await adapter.complete_structured("test prompt", {"type": "object"}, system="test system")
 
-    assert result == {"raw": '{"key": "value"}'}
+    assert result == {"key": "value"}
     mock_client.aio.models.generate_content.assert_awaited_once()
 
 

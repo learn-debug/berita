@@ -1,5 +1,17 @@
+import json
+import logging
 from abc import ABC, abstractmethod
 from typing import Any
+
+logger = logging.getLogger(__name__)
+
+
+def parse_json_response(text: str, source: str = "unknown") -> dict[str, Any]:
+    try:
+        return dict(json.loads(text))
+    except (json.JSONDecodeError, TypeError, ValueError) as e:
+        logger.error("[%s] JSON parse gagal: %s | text=%.200s", source, e, text)
+        return {}
 
 
 class BaseLLMAdapter(ABC):

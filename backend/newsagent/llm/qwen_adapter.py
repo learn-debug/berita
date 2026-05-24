@@ -4,7 +4,7 @@ from typing import Any
 from openai import AsyncOpenAI
 
 from newsagent.core.config import settings
-from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.llm.base_adapter import BaseLLMAdapter, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class QwenAdapter(BaseLLMAdapter):
                 ],
                 response_format={"type": "json_object"},
             )
-            return {"raw": response.choices[0].message.content or ""}
+            return parse_json_response(response.choices[0].message.content or "", "QwenAdapter")
         except Exception as e:
             logger.error("[QwenAdapter] structured API error: %s", e)
             raise

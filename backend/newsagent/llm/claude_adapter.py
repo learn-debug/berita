@@ -5,7 +5,7 @@ from anthropic import AsyncAnthropic
 from anthropic.types import TextBlock
 
 from newsagent.core.config import settings
-from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.llm.base_adapter import BaseLLMAdapter, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class ClaudeAdapter(BaseLLMAdapter):
                 system=system or "",
                 messages=[{"role": "user", "content": prompt}],
             )
-            return {"raw": self._extract_text(response.content)}
+            return parse_json_response(self._extract_text(response.content), "ClaudeAdapter")
         except Exception as e:
             logger.error("[ClaudeAdapter] structured API error: %s", e)
             raise

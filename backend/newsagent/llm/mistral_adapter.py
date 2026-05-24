@@ -5,7 +5,7 @@ from mistralai.client import Mistral
 from mistralai.client.models import ChatCompletionChoice, SystemMessage, UserMessage
 
 from newsagent.core.config import settings
-from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.llm.base_adapter import BaseLLMAdapter, parse_json_response
 from newsagent.resilience.retry_policy import RateLimiter, with_rate_limit_retry
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class MistralAdapter(BaseLLMAdapter):
             choice: ChatCompletionChoice = response.choices[0]
             msg = choice.message
             text = msg.content if msg else ""
-            return {"raw": text if isinstance(text, str) else ""}
+            return parse_json_response(text if isinstance(text, str) else "", "MistralAdapter")
         except Exception as e:
             logger.error("[MistralAdapter] structured API error: %s", e)
             raise

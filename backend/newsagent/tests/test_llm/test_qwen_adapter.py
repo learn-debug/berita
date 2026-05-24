@@ -72,7 +72,7 @@ async def test_complete_structured_returns_raw() -> None:
 
     result = await adapter.complete_structured("test prompt", {"type": "object"}, system="test system")
 
-    assert result == {"raw": '{"key": "value"}'}
+    assert result == {"key": "value"}
     mock_client.chat.completions.create.assert_awaited_once()
 
 

@@ -4,7 +4,7 @@ from typing import Any
 from huggingface_hub import AsyncInferenceClient
 
 from newsagent.core.config import settings
-from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.llm.base_adapter import BaseLLMAdapter, parse_json_response
 from newsagent.resilience.retry_policy import RateLimiter, with_rate_limit_retry
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class HuggingFaceAdapter(BaseLLMAdapter):
                 max_tokens=max_tokens,
                 response_format={"type": "json_object"},
             )
-            return {"raw": response.choices[0].message.content or ""}
+            return parse_json_response(response.choices[0].message.content or "", "HuggingFaceAdapter")
         except Exception as e:
             logger.error("[HuggingFaceAdapter] structured API error: %s", e)
             raise

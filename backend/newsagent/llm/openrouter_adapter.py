@@ -4,7 +4,7 @@ from typing import Any
 from openai import AsyncOpenAI
 
 from newsagent.core.config import settings
-from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.llm.base_adapter import BaseLLMAdapter, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class OpenRouterAdapter(BaseLLMAdapter):
                 ],
                 response_format={"type": "json_object"},
             )
-            return {"raw": response.choices[0].message.content or ""}
+            return parse_json_response(response.choices[0].message.content or "", "OpenRouterAdapter")
         except Exception as e:
             logger.error("[OpenRouterAdapter] %s structured error: %s", self._model, e)
             raise

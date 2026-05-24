@@ -4,7 +4,7 @@ from typing import Any
 from google import genai
 
 from newsagent.core.config import settings
-from newsagent.llm.base_adapter import BaseLLMAdapter
+from newsagent.llm.base_adapter import BaseLLMAdapter, parse_json_response
 from newsagent.resilience.retry_policy import RateLimiter, with_rate_limit_retry
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class GeminiAdapter(BaseLLMAdapter):
                     response_schema=schema,
                 ),
             )
-            return {"raw": response.text or ""}
+            return parse_json_response(response.text or "", "GeminiAdapter")
         except Exception as e:
             logger.error("[GeminiAdapter] structured API error: %s", e)
             raise
