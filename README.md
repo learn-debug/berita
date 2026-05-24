@@ -506,4 +506,4 @@ pytest backend/ -v
 
 ## Lisensi
 
-Didistribusikan di bawah lisensi **MIT**. Lihat file `LICENSE` untuk detail lebih lanjut.
+Didistribusikan di bawah lisensi **Apache 2.0**. Lihat file `LICENSE` untuk detail lebih lanjut.

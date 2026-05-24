@@ -1,7 +1,8 @@
 import logging
+from typing import cast
 
 from newsagent.core.events import make_event
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, FactCheckReport
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
 from newsagent.security.prompt_hardening import PromptHardener
@@ -40,7 +41,7 @@ class InputIngestionAgent:
             logger.error("[InputIngestion] gagal: %s", e)
             claims = ""
 
-        fact_check = {**state.get("fact_check_report", {}), "claims": claims}
+        fact_check = cast(FactCheckReport, {**state.get("fact_check_report", {}), "claims": claims})
 
         return {
             **state,

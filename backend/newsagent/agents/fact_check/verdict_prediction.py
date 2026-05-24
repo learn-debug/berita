@@ -1,8 +1,8 @@
 import logging
-from typing import Any
+from typing import Any, cast
 
 from newsagent.core.events import make_event
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, FactCheckReport
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.memory.verdict_cache import VerdictCache
 from newsagent.resilience.retry_policy import with_retry
@@ -121,7 +121,7 @@ class VerdictPredictionAgent:
             else:
                 verdict_text = "\n\n".join(cached_parts)
 
-        fact_check = {**report, "verdict": verdict_text, "verdict_raw": verdict_raw}
+        fact_check = cast(FactCheckReport, {**report, "verdict": verdict_text, "verdict_raw": verdict_raw})
 
         return {
             **state,
