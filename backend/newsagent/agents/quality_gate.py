@@ -2,6 +2,7 @@ import logging
 
 from newsagent.core.events import make_event
 from newsagent.core.state import ArticleState
+from newsagent.cost.token_budget import with_budget
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.memory.draft_memory import DraftMemory
 from newsagent.resilience.retry_policy import with_retry
@@ -29,6 +30,7 @@ class QualityGateAgent:
         self._draft_memory = draft_memory
 
     @with_retry(max_attempts=3)
+    @with_budget(max_tokens=1024)
     async def run(self, state: ArticleState) -> ArticleState:
         logger.info("[QualityGate] mulai — article_id=%s", state["article_id"])
 
