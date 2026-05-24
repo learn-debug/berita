@@ -6,7 +6,7 @@ from mistralai.client.models import ChatCompletionChoice, SystemMessage, UserMes
 
 from newsagent.core.config import settings
 from newsagent.llm.base_adapter import BaseLLMAdapter
-from newsagent.resilience.retry_policy import with_rate_limit_retry
+from newsagent.resilience.retry_policy import RateLimiter, with_rate_limit_retry
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +16,11 @@ class MistralAdapter(BaseLLMAdapter):
 
     def __init__(self) -> None:
         self._client = Mistral(api_key=settings.mistral_api_key)
+        self._rate_limiter = RateLimiter(provider="mistral", max_concurrent=1, min_interval=62.0)
 
-    @with_rate_limit_retry(max_attempts=5)
-    async def complete(self, prompt: str, system: str | None = None) -> str:
+    @with_rate_limit_retry()
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
+        await self._rate_limiter.acquire()
         try:
             messages: list[SystemMessage | UserMessage] = []
             if system:
@@ -36,11 +38,14 @@ class MistralAdapter(BaseLLMAdapter):
         except Exception as e:
             logger.error("[MistralAdapter] API error: %s", e)
             raise
+        finally:
+            self._rate_limiter.release()
 
-    @with_rate_limit_retry(max_attempts=5)
+    @with_rate_limit_retry()
     async def complete_structured(
-        self, prompt: str, schema: dict[str, Any], system: str | None = None
+        self, prompt: str, schema: dict[str, Any], system: str | None = None, max_tokens: int = 2048
     ) -> dict[str, Any]:
+        await self._rate_limiter.acquire()
         try:
             messages: list[SystemMessage | UserMessage] = []
             if system:
@@ -59,6 +64,8 @@ class MistralAdapter(BaseLLMAdapter):
         except Exception as e:
             logger.error("[MistralAdapter] structured API error: %s", e)
             raise
+        finally:
+            self._rate_limiter.release()
 
     def model_name(self) -> str:
         return self._model
