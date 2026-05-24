@@ -53,18 +53,40 @@ Prinsip: **agen tidak boleh tahu LLM apa yang dipakai.**
 ```python
 # Semua agen hanya tahu interface ini
 class BaseLLMAdapter(ABC):
-    async def complete(self, prompt: str, system: str) -> str: ...
-    async def complete_structured(self, prompt: str, schema: dict) -> dict: ...
+    async def complete(
+        self, prompt: str, system: str | None = None,
+        max_tokens: int = 2048,
+    ) -> str: ...
+    async def complete_structured(
+        self, prompt: str, schema: dict,
+        system: str | None = None, max_tokens: int = 2048,
+    ) -> dict: ...
 
 # Provider spesifik di-inject saat runtime
 class ClaudeAdapter(BaseLLMAdapter): ...
 class OpenAIAdapter(BaseLLMAdapter): ...
 class GeminiAdapter(BaseLLMAdapter): ...
 class MistralAdapter(BaseLLMAdapter): ...
+class DeepSeekAdapter(BaseLLMAdapter): ...
 class QwenAdapter(BaseLLMAdapter): ...
+class HuggingFaceAdapter(BaseLLMAdapter): ...
 ```
 
-Keuntungan: tiap agen bisa dikonfigurasi pakai LLM berbeda via `.env` — agen kompleks pakai Claude, agen sederhana pakai Mistral atau Qwen untuk hemat biaya.
+Setiap agen bisa dikonfigurasi pakai LLM berbeda via `.env` — agen kompleks pakai model besar, agen sederhana pakai model ringan untuk hemat biaya. Parameter `max_tokens` diatur per-agent agar budget token proporsional dengan beban kerja.
+
+### Fallback Adapter
+
+Saat provider utama kehabisan kuota (429/402), `FallbackAdapter` otomatis mencoba provider berikutnya:
+
+```python
+# LLM_FALLBACK_CHAIN=gemini,openrouter,hf
+# FallbackAdapter coba Gemini -> OpenRouter -> HuggingFace
+class FallbackAdapter(BaseLLMAdapter):
+    def __init__(self, adapters: list[BaseLLMAdapter]): ...
+    # complete() coba adapter[0], jika exception -> adapter[1], dst
+```
+
+Konfigurasi via env `LLM_FALLBACK_CHAIN=gemini,openrouter,hf`. Setiap agen punya chain sendiri — pipeline tetap jalan meski satu provider down.
 
 ---
 
@@ -75,6 +97,7 @@ State antar agen bersifat **immutable** — agen tidak mengubah state yang ada, 
 ```python
 class ArticleState(TypedDict):
     article_id: str
+    input_type: str            # "headline" | "url" | "text"
     raw_input: str
     rag_context: str           # diisi RAG Pipeline
     draft: str                 # diisi Draft Agent
@@ -82,7 +105,8 @@ class ArticleState(TypedDict):
     edited_draft: str          # diisi Editor Agent
     aggregated_article: str    # diisi Aggregator
     credibility_score: float   # diisi Quality Gate
-    status: str
+    status: str                # processing | published | review | failed
+    revision_count: int        # counter pipeline restart (max 2)
     events: list[dict]         # append-only event log
 ```
 
@@ -198,7 +222,7 @@ Setiap node membaca field tertentu dari `ArticleState` dan menulis field baru ta
 
 ```mermaid
 flowchart LR
-    O[Orchestrator] --> |"menulis: status, events"| S
+    O[Orchestrator] --> |"menulis: status, revision_count, events"| S
     RA[RAG] --> |"menulis: rag_context, events"| S
     D[Draft] --> |"menulis: draft, events"| S
     E[Editor] --> |"menulis: edited_draft, events"| S
@@ -215,30 +239,26 @@ flowchart LR
 
 ### Detail Routing Quality Gate
 
-Quality Gate menghitung skor lalu menentukan jalur — implementasi routing saat ini:
+Quality Gate menghitung skor lalu menentukan jalur. Setiap pipeline maksimal 2 revisi (`MAX_REVISIONS=2`) untuk mencegah infinite loop:
 
 ```mermaid
 flowchart TD
     QG[Quality Gate] --> Score{credibility_score}
-    Score -->|">= 0.75"| Auto[auto-publish → Publisher]
-    Score -->|"0.50 - 0.74"| Review[editor-review → Publisher<br/>status=review]
-    Score -->|"< 0.50"| Full[full-revision → Publisher<br/>(routing dihitung,<br/>graph masih linear)]
+    Score -->|">= 0.75"| Pub[Publisher]
+    Score -->|"0.50 - 0.74"| Review{revision_count < 2?}
+    Score -->|"< 0.50"| Full{revision_count < 2?}
+    Review -->|ya| Editor[Editor Agent]
+    Review -->|tidak| Pub
+    Full -->|ya| Orchestrator[Orchestrator<br/>ulang pipeline]
+    Full -->|tidak| Pub
 ```
 
-> **Catatan:** Routing conditional saat ini mengirim score ≥ 0.50 ke Publisher, score < 0.50 ke Editor Agent (revisi). Routing penuh (cabang ke agen spesifik) akan disempurnakan di Fase 2.
+Tiga jalur:
+- **≥ 0.75** — auto-publish langsung ke Publisher
+- **0.50–0.74** — review editor jika revisi < 2, publish paksa jika sudah 2x revisi
+- **< 0.50** — revisi penuh (ulang dari Orchestrator) jika revisi < 2, publish paksa jika sudah 2x revisi
 
-### Pipeline Masa Depan (Fase 2+)
-
-Rencana pengembangan setelah routing kondisional diimplementasikan:
-
-```mermaid
-flowchart LR
-    QG{Quality Gate} -->|>= 0.75| Pub[Publisher]
-    QG -->|0.50-0.74| Review[Review Editor Manusia]
-    QG -->|< 0.50| FullRev[Revisi Penuh<br/>→ Orchestrator]
-    Review --> Pub
-    FullRev --> Draft[Draft Agent]
-```
+Pipeline maksimal melalui 2 siklus revisi sebelum dipublikasikan (dengan skor apa pun).
 
 ---
 

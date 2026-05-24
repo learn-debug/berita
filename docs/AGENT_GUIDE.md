@@ -178,17 +178,29 @@ verdicts = result["verdicts"]
 
 ## Pola Error Handling
 
-Setiap agen harus punya strategi fallback yang jelas — jangan biarkan kegagalan satu agen menghentikan seluruh pipeline.
+### Fallback Antar-Provider (LLM Layer)
+
+Sebelum agen menangani kegagalan, `FallbackAdapter` sudah mencoba provider LLM cadangan:
+
+```
+LLM_FALLBACK_CHAIN=gemini,openrouter,hf
+```
+
+Jika Gemini quota habis (429), OpenRouter rate-limited (429), atau HF down (503) — adapter otomatis beralih ke provider berikutnya dalam chain tanpa agen menyadarinya. Konfigurasi per-agent via `.env`.
+
+Lihat `FallbackAdapter` di `backend/newsagent/llm/fallback_adapter.py`.
+
+Setiap agen tetap harus punya strategi fallback sendiri — jangan biarkan kegagalan satu agen menghentikan seluruh pipeline.
 
 ```python
 @with_retry(max_attempts=3, backoff=2.0)
-@with_budget(max_tokens=2000)
-async def run(self, state: ArticleState) -> ArticleState:
-    try:
-        result = await self.llm.complete(
-            system=self._system_prompt(),
-            prompt=f"Artikel:\n{state['draft']}"
-        )
+    @with_budget(max_tokens=2000)
+    async def run(self, state: ArticleState) -> ArticleState:
+        try:
+            result = await self.llm.complete(
+                prompt="...",
+                system=SYSTEM_PROMPT,
+            )
         return {
             **state,
             "edited_draft": result,
