@@ -38,11 +38,13 @@ class OpenAIAdapter(BaseLLMAdapter):
     ) -> dict[str, Any]:
         client = self._get_client()
         try:
+            json_sys = (system or "") + "\n\nYou must respond in JSON format only."
             response = await client.chat.completions.create(
                 model=self._model,
                 max_tokens=4096,
+                response_format={"type": "json_object"},
                 messages=[
-                    {"role": "system", "content": system or ""},
+                    {"role": "system", "content": json_sys},
                     {"role": "user", "content": prompt},
                 ],
             )
