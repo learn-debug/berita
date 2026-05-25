@@ -184,36 +184,39 @@ Tiga jalur keputusan:
 
 ## Diagram Pipeline LangGraph
 
-Pipeline NewsAgent terdiri dari 11 node LangGraph yang berjalan secara sekuensial:
+Pipeline NewsAgent terdiri dari 12 node LangGraph yang memiliki beberapa percabangan kondisional:
 
 ```mermaid
 flowchart LR
     subgraph Init["Inisialisasi"]
-        A[Orchestrator<br/>init pipeline] --> RAG[RAG Pipeline<br/>structured evidence]
+        A[Orchestrator] --> RAG[RAG Pipeline]
     end
 
-    subgraph RAGNode["RAG"]
-        RAG --> B[Draft Agent<br/>tulis artikel]
+    subgraph DraftNode["Penulisan Draft"]
+        RAG --> B[Draft Agent]
+        B --> |route_after_draft| CheckDraft{Revisi?}
+        CheckDraft --> |Ya| A
     end
 
     subgraph Editorial["Editorial"]
-        B --> C[Editor Agent<br/>perbaiki bahasa]
+        CheckDraft --> |Tidak| C[Editor Agent]
     end
 
     subgraph FactCheck["Fact-Check Pipeline"]
-        C --> D[Input Ingestion<br/>ekstrak klaim]
-        D --> E[Query Generation<br/>buat subquery]
-        E --> F[Evidence Retrieval<br/>cari bukti]
-        F --> G[Verdict Prediction<br/>verifikasi klaim]
+        C --> D[Input Ingestion]
+        D --> E[Query Generation]
+        E --> F[Evidence Retrieval]
+        F --> G[Verdict Prediction]
     end
 
-    subgraph Finalization["Finalisasi"]
-        G --> H[Aggregator<br/>debate + konsensus]
-        H --> I[Quality Gate<br/>credibility scoring]
-        I --> J[Publisher<br/>publikasi ke CMS]
+    subgraph Finalization["Finalisasi & Publikasi"]
+        G --> H[Aggregator]
+        H --> I[Quality Gate]
+        I --> J[Memory Agent]
+        J --> K[Publisher]
     end
 
-    J --> END([Selesai])
+    K --> END([Selesai])
 ```
 
 ### Alur State per Node
@@ -232,33 +235,38 @@ flowchart LR
     VP[VerdictPrediction] --> |"menulis: fact_check_report.verdicts, events"| S
     AG[Aggregator] --> |"menulis: aggregated_article, events"| S
     QL[QualityGate] --> |"menulis: credibility_score, status, events"| S
+    MA[MemoryAgent] --> |"menulis: events"| S
     PB[Publisher] --> |"menulis: status, events"| S
 
     S(("ArticleState<br/>(immutable)"))
 ```
 
-### Detail Routing Quality Gate
+### Detail Routing Quality Gate & Draft Agent
 
-Quality Gate menghitung skor lalu menentukan jalur. Setiap pipeline maksimal 2 revisi (`MAX_REVISIONS=2`) untuk mencegah infinite loop:
+1. **`route_after_draft`**:
+   Setelah Draft Agent, sistem memeriksa status. Jika `REVISION`, maka kembali ke Orchestrator. Jika tidak, maju ke Editor Agent.
+
+2. **`route_after_quality`**:
+   Quality Gate menghitung skor lalu menentukan jalur. Setiap pipeline maksimal 2 revisi (`MAX_REVISIONS=2`) untuk mencegah infinite loop:
 
 ```mermaid
 flowchart TD
     QG[Quality Gate] --> Score{credibility_score}
-    Score -->|">= 0.75"| Pub[Publisher]
+    Score -->|">= 0.75"| Mem[Memory Agent]
     Score -->|"0.50 - 0.74"| Review{revision_count < 2?}
     Score -->|"< 0.50"| Full{revision_count < 2?}
     Review -->|ya| Editor[Editor Agent]
-    Review -->|tidak| Pub
+    Review -->|tidak| Mem
     Full -->|ya| Orchestrator[Orchestrator<br/>ulang pipeline]
-    Full -->|tidak| Pub
+    Full -->|tidak| Mem
 ```
 
-Tiga jalur:
-- **≥ 0.75** — auto-publish langsung ke Publisher
-- **0.50–0.74** — review editor jika revisi < 2, publish paksa jika sudah 2x revisi
-- **< 0.50** — revisi penuh (ulang dari Orchestrator) jika revisi < 2, publish paksa jika sudah 2x revisi
+Tiga jalur Quality Gate:
+- **≥ 0.75** — langsung ke Memory Agent
+- **0.50–0.74** — review editor jika revisi < 2, paksa ke Memory Agent jika sudah 2x revisi
+- **< 0.50** — revisi penuh (ulang dari Orchestrator) jika revisi < 2, paksa ke Memory Agent jika sudah 2x revisi
 
-Pipeline maksimal melalui 2 siklus revisi sebelum dipublikasikan (dengan skor apa pun).
+Semua artikel yang lolos (ataupun dipaksa lanjut) akan masuk ke **Memory Agent** terlebih dahulu untuk direkam dan diekstrak entitasnya, sebelum akhirnya diserahkan ke Publisher.
 
 ---
 

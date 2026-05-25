@@ -19,6 +19,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - `backend/newsagent/memory/` — persistent memory layer with PostgreSQL + pgvector
   - `VerdictCache` — hash-based claim cache untuk FactCheck
   - `DraftMemory` — store draft+score+feedback untuk few-shot learning
+- **Arsitektur Graf Berubah**: Penambahan `MemoryAgent` sebagai node eksplisit ke-12 di LangGraph setelah `Quality Gate`.
+- **Routing Baru**: `route_after_draft` (looping status revisi ke Orchestrator) dan `route_after_quality` (wajib melewati `MemoryAgent` sebelum ke Publisher).
 - Self-improving loop: DraftAgent injects high-scoring past drafts, QualityGate saves each result
 - `RateLimiter` async semaphore per-provider + minimum interval antar request
 - Config HF model: 6 field `*_hf_model` per-agent (default Qwen2.5-7B-Instruct)
@@ -60,6 +62,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - Updated `docs/AGENT_GUIDE.md` to document the new external Markdown prompt structure and CoT requirement
 - Updated `docs/AGENT_GUIDE.md` with memory layer documentation (katalog + self-improving loop)
 - `ROADMAP.md`: tambah checklist "Article state machine + atomic claim" di Fase 2; update test count 261→263; tandai frontend dashboard ✅
+- `README.md` & `docs/ARCHITECTURE.md`: rombak total diagram LangGraph untuk menyertakan `MemoryAgent` dan _routing_ baru. Hapus seluruh sitasi akademis.
+- Buat `docs/adr/0004-memory-agent-integration.md` untuk mencatat keputusan penambahan _node_ memori eksplisit.
 
 ---
 
