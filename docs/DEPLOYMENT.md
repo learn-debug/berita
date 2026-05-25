@@ -56,11 +56,13 @@ docker compose logs postgres
 
 | Variabel | Keterangan |
 |---|---|
-| `ANTHROPIC_API_KEY` | API key Anthropic (wajib) |
+| `ANTHROPIC_API_KEY` | API key Anthropic (atau API key LLM lain sesuai konfigurasi) |
 | `DATABASE_URL` | PostgreSQL connection string |
 | `REDIS_URL` | Redis connection string |
 | `CMS_BASE_URL` | URL base WordPress/CMS |
 | `CMS_API_KEY` | API key CMS |
+| `ADMIN_PASSWORD` | Password untuk login ke Dashboard Redaksi (wajib) |
+| `JWT_SECRET` | Secret key untuk penandatanganan token JWT (wajib) |
 
 Lihat `.env.example` untuk daftar lengkap semua variabel.
 

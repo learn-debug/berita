@@ -139,11 +139,12 @@ pytest backend/ -v --cov=newsagent --cov-report=term-missing
 
 ## Area yang Paling Butuh Kontribusi
 
-Berdasarkan [ROADMAP.md](./ROADMAP.md) dan status Fase 1 yang sudah selesai:
+Fase 1 (HMAS Backend) dan Fase 2 (API & Dashboard) **telah selesai 100%**. Berdasarkan [ROADMAP.md](./ROADMAP.md), fokus kontribusi saat ini adalah **Fase 3 (Situs Berita Publik & SEO)**:
 
-1. **Publisher Agent Test** — test integrasi dengan WordPress REST API (satu-satunya item `[ ]` yang tersisa di Fase 1)
-2. **Fase 2 — API & Dashboard** — endpoint REST lengkap, WebSocket pipeline status, dashboard redaksi
-3. **Testing** — tambah coverage test untuk agen yang sudah ada (target 80% per modul)
+1. **Next.js Public Frontend** — SSR untuk SEO, desain web dinamis, Web Vitals optimization.
+2. **FactClaimTooltip UI** — visualisasi penjelasan fact-check saat user menyorot klaim dalam artikel.
+3. **Optimasi GEO (Generative Engine Optimization)** — markup terstruktur (JSON-LD) khusus AI search engine.
+4. **Testing** — pemeliharaan coverage test untuk backend dan penambahan Cypress/Playwright untuk frontend.
 
 ## Review Process
 
