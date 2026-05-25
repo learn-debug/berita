@@ -2,6 +2,8 @@ from collections.abc import Awaitable, Callable, Coroutine
 from functools import wraps
 from typing import Any, ParamSpec
 
+from newsagent.cost.cost_tracker import get_max_monthly_budget, get_monthly_cost
+
 P = ParamSpec("P")
 
 
@@ -15,6 +17,14 @@ def with_budget(
     def decorator(func: Callable[P, Awaitable[Any]]) -> Callable[P, Coroutine[Any, Any, Any]]:
         @wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> Any:
+            # Check global monthly budget limit before executing LLM-based agent run
+            monthly_cost = await get_monthly_cost()
+            max_budget = get_max_monthly_budget()
+            if monthly_cost > max_budget:
+                raise TokenBudgetExceededError(
+                    f"Monthly API budget of ${max_budget:.2f} exceeded (Current: ${monthly_cost:.2f})"
+                )
+
             result = await func(*args, **kwargs)
             text_to_check = ""
             if isinstance(result, str):
