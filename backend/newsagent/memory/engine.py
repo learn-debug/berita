@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import os
 from typing import Any
 
 import asyncpg
@@ -8,12 +10,22 @@ from newsagent.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "schema.sql")
+
 
 class PostgresEngine:
     def __init__(self) -> None:
         self._pool_instance: asyncpg.Pool | None = None
+        self._pool_loop = None
+        self._schema_initialized = False
 
     async def pool(self) -> asyncpg.Pool:
+        current_loop = asyncio.get_running_loop()
+        if self._pool_instance is not None:
+            if self._pool_loop is not current_loop or self._pool_loop.is_closed():
+                self._pool_instance = None
+                self._schema_initialized = False
+
         if self._pool_instance is None:
             dsn = settings.database_url.replace("+asyncpg", "")
             self._pool_instance = await asyncpg.create_pool(
@@ -21,10 +33,49 @@ class PostgresEngine:
                 min_size=1,
                 max_size=5,
             )
+            self._pool_loop = current_loop
             async with self._pool_instance.acquire() as conn:
                 await conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
                 await register_vector(conn)
+                await self._init_schema(conn)
         return self._pool_instance
+
+    async def _init_schema(self, conn: asyncpg.Connection) -> None:
+        if self._schema_initialized:
+            return
+        try:
+            schema_path = os.path.abspath(SCHEMA_PATH)
+            if os.path.exists(schema_path):
+                with open(schema_path) as f:
+                    sql = f.read()
+                await conn.execute(sql)
+                # Ensure new columns and tables exist for in-memory mapping to postgres
+                await conn.execute("ALTER TABLE articles ADD COLUMN IF NOT EXISTS article_id_str TEXT UNIQUE")
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS article_claims (
+                        article_id_str TEXT NOT NULL,
+                        revision_count INTEGER NOT NULL,
+                        claimed_at TIMESTAMPTZ DEFAULT NOW(),
+                        PRIMARY KEY (article_id_str, revision_count)
+                    )
+                """)
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS agent_costs (
+                        id SERIAL PRIMARY KEY,
+                        agent TEXT NOT NULL,
+                        model TEXT NOT NULL,
+                        input_tokens INTEGER NOT NULL,
+                        output_tokens INTEGER NOT NULL,
+                        cost REAL NOT NULL,
+                        timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                    )
+                """)
+                logger.info("[schema] initialized from %s", schema_path)
+                self._schema_initialized = True
+            else:
+                logger.warning("[schema] not found at %s", schema_path)
+        except Exception as e:
+            logger.warning("[schema] init error (non-fatal): %s", e)
 
     async def execute(self, query: str, *args: Any) -> str:
         p = await self.pool()
