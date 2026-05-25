@@ -232,7 +232,8 @@ Status backend API ✅ — frontend dashboard ✅
 - [x] Endpoint: `PATCH /api/v1/articles/{id}` (approve/reject/retry)
 - [x] WebSocket: `ws/{article_id}` (status pipeline real-time via EventBus)
 - [x] `backend/newsagent/api/event_bus.py` — pub/sub untuk pipeline event
-- [x] `backend/newsagent/api/store.py` — ArticleStore (masih in-memory)
+- [x] `backend/newsagent/api/store.py` — ArticleStore (PostgreSQL, tabel `articles` & `article_claims`)
+- [x] `backend/newsagent/api/routers/auth.py` — JWT Authentication endpoints (`/login`, `/logout`, `/verify`)
 - [x] `apps/web/` — Next.js Dashboard Redaksi (TypeScript) — 8 halaman, build clean
 - [x] Dashboard Redaksi — halaman Dashboard (metric cards, activity chart 7 hari, alert review)
 - [x] Dashboard Redaksi — halaman Pipeline (11 agent status cards: idle/running/completed/error)
@@ -240,7 +241,7 @@ Status backend API ✅ — frontend dashboard ✅
 - [x] Dashboard Redaksi — halaman daftar artikel (search, filter status, pagination)
 - [x] Dashboard Redaksi — halaman input artikel baru (topic/draft/url)
 - [x] Dashboard Redaksi — halaman pengaturan threshold (5 tab: Quality Gate, Fact-Check, Aggregator, Publisher, Notifikasi)
-- [ ] Article state machine + atomic claim — cegah duplicate processing saat multi-worker, resume after crash, `article_id` + `revision_count` sebagai unique key
+- [x] Article state machine + atomic claim — cegah duplicate processing saat multi-worker, resume after crash, `article_id` + `revision_count` sebagai unique key
 
 ### ✅ Milestone Fase 2
 **Dashboard berjalan:** editor bisa submit topik, pantau pipeline, review laporan fact-check, dan approve/tolak artikel — semua dari browser.
@@ -261,6 +262,8 @@ Estimasi total: 2-3 minggu
 - [ ] Halaman kategori + filter
 - [ ] Halaman "Tentang Sistem" (transparansi cara kerja AI)
 - [ ] SEO + structured data (schema.org)
+- [ ] GEO (Generative Engine Optimization) — optimasi konten untuk AI search / LLM answer engines (ChatGPT, Gemini, Perplexity, dll)
+- [ ] GEO (Generative Engine Optimization) — optimasi untuk AI search / LLM answer engines
 - [ ] Optimasi performa (SSG/ISR)
 
 ### ✅ Milestone Fase 3

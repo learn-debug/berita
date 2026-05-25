@@ -19,10 +19,58 @@ Dokumentasi endpoint REST API dan WebSocket NewsAgent.
 
 ## Autentikasi
 
-Semua endpoint membutuhkan API key di header:
+Semua endpoint dilindungi oleh sistem autentikasi ganda yang mendukung dua metode:
 
-```http
-Authorization: Bearer your_api_key_here
+1. **API Key (Header):** Cocok untuk request server-to-server (mesin).
+   ```http
+   Authorization: Bearer your_api_key_here
+   ```
+2. **JWT Cookie:** Cocok untuk interaksi browser (digunakan oleh Next.js Frontend). Token disimpan pada cookie `newsagent_token` dengan perlindungan `HttpOnly`.
+
+Lihat [Endpoint Auth](#auth) untuk cara login dan mendapatkan JWT Cookie.
+
+---
+
+## Endpoints
+
+### Auth
+
+#### `POST /api/v1/auth/login`
+Endpoint untuk login dan mendapatkan JWT Cookie serta Token untuk sesi dashboard.
+
+**Request Body:**
+```json
+{
+  "password": "your_admin_password"
+}
+```
+
+**Response `200 OK` (Set-Cookie `newsagent_token`):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer"
+}
+```
+
+#### `GET /api/v1/auth/verify`
+Cek validitas token atau cookie saat ini (digunakan untuk middleware frontend).
+
+**Response `200 OK`:**
+```json
+{
+  "valid": true
+}
+```
+
+#### `POST /api/v1/auth/logout`
+Menghapus sesi dengan membersihkan cookie `newsagent_token`.
+
+**Response `200 OK`:**
+```json
+{
+  "ok": true
+}
 ```
 
 ---
