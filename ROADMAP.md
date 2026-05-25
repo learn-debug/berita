@@ -38,7 +38,7 @@ Selesai (Fase 1 — Fondasi Agen):
   ✅ Semua agen: Orchestrator, Draft, Editor, Fact-Check (4 sub-agen),
      Aggregator, Quality Gate, Publisher
   ✅ RAG Pipeline (pipeline, retriever, synthesizer, reranker)
-  ✅ Tools (BaseTool, web search, CMS client, scoring)
+  ✅ Tools (BaseTool, web search, CMS client, scoring, NER extractor)
   ✅ `backend/newsagent/api/main.py` — FastAPI entrypoint (POST /process)
   ✅ Docker Compose (PostgreSQL + Redis)
   ✅ 263 unit/integration test passing, ruff + mypy + pyright clean
