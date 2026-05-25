@@ -11,11 +11,13 @@ from newsagent.agents.fact_check.evidence_retrieval import EvidenceRetrievalAgen
 from newsagent.agents.fact_check.input_ingestion import InputIngestionAgent
 from newsagent.agents.fact_check.query_generation import QueryGenerationAgent
 from newsagent.agents.fact_check.verdict_prediction import VerdictPredictionAgent
+from newsagent.agents.memory_agent import MemoryAgent
 from newsagent.agents.orchestrator import OrchestratorAgent
 from newsagent.agents.publisher_agent import PublisherAgent
 from newsagent.agents.quality_gate import QualityGateAgent
 from newsagent.core.config import settings
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, ArticleStatus
+from newsagent.database.kg_repository import KnowledgeGraphRepository
 from newsagent.llm.adapter_factory import adapter_factory
 from newsagent.memory.draft_memory import DraftMemory
 from newsagent.memory.verdict_cache import VerdictCache
@@ -29,19 +31,19 @@ def route_after_quality(state: ArticleState) -> str:
     score = state.get("credibility_score", 0.0)
     revisions = state.get("revision_count", 0)
     if score >= 0.75:
-        return "publisher"
+        return "memory_agent"
     if score >= 0.50:
         if revisions < MAX_REVISIONS:
             return "editor_agent"
-        return "publisher"
+        return "memory_agent"
     if revisions < MAX_REVISIONS:
         return "orchestrator"
-    return "publisher"
+    return "memory_agent"
 
 
 def route_after_draft(state: ArticleState) -> str:
     status = state.get("status", "")
-    if status == "revision":
+    if status == ArticleStatus.REVISION.value:
         return "orchestrator"
     return "editor_agent"
 
@@ -93,6 +95,7 @@ def _wrap_node(
 def build_graph(cleanup_handlers: list | None = None, event_bus: Any | None = None) -> Any:
     draft_memory = DraftMemory()
     verdict_cache = VerdictCache()
+    kg_repo = KnowledgeGraphRepository()
 
     orchestrator = OrchestratorAgent()
     rag_pipeline = RAGPipeline(llm=adapter_factory("rag"))
@@ -104,6 +107,7 @@ def build_graph(cleanup_handlers: list | None = None, event_bus: Any | None = No
     verdict = VerdictPredictionAgent(llm=adapter_factory("fact_check"), cache=verdict_cache)
     aggregator = AggregatorAgent(llm=adapter_factory("orchestrator"))
     quality = QualityGateAgent(llm=adapter_factory("orchestrator"), draft_memory=draft_memory)
+    memory = MemoryAgent(draft_memory=draft_memory, verdict_cache=verdict_cache, kg_repo=kg_repo)
     cms = (
         CMSClient(base_url=settings.cms_base_url, api_key=settings.cms_api_key)
         if settings.cms_base_url and settings.cms_api_key
@@ -130,6 +134,7 @@ def build_graph(cleanup_handlers: list | None = None, event_bus: Any | None = No
     workflow.add_node("verdict_prediction", _wrap_node("verdict_prediction", verdict.run, event_bus))
     workflow.add_node("aggregator", _wrap_node("aggregator", aggregator.run, event_bus))
     workflow.add_node("quality_gate", _wrap_node("quality_gate", quality.run, event_bus))
+    workflow.add_node("memory_agent", _wrap_node("memory_agent", memory.run, event_bus))
     workflow.add_node("publisher", _wrap_node("publisher", publisher.run, event_bus))
 
     workflow.set_entry_point("orchestrator")
@@ -144,6 +149,7 @@ def build_graph(cleanup_handlers: list | None = None, event_bus: Any | None = No
     workflow.add_edge("verdict_prediction", "aggregator")
     workflow.add_edge("aggregator", "quality_gate")
     workflow.add_conditional_edges("quality_gate", route_after_quality)
+    workflow.add_edge("memory_agent", "publisher")
     workflow.add_edge("publisher", END)
 
     return workflow.compile()

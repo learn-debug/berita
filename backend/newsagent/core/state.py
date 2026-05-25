@@ -1,8 +1,57 @@
+from __future__ import annotations
+
+import enum
 from typing import Any, TypedDict
 
 from typing_extensions import NotRequired
 
 from newsagent.core.events import EventDict
+
+
+class ArticleStatus(str, enum.Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    REVIEW = "review"
+    REVISION = "revision"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    PUBLISHED = "published"
+    FAILED = "failed"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+_VALID_TRANSITIONS: dict[ArticleStatus, set[ArticleStatus]] = {
+    ArticleStatus.PENDING: {ArticleStatus.PROCESSING},
+    ArticleStatus.PROCESSING: {
+        ArticleStatus.REVIEW,
+        ArticleStatus.REVISION,
+        ArticleStatus.PUBLISHED,
+        ArticleStatus.FAILED,
+    },
+    ArticleStatus.REVIEW: {ArticleStatus.APPROVED, ArticleStatus.REJECTED, ArticleStatus.PROCESSING},
+    ArticleStatus.REVISION: {ArticleStatus.PROCESSING},
+    ArticleStatus.APPROVED: {ArticleStatus.PUBLISHED},
+    ArticleStatus.REJECTED: set(),
+    ArticleStatus.PUBLISHED: set(),
+    ArticleStatus.FAILED: {ArticleStatus.PROCESSING},
+}
+
+
+def transition_allowed(current: str | ArticleStatus, target: str | ArticleStatus) -> bool:
+    if isinstance(current, str):
+        try:
+            current = ArticleStatus(current)
+        except ValueError:
+            return True
+    if isinstance(target, str):
+        try:
+            target = ArticleStatus(target)
+        except ValueError:
+            return True
+    allowed = _VALID_TRANSITIONS.get(current, set())
+    return target in allowed
 
 
 class FactCheckReport(TypedDict, total=False):
