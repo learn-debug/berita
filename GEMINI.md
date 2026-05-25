@@ -101,7 +101,7 @@ Setiap kali user mengoreksi sesuatu, refleksikan secara verbal sebelum melanjutk
 
 ---
 
-## 7. Frontier 2026 Check — Wajib Sebelum Menutup Rencana
+## 7. Check — Wajib Sebelum Menutup Rencana
 
 **WAJIB**: Sebelum menyelesaikan rencana implementasi atau rekomendasi teknis, tanyakan secara internal:
 
