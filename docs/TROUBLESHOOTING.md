@@ -4,9 +4,11 @@
 
 ### `ModuleNotFoundError: No module named 'langgraph'`
 ```bash
+# Pastikan dependensi disinkronkan dan jalankan perintah Python via uv run
 uv sync --extra dev --directory backend
-# Pastikan virtual environment di backend/.venv
-source backend/.venv/bin/activate
+uv run --directory backend pytest newsagent/ -v
+# Atau buka shell yang sudah terhubung ke environment
+uv shell
 ```
 
 ### `ERROR: Could not find a version that satisfies the requirement`

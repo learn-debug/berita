@@ -114,17 +114,4 @@ NewsAgent berkomitmen untuk tidak pernah:
 
 ---
 
-## Hubungan dengan Riset Akademis
-
-Visi NewsAgent tidak lahir dari vacuum. Ia berdiri di atas bahu riset yang telah membuktikan bahwa sistem ini bukan sekadar mungkin — tetapi sudah terbukti bekerja:
-
-- AI-Press (2024) membuktikan multi-agent menghasilkan berita lebih baik dari prompt tunggal
-- FactAgent (2025) membuktikan verifikasi 4-tahap meningkatkan akurasi 12,3%
-- DelphiAgent (2025) membuktikan konsensus multi-agen mengurangi halusinasi LLM
-- MAFC (2026) membuktikan credibility scoring lebih adil dari keputusan biner
-
-NewsAgent adalah implementasi praktis dari temuan-temuan ini — menjembatani riset akademis dengan kebutuhan industri media nyata.
-
----
-
 *Dokumen ini adalah kompas arah proyek. Setiap keputusan teknis, desain, dan bisnis yang diambil dalam pengembangan NewsAgent harus dapat dikembalikan kepada nilai-nilai yang tertulis di sini.*

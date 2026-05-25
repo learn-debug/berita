@@ -25,8 +25,8 @@ Sistem frontend NewsAgent terdiri dari dua layer terpisah dengan tujuan dan peng
 ## Layer 1 — Dashboard Redaksi (Internal)
 
 ### Teknologi yang Direkomendasikan
-- **Framework:** Next.js 14 (App Router) — **TypeScript**
-- **UI Component:** shadcn/ui + Tailwind CSS
+- **Framework:** Next.js 16 (App Router) — **TypeScript**
+- **UI Component:** shadcn/ui + Tailwind CSS v4
 - **State Management:** Zustand
 - **Real-time:** WebSocket (status pipeline live)
 - **Charts:** Recharts
@@ -168,8 +168,8 @@ Login
 ## Layer 2 — Situs Berita Publik
 
 ### Teknologi yang Direkomendasikan
-- **Framework:** Next.js 14 (App Router + SSG/ISR)
-- **Styling:** Tailwind CSS
+- **Framework:** Next.js 16 (App Router + SSG/ISR)
+- **Styling:** Tailwind CSS v4
 - **CMS:** Headless CMS (Strapi / WordPress) sebagai sumber konten
 - **SEO:** next/head + structured data (schema.org)
 
