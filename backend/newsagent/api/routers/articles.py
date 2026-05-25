@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from newsagent.api.auth import verify_api_key_or_jwt as verify_api_key
 from newsagent.api.schemas import PatchRequest, ProcessRequest, ProcessResponse
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, ArticleStatus, transition_allowed
 from newsagent.security.input_sanitizer import InputSanitizer
 from newsagent.security.rate_limiter import RateLimiter
 
@@ -47,10 +47,13 @@ async def process_article(req: ProcessRequest, _auth: None = Depends(verify_api_
         "edited_draft": "",
         "aggregated_article": "",
         "credibility_score": 0.0,
-        "status": "processing",
+        "status": ArticleStatus.PROCESSING.value,
         "revision_count": 0,
         "events": [],
     }
+
+    if not await _store.claim_for_processing(article_id, 0):
+        raise HTTPException(status_code=409, detail="Article already being processed")
 
     await _store.save(article_id, initial)
     await _event_bus.publish(
@@ -74,9 +77,11 @@ async def _run_pipeline(
     store: Any,
     event_bus: Any,
 ) -> None:
+    revision_count: int = 0
     try:
         result = await asyncio.wait_for(graph.ainvoke(initial), timeout=120.0)
-        status = result.get("status", "failed")
+        status = result.get("status", ArticleStatus.FAILED.value)
+        revision_count = result.get("revision_count", 0)
         await store.save(article_id, result)
         await event_bus.publish(
             article_id,
@@ -87,7 +92,7 @@ async def _run_pipeline(
             },
         )
     except asyncio.TimeoutError:
-        await store.save(article_id, {"status": "failed"})
+        await store.save(article_id, {"status": ArticleStatus.FAILED.value})
         await event_bus.publish(
             article_id,
             {
@@ -98,7 +103,7 @@ async def _run_pipeline(
         )
     except Exception as e:
         logger.error("[pipeline] %s failed: %s", article_id, e)
-        await store.save(article_id, {"status": "failed"})
+        await store.save(article_id, {"status": ArticleStatus.FAILED.value})
         await event_bus.publish(
             article_id,
             {
@@ -107,6 +112,8 @@ async def _run_pipeline(
                 "error": str(e),
             },
         )
+    finally:
+        await store.release_claim(article_id, revision_count)
 
 
 @router.get("")
@@ -141,14 +148,23 @@ async def patch_article(article_id: str, body: PatchRequest, _auth: None = Depen
         raise HTTPException(status_code=404, detail="Article not found")
 
     action = body.action
+    current_status = article.get("status", "")
     if action == "approve":
-        article["status"] = "approved"
+        target = ArticleStatus.APPROVED.value
     elif action == "reject":
-        article["status"] = "rejected"
+        target = ArticleStatus.REJECTED.value
     elif action == "retry":
-        article["status"] = "processing"
+        target = ArticleStatus.PROCESSING.value
     else:
         raise HTTPException(status_code=422, detail=f"Unknown action: {action}")
+
+    if not transition_allowed(current_status, target):
+        raise HTTPException(
+            status_code=422,
+            detail=f"Cannot transition from '{current_status}' to '{target}'",
+        )
+
+    article["status"] = target
 
     if body.content is not None:
         article["aggregated_article"] = body.content

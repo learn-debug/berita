@@ -15,7 +15,7 @@ from newsagent.api.routers.auth import router as auth_router
 from newsagent.api.routers.ws import router as ws_router
 from newsagent.api.schemas import ArticleResponse, ProcessRequest
 from newsagent.api.store import ArticleStore
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, ArticleStatus
 from newsagent.security.input_sanitizer import InputSanitizer
 from newsagent.security.rate_limiter import RateLimiter
 
@@ -33,6 +33,10 @@ async def lifespan(_app: FastAPI):
 
     global _graph
     _graph = build_graph(cleanup_handlers=_cleanup_handlers, event_bus=_event_bus)
+
+    stale = await _store.reset_stale_processing()
+    if stale:
+        logger.warning("[startup] reset %d stale processing article(s) to failed", stale)
 
     yield
 
@@ -90,7 +94,7 @@ async def process_article(req: ProcessRequest, _auth: None = Depends(verify_api_
         "edited_draft": "",
         "aggregated_article": "",
         "credibility_score": 0.0,
-        "status": "processing",
+        "status": ArticleStatus.PROCESSING.value,
         "revision_count": 0,
         "events": [],
     }

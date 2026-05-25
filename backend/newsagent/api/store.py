@@ -163,7 +163,7 @@ class ArticleStore:
             article_id,
             input_type,
             state.get("raw_input") or "",
-            state.get("title") or state.get("raw_input")[:100] if state.get("raw_input") else "",
+            state.get("title") or (state.get("raw_input") or "")[:100],
             state.get("rag_context") or "",
             state.get("draft") or "",
             report_str,

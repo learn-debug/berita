@@ -20,6 +20,7 @@ class ArticleListItem(BaseModel):
     status: str
     credibility_score: float
     word_count: int
+    revision_count: int = 0
     created_at: datetime | None = None
     published_url: str | None = None
 
@@ -37,6 +38,7 @@ class ArticleDetailResponse(BaseModel):
     content: str
     status: str
     credibility_score: float
+    revision_count: int = 0
     fact_check_report: dict[str, Any]
     events: list[dict[str, Any]]
     created_at: datetime | None = None

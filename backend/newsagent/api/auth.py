@@ -9,6 +9,8 @@ from newsagent.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+COOKIE_NAME = "newsagent_token"
+
 
 def _secret() -> str:
     return settings.jwt_secret
@@ -41,7 +43,7 @@ def verify_token(token: str) -> dict | None:
 
 async def verify_api_key_or_jwt(
     authorization: str = Header(""),
-    x_token: str | None = Cookie(None),
+    newsagent_token: str | None = Cookie(None),
 ) -> None:
     if not settings.api_key and not settings.admin_password:
         return
@@ -52,7 +54,7 @@ async def verify_api_key_or_jwt(
     if token and verify_token(token):
         return
 
-    if x_token and verify_token(x_token):
+    if newsagent_token and verify_token(newsagent_token):
         return
 
     raise HTTPException(status_code=401, detail="Unauthorized")
