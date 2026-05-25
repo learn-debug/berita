@@ -16,9 +16,9 @@ OSINT Layer **ditunda ke Fase 4** — tidak diimplementasikan di Fase 1 (fondasi
 
 ## Alasan
 
-1. **Fokus MVP**: Fase 1–3 harus selesai dulu untuk memvalidasi pipeline dasar berjalan benar
+1. **Fokus Stabilitas Dasar**: Fase 1–3 harus selesai dulu untuk memvalidasi pipeline dasar berjalan benar
 2. **Kompleksitas tidak proporsional**: OSINT menambah 6+ integrasi API eksternal sebelum pipeline inti stabil
-3. **Nilai tambah bisa ditunda**: Fact-check dengan web search saja sudah cukup untuk MVP
+3. **Nilai tambah bisa ditunda**: Fact-check dengan web search saja sudah cukup untuk rilis fungsional
 4. **Ketergantungan eksternal**: OSINT bergantung pada API pihak ketiga yang bisa berubah kapan saja
 
 ## Konsekuensi

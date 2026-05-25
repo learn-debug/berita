@@ -173,7 +173,7 @@ Tiga jalur keputusan:
 
 | Keputusan | Alasan Ditunda |
 |---|---|
-| OSINT Layer | Kompleks, tidak kritis untuk MVP |
+| OSINT Layer | Kompleks, ditunda ke fase selanjutnya |
 | Caching Layer | Optimasi, bukan fondasi |
 | Fine-tuning model | Butuh data produksi dulu |
 | Multi-bahasa | Butuh pipeline stabil dulu |
