@@ -24,6 +24,14 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - Config HF model: 6 field `*_hf_model` per-agent (default Qwen2.5-7B-Instruct)
 - Config fallback: `LLM_FALLBACK_CHAIN` env var untuk chain provider per-agent
 - Per-agent `max_tokens` budget: Draft/Editor/Aggregator/Publisher/Verdict=4096, RAG/InputIngestion/QueryGen/QualityGate=1024-2048
+- **Frontend Dashboard Redaksi**: 8 halaman Next.js (App Router) + shadcn/ui + Tailwind CSS v4
+  - `/dashboard` — Metric cards, ActivityChart 7 hari, alert artikel butuh review
+  - `/pipeline` — 11 AgentStatusCard (idle/running/completed/error), event log, WebSocket live
+  - `/articles` — Tabel dengan search, filter status dropdown, pagination
+  - `/articles/[id]` — FactCheckReportView terformat, CredibilityGaugeCard, tab Debat, live pipeline
+  - `/articles/new` — Input artikel baru (topic/draft/url)
+  - `/settings` — 5 tab konfigurasi: Quality Gate, Fact-Check, Aggregator, Publisher, Notifikasi
+- Komponen baru: `CredibilityGauge`, `FactCheckReportView`, `DebateLog`, `AgentStatusCard`, `ActivityChart`, `ScrollArea`, `Label`
 
 ### Changed
 - Refactored all 9 core and fact-check agents' `_system_prompt()` methods to use `load_prompt()`
@@ -40,6 +48,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 - `OrchestratorAgent`: increment `revision_count` setiap pipeline dimulai
 - `VerdictCache.get()`: tambah `await self._ensure()` yang terlewat
 - `pyproject.toml` + `uv.lock`: update google-genai, mistralai, langgraph deps
+- `lib/api.ts`: sync types with actual backend (`ArticleState`, `FactCheckReport`, `VerdictRaw`, `EventDict`)
+- `hooks/use-websocket.ts`: handle all 8 EventBus message types (pipeline_start/complete/error, agent_start/complete/error, connected, ping)
 
 ### Fixed
 - **Infinite pipeline loop**: `route_after_quality()` sekarang pakai `MAX_REVISIONS=2` — pipeline selalu selesai maksimal 2 revisi
@@ -49,7 +59,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), dan p
 ### Docs
 - Updated `docs/AGENT_GUIDE.md` to document the new external Markdown prompt structure and CoT requirement
 - Updated `docs/AGENT_GUIDE.md` with memory layer documentation (katalog + self-improving loop)
-- `ROADMAP.md`: tambah checklist "Article state machine + atomic claim" di Fase 2
+- `ROADMAP.md`: tambah checklist "Article state machine + atomic claim" di Fase 2; update test count 261→263; tandai frontend dashboard ✅
 
 ---
 

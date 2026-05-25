@@ -14,7 +14,7 @@
 
 Jika kamu menemukan celah keamanan, kirim laporan secara privat ke:
 
-**Email:** *(isi email aktif untuk laporan keamanan)*
+**Email:** *(ganti dengan alamat email untuk laporan keamanan)*
 
 Sertakan informasi berikut dalam laporan:
 - Jenis celah keamanan (misal: prompt injection, SQL injection, SSRF)

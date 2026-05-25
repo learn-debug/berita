@@ -6,6 +6,7 @@ Pastikan kamu sudah membaca:
 - [README.md](./README.md) — arsitektur & cara kerja sistem
 - [VISION.md](./VISION.md) — visi & nilai proyek
 - [ROADMAP.md](./ROADMAP.md) — prioritas pengembangan saat ini
+- [GEMINI.md](./GEMINI.md) — aturan kerja untuk AI assistant (wajib dibaca jika menggunakan AI coding tools)
 - [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) — standar perilaku komunitas
 
 ## Cara Berkontribusi

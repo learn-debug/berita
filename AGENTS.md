@@ -9,19 +9,23 @@ Every session must be saved to the knowledge graph as entity `session-YYYY-MM-DD
 - **Phase 1 complete.** `backend/newsagent/` package, all agents, LangGraph pipeline, LLM adapters, resilience/security/cost layers, FastAPI entrypoint, Docker Compose, and tests exist and pass.
 - **Phase 2 API complete.** REST endpoints (`POST /api/v1/articles/process`, `GET /api/v1/articles`, `GET /api/v1/articles/{id}`, `PATCH /api/v1/articles/{id}`) and WebSocket (`ws/{article_id}`) all live. Frontend dashboard belum dikerjakan.
 - **Semua agen menggunakan `complete_structured()` + JSON Schema.** 8 agen single-text pakai `TEXT_OUTPUT_SCHEMA` (`{"output": "string"}`), 3 agen multi-field pakai schema spesifik (QualityGate 4 scores, Publisher judul+konten, VerdictPrediction 8-field per claim). Zero parsing error.
-- **261 tests passing**, ruff + mypy + pyright clean.
+- **263 tests passing**, ruff + mypy + pyright clean.
 - All code committed. Working tree clean.
 
 ## Authoritative docs
 
 | Doc | What it covers |
-|---|---|
+|---|---|---|
 | `CONTRIBUTING.md` | Exact dev commands, commit conventions, code standards |
 | `ROADMAP.md` | Phase plan, build order, current status |
+| `VISION.md` | Project vision, mission, core values, success metrics |
+| `GEMINI.md` | Mandatory AI assistant working rules (SRS + Reflexion, Plan-and-Solve) |
 | `docs/ARCHITECTURE.md` | Why HMAS/LangGraph, state design, pipeline design |
 | `docs/AGENT_GUIDE.md` | Agent coding templates, patterns, debugging |
 | `docs/adr/` | ADRs for key decisions (LLM Adapter, OSINT deferral, etc.) |
 | `docs/API_REFERENCE.md` | Planned REST + WebSocket endpoints |
+| `docs/DEPLOYMENT.md` | Local dev setup, Docker infra, env vars |
+| `docs/TROUBLESHOOTING.md` | Common errors and solutions |
 | `FRONTEND.md` | Dashboard & public site frontend specs |
 
 ## Quick start

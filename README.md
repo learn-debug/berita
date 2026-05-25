@@ -15,6 +15,7 @@
 - [Instalasi](#instalasi)
 - [Cara Penggunaan](#cara-penggunaan)
 - [Konfigurasi](#konfigurasi)
+- [Dokumen Terkait](#dokumen-terkait)
 - [Kontribusi](#kontribusi)
 - [Lisensi](#lisensi)
 
@@ -145,19 +146,7 @@ Proses fact-checking dipecah menjadi 4 sub-agen spesialis yang bekerja secara se
 - **Menggunakan OSINT Layer** untuk memperkuat verifikasi bukti (lihat bagian OSINT Integration)
 
 #### 4c-OSINT. OSINT Layer *(Fase 4 — direncanakan)*
-> Lapisan intelijen sumber terbuka yang akan memperkuat Evidence Retrieval Agent melampaui web search biasa. OSINT sengaja ditunda ke Fase 4 (*lihat ADR-0003*).
-
-OSINT akan berfungsi sebagai **sumber data mentah** — bukan pengambil keputusan. Semua hasil OSINT akan diteruskan ke Verdict Prediction Agent untuk sintesis akhir.
-
-| Tool OSINT *(Fase 4)* | Fungsi |
-|---|---|
-| **Wayback Machine API** | Verifikasi konten historis |
-| **Whois / SecurityTrails** | Cek reputasi & usia domain sumber |
-| **Google Reverse Image API** | Verifikasi keaslian foto/gambar |
-| **GDELT Project** | Database berita global real-time |
-| **CommonCrawl** | Database crawl web terbuka |
-| **OpenCorporates** | Data perusahaan publik global |
-| **SpiderFoot** | Analisis jejak digital entitas |
+> Lapisan intelijen sumber terbuka yang akan memperkuat Evidence Retrieval Agent melampaui web search biasa. OSINT sengaja ditunda ke Fase 4 (*lihat [ADR-0003](docs/adr/0003-osint-deferred-to-phase-4.md)* dan [ROADMAP.md](./ROADMAP.md)).
 
 #### 4d. Verdict Prediction Agent
 - Mensintesis semua bukti menjadi putusan verifikasi (benar / salah / tidak dapat diverifikasi)
@@ -344,21 +333,21 @@ borneo/
 │   │   │   ├── verdict_prediction_user.md
 │   │   │   ├── _system_guard.md
 │   │   │   └── _user_wrapper.md
-│   │       └── tests/                           # In-package tests (261 test cases)
-│   │       ├── test_agents/
-│   │       ├── test_api/
-│   │       ├── test_core/
-│   │       ├── test_cost/
-│   │       ├── test_integration/
-│   │       ├── test_llm/
-│   │       ├── test_rag/
-│   │       ├── test_resilience/
-│   │       ├── test_security/
-│   │       └── test_tools/
+│   │   ├── tests/                               # In-package tests (261 test cases)
+│   │   │   ├── test_agents/
+│   │   │   ├── test_api/
+│   │   │   ├── test_core/
+│   │   │   ├── test_cost/
+│   │   │   ├── test_integration/
+│   │   │   ├── test_llm/
+│   │   │   ├── test_rag/
+│   │   │   ├── test_resilience/
+│   │   │   ├── test_security/
+│   │   │   └── test_tools/
 │   ├── pyproject.toml
 │   └── pyrightconfig.json
 ├── apps/
-│   └── web/                                 # Next.js 16 + TypeScript (Fase 2 & 3)
+│   └── web/                                 # Next.js 14+ TypeScript (Fase 2 & 3)
 ├── packages/                                # Reserved for shared utilities
 ├── docs/
 ├── pnpm-workspace.yaml
@@ -370,38 +359,16 @@ borneo/
 
 ## Instalasi
 
-### Prasyarat
+Lihat panduan lengkap di [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — mencakup prasyarat, setup lokal, konfigurasi Docker, dan variabel environment.
 
-- Python 3.10 atau lebih baru
-- Docker & Docker Compose
-- API Key Anthropic
-- `uv` ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
-- Node.js 18+ (untuk pyright)
-
-### Langkah Instalasi
+Instalasi cepat:
 
 ```bash
-# 1. Clone repositori
-git clone https://github.com/YOUR_USERNAME/borneo.git
-cd borneo
-
-# 2. Install semua dependensi Python
-uv sync --extra dev --directory backend
-
-# 3. Install semua dependensi frontend
-pnpm install
-
-# 4. Salin file konfigurasi
-cp .env.example .env
-
-# 5. Isi variabel environment (lihat bagian Konfigurasi)
-nano .env
-
-# 6. Jalankan infrastruktur (PostgreSQL + Redis)
-docker compose up -d
-
-# 7. Jalankan API server
-uvicorn newsagent.api.main:app --reload --app-dir backend
+uv sync --extra dev --directory backend   # install Python deps
+pnpm install                              # install frontend deps
+cp .env.example .env                      # buat konfigurasi
+docker compose up -d                      # PostgreSQL + Redis
+uvicorn newsagent.api.main:app --reload --app-dir backend  # jalankan API
 ```
 
 ---
@@ -451,6 +418,11 @@ ANTHROPIC_API_KEY=sk-ant-...
 # === Search Provider ===
 TAVILY_API_KEY=tvly-...          # default search provider
 # SERPER_API_KEY=...              # alternatif
+# DEEPSEEK_API_KEY=sk-...         # opsional (DeepSeek)
+# HF_API_KEY=hf_...               # opsional (HuggingFace)
+
+# === Provider Pilihan ===
+SEARCH_PROVIDER=tavily            # tavily (default) | serper
 
 # === CMS (WordPress REST API) ===
 CMS_BASE_URL=https://yoursite.com/wp-json/wp/v2
@@ -474,6 +446,25 @@ QUALITY_GATE_REVIEW_THRESHOLD=0.50
 ```
 
 Semua variabel lain yang tidak disebut di sini (retry, circuit breaker, token budget, security threshold, OSINT) akan dikonfigurasi di Fase 4 — lihat [ROADMAP.md](./ROADMAP.md).
+
+---
+
+## Dokumen Terkait
+
+| Dokumen | Isi |
+|---|---|
+| [VISION.md](./VISION.md) | Visi, misi, nilai inti, dan arah jangka panjang proyek |
+| [ROADMAP.md](./ROADMAP.md) | Peta jalan 4 fase pengembangan |
+| [FRONTEND.md](./FRONTEND.md) | Spesifikasi dashboard redaksi & situs berita publik |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Panduan kontribusi, commit convention, standar kode |
+| [GEMINI.md](./GEMINI.md) | Aturan wajib untuk AI assistant saat bekerja di proyek ini |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Keputusan arsitektur detail (HMAS, LangGraph, State) |
+| [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) | Panduan coding agen, pola prompt, debugging |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Dokumentasi REST & WebSocket endpoint |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Panduan setup lokal, Docker, dan environment |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Solusi error umum (install, runtime, API, test) |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Definisi 30+ istilah teknis yang digunakan |
+| [SECURITY.md](./SECURITY.md) | Kebijakan keamanan dan cara melaporkan celah |
 
 ---
 

@@ -39,11 +39,11 @@ Selesai (Fase 1 — Fondasi Agen):
      Aggregator, Quality Gate, Publisher
   ✅ RAG Pipeline (pipeline, retriever, synthesizer, reranker)
   ✅ Tools (BaseTool, web search, CMS client, scoring)
-   ✅ `backend/newsagent/api/main.py` — FastAPI entrypoint (POST /process)
+  ✅ `backend/newsagent/api/main.py` — FastAPI entrypoint (POST /process)
   ✅ Docker Compose (PostgreSQL + Redis)
-   ✅ 261 unit/integration test passing, ruff + mypy + pyright clean
-   ✅ Semua agen ganti `complete()` → `complete_structured()` + JSON Schema (0 parsing error)
-   ✅ Dev tooling: ruff, uv, pre-commit, pyright
+  ✅ 263 unit/integration test passing, ruff + mypy + pyright clean
+  ✅ Semua agen ganti `complete()` → `complete_structured()` + JSON Schema (0 parsing error)
+  ✅ Dev tooling: ruff, uv, pre-commit, pyright
 ```
 
 ---
@@ -222,7 +222,7 @@ Estimasi: 1 hari | Output: artikel tayang di CMS
 
 ```bash
 Estimasi total: 2-3 minggu
-Status backend API ✅ — frontend dashboard belum dimulai
+Status backend API ✅ — frontend dashboard ✅
 ```
 
 - [x] `backend/newsagent/api/main.py` — FastAPI dengan endpoint REST + WebSocket
@@ -233,12 +233,13 @@ Status backend API ✅ — frontend dashboard belum dimulai
 - [x] WebSocket: `ws/{article_id}` (status pipeline real-time via EventBus)
 - [x] `backend/newsagent/api/event_bus.py` — pub/sub untuk pipeline event
 - [x] `backend/newsagent/api/store.py` — ArticleStore (masih in-memory)
-- [ ] `apps/web/` — Next.js Dashboard Redaksi (TypeScript) — boilerplate exist, belum konten
-- [ ] Dashboard Redaksi — halaman Pipeline (status agen real-time)
-- [ ] Dashboard Redaksi — halaman Detail Artikel (fact-check report + approve)
-- [ ] Dashboard Redaksi — halaman daftar artikel + filter
-- [ ] Dashboard Redaksi — halaman input artikel baru
-- [ ] Dashboard Redaksi — halaman pengaturan threshold
+- [x] `apps/web/` — Next.js Dashboard Redaksi (TypeScript) — 8 halaman, build clean
+- [x] Dashboard Redaksi — halaman Dashboard (metric cards, activity chart 7 hari, alert review)
+- [x] Dashboard Redaksi — halaman Pipeline (11 agent status cards: idle/running/completed/error)
+- [x] Dashboard Redaksi — halaman Detail Artikel (FactCheckReport terformat, CredibilityGauge, tab Debat, live pipeline)
+- [x] Dashboard Redaksi — halaman daftar artikel (search, filter status, pagination)
+- [x] Dashboard Redaksi — halaman input artikel baru (topic/draft/url)
+- [x] Dashboard Redaksi — halaman pengaturan threshold (5 tab: Quality Gate, Fact-Check, Aggregator, Publisher, Notifikasi)
 - [ ] Article state machine + atomic claim — cegah duplicate processing saat multi-worker, resume after crash, `article_id` + `revision_count` sebagai unique key
 
 ### ✅ Milestone Fase 2

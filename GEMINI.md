@@ -1,6 +1,6 @@
 # GEMINI.md — Aturan Kerja AI di Project NewsAgent
 
-Dokumen ini berisi aturan **wajib** yang harus diikuti oleh AI assistant saat bekerja di proyek ini.
+Dokumen ini berisi aturan **wajib** yang harus diikuti oleh AI assistant (**semua model/layanan, bukan hanya Gemini**) saat bekerja di proyek ini.
 Dibuat berdasarkan evaluasi sesi kerja tanggal 22 Mei 2026.
 
 ---
