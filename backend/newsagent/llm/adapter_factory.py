@@ -43,8 +43,7 @@ def _build_single_adapter(provider: str, agent_key: str) -> BaseLLMAdapter:
     cls = _ADAPTER_CLASSES.get(provider)
     if cls is None:
         raise ValueError(
-            f"Unknown LLM provider '{provider}'. "
-            f"Valid: {', '.join(_ADAPTER_CLASSES)}, openrouter, hf"
+            f"Unknown LLM provider '{provider}'. Valid: {', '.join(_ADAPTER_CLASSES)}, openrouter, hf"
         )
     return cls()
 

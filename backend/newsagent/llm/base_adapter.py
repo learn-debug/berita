@@ -16,9 +16,7 @@ def parse_json_response(text: str, source: str = "unknown") -> dict[str, Any]:
 
 class BaseLLMAdapter(ABC):
     @abstractmethod
-    async def complete(
-        self, prompt: str, system: str | None = None, max_tokens: int = 2048
-    ) -> str: ...
+    async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str: ...
 
     @abstractmethod
     async def complete_structured(

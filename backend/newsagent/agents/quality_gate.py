@@ -1,7 +1,7 @@
 import logging
 
 from newsagent.core.events import make_event
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, ArticleStatus
 from newsagent.cost.token_budget import with_budget
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.memory.draft_memory import DraftMemory
@@ -70,9 +70,9 @@ class QualityGateAgent:
 
         status = state["status"]
         if route == "editor-review":
-            status = "review"
+            status = ArticleStatus.REVIEW.value
         elif route == "full-revision":
-            status = "revision"
+            status = ArticleStatus.REVISION.value
 
         logger.info("[QualityGate] skor=%.2f routing=%s", score, route)
 

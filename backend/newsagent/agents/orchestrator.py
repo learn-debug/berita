@@ -2,7 +2,7 @@ import logging
 from uuid import uuid4
 
 from newsagent.core.events import make_event
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, ArticleStatus
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class OrchestratorAgent:
 
             return {
                 **state,
-                "status": "processing",
+                "status": ArticleStatus.PROCESSING.value,
                 "revision_count": rev,
                 "events": state["events"]
                 + [
@@ -35,6 +35,6 @@ class OrchestratorAgent:
             logger.error("[Orchestrator] gagal: %s", e)
             return {
                 **state,
-                "status": "failed",
+                "status": ArticleStatus.FAILED.value,
                 "events": state["events"] + [make_event("Orchestrator", "failed", str(e))],
             }

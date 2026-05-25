@@ -1,7 +1,7 @@
 import logging
 
 from newsagent.core.events import make_event
-from newsagent.core.state import ArticleState
+from newsagent.core.state import ArticleState, ArticleStatus
 from newsagent.cost.token_budget import with_budget
 from newsagent.llm.base_adapter import BaseLLMAdapter
 from newsagent.resilience.retry_policy import with_retry
@@ -70,7 +70,7 @@ class PublisherAgent:
 
         return {
             **state,
-            "status": "published",
+            "status": ArticleStatus.PUBLISHED.value,
             "published_title": title,
             "published_body": body,
             "published_url": published_url,
@@ -81,7 +81,7 @@ class PublisherAgent:
     def _fail(self, state: ArticleState, reason: str) -> ArticleState:
         return {
             **state,
-            "status": "failed",
+            "status": ArticleStatus.FAILED.value,
             "events": state["events"] + [make_event("PublisherAgent", "publish_failed", reason)],
         }
 
