@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     quality_gate_review_threshold: float = 0.50
 
     api_key: str = ""
+    admin_password: str = "admin123"
+
+    jwt_secret: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    jwt_expiry_hours: int = 24
 
     cms_base_url: str = ""
     cms_api_key: str = ""

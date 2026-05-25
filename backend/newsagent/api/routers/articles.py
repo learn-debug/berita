@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from newsagent.api.auth import verify_api_key
+from newsagent.api.auth import verify_api_key_or_jwt as verify_api_key
 from newsagent.api.schemas import PatchRequest, ProcessRequest, ProcessResponse
 from newsagent.core.state import ArticleState
 from newsagent.security.input_sanitizer import InputSanitizer

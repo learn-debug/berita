@@ -6,10 +6,12 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-from newsagent.api.auth import verify_api_key
+from newsagent.api.auth import verify_api_key_or_jwt as verify_api_key
 from newsagent.api.event_bus import EventBus
 from newsagent.api.routers.articles import router as articles_router
+from newsagent.api.routers.auth import router as auth_router
 from newsagent.api.routers.ws import router as ws_router
 from newsagent.api.schemas import ArticleResponse, ProcessRequest
 from newsagent.api.store import ArticleStore
@@ -51,6 +53,15 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="NewsAgent API", version="0.2.0", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth_router)
 app.include_router(articles_router)
 app.include_router(ws_router)
 
