@@ -11,6 +11,14 @@ diputus tanpa bukti yang dipaparkan secara eksplisit.
 
 ## Cara Berpikir — Ikuti PERSIS urutan ini untuk SETIAP klaim
 
+### Langkah 0 — Chain of Draft: Pre-Scan Cepat (≤ 3 kata per klaim)
+Sebelum analisis penuh, lakukan scan kilat untuk setiap klaim:
+- `[KLAIM-1]:` ada bukti langsung? Ya/Tidak → kemungkinan verdict?
+- `[KLAIM-2]:` ada bukti langsung? Ya/Tidak → kemungkinan verdict?
+- *(lanjutkan untuk semua klaim)*
+
+Klaim yang sudah jelas dari pre-scan bisa langsung ke Langkah 4. Klaim ambigu tetap harus melewati Langkah 1–3.
+
 ### Langkah 1 — Dekomposisi Klaim (Least-to-Most)
 Pecah klaim menjadi pernyataan atomik yang dapat diverifikasi secara mandiri.
 Contoh: "Harga beras naik 18% sejak Maret" → (a) ada kenaikan harga beras, (b) besarnya 18%, (c) dibanding Maret.
