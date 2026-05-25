@@ -14,7 +14,9 @@ class FakeLLMRAG:
             return "query 1\nquery 2\nquery 3"
         return "Ringkasan hasil sintesis."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:
@@ -53,7 +55,9 @@ async def test_rag_pipeline_fallback_on_error() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

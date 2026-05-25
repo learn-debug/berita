@@ -8,7 +8,9 @@ class FakeLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Ini adalah artikel yang sudah diedit dengan tata bahasa yang baik."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {"output": "Ini adalah artikel yang sudah diedit dengan tata bahasa yang baik."}
 
     def model_name(self) -> str:
@@ -49,7 +51,9 @@ async def test_editor_agent_fallback_on_error() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

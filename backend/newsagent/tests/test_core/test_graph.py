@@ -24,13 +24,13 @@ def _make_state(overrides: dict | None = None) -> ArticleState:
 
 
 class TestRouteAfterQuality:
-    def test_high_score_goes_to_publisher(self) -> None:
+    def test_high_score_goes_to_memory_agent(self) -> None:
         state = _make_state({"credibility_score": 0.85})
-        assert route_after_quality(state) == "publisher"
+        assert route_after_quality(state) == "memory_agent"
 
     def test_score_at_auto_publish_boundary(self) -> None:
         state = _make_state({"credibility_score": 0.75})
-        assert route_after_quality(state) == "publisher"
+        assert route_after_quality(state) == "memory_agent"
 
     def test_score_at_review_boundary(self) -> None:
         state = _make_state({"credibility_score": 0.50})
@@ -97,6 +97,7 @@ class TestBuildGraph:
             "verdict_prediction",
             "aggregator",
             "quality_gate",
+            "memory_agent",
             "publisher",
         ]
         for node in expected:

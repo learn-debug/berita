@@ -17,7 +17,9 @@ class FakeLLMDraft:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Ini adalah draft artikel yang dihasilkan."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {"output": "Ini adalah draft artikel yang dihasilkan."}
 
     def model_name(self) -> str:
@@ -28,7 +30,9 @@ class FakeLLMEditor:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Ini adalah artikel yang sudah diedit dengan baik."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {"output": "Ini adalah artikel yang sudah diedit dengan baik."}
 
     def model_name(self) -> str:
@@ -39,7 +43,9 @@ class FakeLLMGeneric:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Respon dari LLM."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         required = schema.get("required", [])
         if "judul" in required:
             return {"judul": "Judul Artikel", "konten": "Respon dari LLM."}
@@ -70,7 +76,9 @@ class FakeLLMQuality:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return ""
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {
             "fact_accuracy": 0.80,
             "narrative_consistency": 0.75,
@@ -86,7 +94,9 @@ class HighScoreLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return ""
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {
             "fact_accuracy": 0.90,
             "narrative_consistency": 0.85,

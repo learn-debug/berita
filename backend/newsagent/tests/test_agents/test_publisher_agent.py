@@ -8,7 +8,9 @@ class FakeLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return ""
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {"judul": "Artikel Test", "konten": "Ini adalah artikel yang siap publikasi."}
 
     def model_name(self) -> str:
@@ -19,7 +21,9 @@ class FakeLLMNoTitle:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return ""
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {"judul": "", "konten": ""}
 
     def model_name(self) -> str:
@@ -109,7 +113,9 @@ async def test_publisher_agent_handles_llm_error() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

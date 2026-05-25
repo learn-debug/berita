@@ -7,7 +7,9 @@ class FakeLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Ringkasan terstruktur tentang topik."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {"raw": "test"}
 
     def model_name(self) -> str:

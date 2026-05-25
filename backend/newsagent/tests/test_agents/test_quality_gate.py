@@ -8,7 +8,9 @@ class FakeLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return ""
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {
             "fact_accuracy": 0.85,
             "narrative_consistency": 0.90,
@@ -53,7 +55,9 @@ async def test_quality_gate_editor_review() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return ""
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             return {
                 "fact_accuracy": 0.70,
                 "narrative_consistency": 0.65,
@@ -80,7 +84,9 @@ async def test_quality_gate_full_revision() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return ""
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             return {
                 "fact_accuracy": 0.20,
                 "narrative_consistency": 0.30,
@@ -106,7 +112,9 @@ async def test_quality_gate_score_at_auto_publish_boundary() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return ""
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             return {
                 "fact_accuracy": 0.875,
                 "narrative_consistency": 0.875,
@@ -131,7 +139,9 @@ async def test_quality_gate_score_at_full_revision_boundary() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             return ""
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             return {
                 "fact_accuracy": 0.2,
                 "narrative_consistency": 0.2,
@@ -156,7 +166,9 @@ async def test_quality_gate_fallback_on_error() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:

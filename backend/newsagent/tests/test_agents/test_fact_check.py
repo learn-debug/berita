@@ -11,7 +11,9 @@ class FakeLLM:
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
         return "Fake response for testing."
 
-    async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+    async def complete_structured(
+        self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+    ) -> dict:
         return {
             "output": "Fake output for TEXT_OUTPUT_SCHEMA.",
             "claims": [
@@ -69,7 +71,9 @@ async def test_input_ingestion_fallback_on_error() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:
@@ -151,7 +155,9 @@ async def test_query_generation_fallback_on_error() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:
@@ -224,7 +230,9 @@ async def test_verdict_prediction_fallback_on_error() -> None:
         async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
             raise RuntimeError("API error")
 
-        async def complete_structured(self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048) -> dict:
+        async def complete_structured(
+            self, prompt: str, schema: dict, system: str | None = None, max_tokens: int = 2048
+        ) -> dict:
             raise RuntimeError("API error")
 
         def model_name(self) -> str:
