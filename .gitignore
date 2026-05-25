@@ -19,3 +19,6 @@ out/
 
 # Dokumen referensi internal — jangan dipush ke GitHub
 docs/prompt_engineering_referensi_lengkap.md
+
+# Local AI Tools
+.continue/
