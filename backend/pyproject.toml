@@ -36,6 +36,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+ner = [
+    "spacy>=3.8.0",
+]
 dev = [
     "ruff>=0.9.0",
     "pytest>=8.3.0",
