@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any
 
 import pytest
@@ -40,3 +41,28 @@ def base_state() -> ArticleState:
         revision_count=0,
         events=[],
     )
+
+
+@pytest.fixture(autouse=True)
+def clean_database():
+    try:
+        from newsagent.memory.engine import get_engine
+
+        async def _truncate():
+            engine = await get_engine()
+            await engine.execute(
+                "TRUNCATE TABLE article_claims, agent_costs, article_events, articles CASCADE"
+            )
+
+        try:
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                # In active async tests, run it on the active loop
+                loop.create_task(_truncate())
+            else:
+                loop.run_until_complete(_truncate())
+        except RuntimeError:
+            asyncio.run(_truncate())
+    except Exception:
+        pass
+    yield
