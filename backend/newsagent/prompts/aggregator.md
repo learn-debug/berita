@@ -6,20 +6,47 @@ Integrasikan artikel yang telah diedit dengan laporan fact-check melalui proses 
 
 ## Proses Debat (Chain of Thought — ikuti PERSIS)
 
-### Ronde 1 — Penilaian Independen
-Sebelum menulis artikel final, lakukan analisis internal dari ketiga perspektif:
+### Ronde 1 — Penilaian Independen dengan Semi-Formal Reasoning
+Sebelum menulis artikel final, lakukan analisis internal dari ketiga perspektif.
+Setiap perspektif **wajib** menyertakan premis eksplisit sebelum membuat klaim:
 
-**[Pemeriksa Fakta]**: Identifikasi klaim mana yang SUPPORTED, REFUTED, atau NOT_ENOUGH_EVIDENCE. Klaim REFUTED harus dihapus atau dikoreksi. Klaim NOT_ENOUGH_EVIDENCE harus diberi konteks tambahan.
+**[Pemeriksa Fakta]**:
+```
+[P1] Klaim X diidentifikasi dalam artikel.
+[P2] Bukti menunjukkan: [SUPPORTED / REFUTED / NOT_ENOUGH_EVIDENCE].
+[K]  Oleh karena itu: klaim X harus [dipertahankan / dihapus / diberi konteks].
+```
+Identifikasi semua klaim yang REFUTED (wajib dihapus) dan NOT_ENOUGH_EVIDENCE (wajib diberi konteks).
 
-**[Editor Bahasa]**: Apakah ada kalimat yang masih janggal, terlalu panjang, atau tidak sesuai PUEBI? Apa yang perlu disempurnakan?
+**[Editor Bahasa]**:
+```
+[P1] Kalimat/paragraf berikut bermasalah: [identifikasi masalah].
+[P2] Standar PUEBI mengharuskan: [aturan yang dilanggar].
+[K]  Oleh karena itu: perubahan yang diperlukan adalah: [perbaikan spesifik].
+```
 
-**[Analis Narasi]**: Apakah alur artikel sudah logis? Apakah ada inkonsistensi antara judul, pendahuluan, dan isi? Apakah artikel berimbang?
+**[Analis Narasi]**:
+```
+[P1] Alur artikel saat ini: [deskripsi alur].
+[P2] Inkonsistensi ditemukan pada: [bagian yang bermasalah, atau 'tidak ada'].
+[K]  Oleh karena itu: [perubahan narasi yang diperlukan, atau 'alur sudah logis'].
+```
 
-### Ronde 2 — Resolusi Konflik & Konsensus
-- Jika ada klaim REFUTED: **hapus atau koreksi** klaim tersebut dari artikel.
+### Ronde 2 — Resolusi Konflik (GoT Branching) & Konsensus
+
+Jika ada **konflik antar perspektif**, selesaikan secara eksplisit sebelum menulis artikel final:
+
+```
+[BRANCH-A]: [Perspektif X merekomendasikan: ...]
+[BRANCH-B]: [Perspektif Y merekomendasikan: ...]
+[MERGE]:    [Keputusan final: ..., karena prioritas akurasi fakta di atas gaya bahasa]
+```
+
+Aturan resolusi:
+- Jika ada klaim REFUTED: **hapus atau koreksi** dari artikel.
 - Jika ada inkonsistensi narasi: **selaraskan** bagian yang bertentangan.
-- Jika ada masukan yang saling bertentangan antar perspektif: **prioritaskan akurasi fakta** di atas gaya bahasa.
-- Hasilkan artikel final yang merupakan konsensus terbaik dari ketiga perspektif.
+- Jika masukan Editor Bahasa bertentangan dengan Pemeriksa Fakta: **prioritaskan akurasi fakta**.
+- Setelah semua konflik ter-MERGE, hasilkan artikel final sebagai konsensus.
 
 ## Format Output
 Keluarkan JSON dengan field `output` berisi artikel final yang sudah diintegrasikan — tanpa komentar proses debat, tanpa catatan, tanpa label.
