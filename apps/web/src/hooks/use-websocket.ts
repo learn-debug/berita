@@ -17,20 +17,18 @@ export type WsMessage =
 type ConnectionState = "connecting" | "connected" | "disconnected";
 type PipelineState = "idle" | "running" | "completed" | "error";
 
-export function usePipelineWebSocket(articleId: string | null) {
+export function usePipelineWebSocket(articleId: string | null, token?: string | null) {
   const [messages, setMessages] = useState<WsMessage[]>([]);
-  const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected");
+  const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
   const [pipelineState, setPipelineState] = useState<PipelineState>("idle");
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (!articleId) return;
 
-    const ws = new WebSocket(`${WS_BASE}/ws/${articleId}`);
+    const params = token ? `?token=${encodeURIComponent(token)}` : "";
+    const ws = new WebSocket(`${WS_BASE}/ws/${articleId}${params}`);
     wsRef.current = ws;
-    setConnectionState("connecting");
-    setMessages([]);
-    setPipelineState("idle");
 
     ws.onopen = () => setConnectionState("connected");
     ws.onmessage = (msg) => {
@@ -57,7 +55,7 @@ export function usePipelineWebSocket(articleId: string | null) {
       ws.close();
       wsRef.current = null;
     };
-  }, [articleId]);
+  }, [articleId, token]);
 
   const runningAgents = new Set(
     messages

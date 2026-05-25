@@ -21,7 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <>
       <Sidebar />
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+      <main className="flex-1 overflow-auto p-4 lg:p-6 pt-16 lg:pt-6">{children}</main>
     </>
   );
 }

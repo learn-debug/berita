@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { api, ArticleState } from "@/lib/api";
 import { usePipelineWebSocket, WsMessage } from "@/hooks/use-websocket";
+import { useAuth } from "@/lib/auth";
 import { CredibilityGaugeCard } from "@/components/shared/credibility-gauge";
 import { FactCheckReportView } from "@/components/articles/fact-check-report";
 import { DebateLog } from "@/components/articles/debate-log";
@@ -28,6 +30,7 @@ import {
 } from "lucide-react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -75,18 +78,24 @@ export default function ArticleDetailPage() {
   const articleId = params.id as string;
   const [article, setArticle] = useState<ArticleState | null>(null);
   const [loading, setLoading] = useState(true);
-  const { messages, connectionState, pipelineState, runningAgents } = usePipelineWebSocket(articleId);
-
-  const load = () => {
-    setLoading(true);
-    api.getArticle(articleId).then((res) => {
-      setArticle(res);
-      setLoading(false);
-    });
-  };
+  const { token } = useAuth();
+  const { messages, connectionState, runningAgents } = usePipelineWebSocket(articleId, token);
 
   useEffect(() => {
-    load();
+    api.getArticle(articleId).then(
+      (res) => {
+        setArticle(res);
+        setLoading(false);
+      },
+      () => setLoading(false)
+    );
+  }, [articleId]);
+
+  const reload = useCallback(() => {
+    api.getArticle(articleId).then(
+      (res) => setArticle(res),
+      () => {}
+    );
   }, [articleId]);
 
   const handleAction = async (action: string) => {
@@ -99,14 +108,33 @@ export default function ArticleDetailPage() {
             ? "Artikel ditolak"
             : "Artikel dikirim ulang"
       );
-      load();
+      reload();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal");
     }
   };
 
   if (loading) {
-    return <p className="text-muted-foreground">Memuat...</p>;
+    return (
+      <div className="space-y-6 max-w-6xl">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-9 w-9 rounded-md" />
+          <div className="flex-1 space-y-1">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <Skeleton className="h-64 w-full rounded-xl" />
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!article) {
@@ -118,7 +146,7 @@ export default function ArticleDetailPage() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/articles")}>
+        <Button variant="ghost" size="icon" aria-label="Kembali" onClick={() => router.push("/articles")}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1 min-w-0">
@@ -170,13 +198,9 @@ export default function ArticleDetailPage() {
               {article.status === "review" && (
                 <div className="flex gap-2">
                   <Dialog>
-                    <DialogTrigger
-                      render={
-                        <Button className="bg-green-600 hover:bg-green-700">
-                          <CheckCircle2 className="w-4 h-4 mr-1" /> Setujui & Publikasikan
-                        </Button>
-                      }
-                    />
+                    <DialogTrigger render={<Button className="bg-green-600 hover:bg-green-700" />}>
+                      <CheckCircle2 className="w-4 h-4 mr-1" /> Setujui & Publikasikan
+                    </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Setujui Artikel</DialogTitle>
@@ -185,9 +209,11 @@ export default function ArticleDetailPage() {
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => {}}>
+                        <DialogClose
+                          render={<Button variant="outline" />}
+                        >
                           Batal
-                        </Button>
+                        </DialogClose>
                         <Button
                           className="bg-green-600 hover:bg-green-700"
                           onClick={() => handleAction("approve")}

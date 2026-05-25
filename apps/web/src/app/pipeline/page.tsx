@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { usePipelineWebSocket, WsMessage } from "@/hooks/use-websocket";
 import { AgentStatusCard, AgentStatus } from "@/components/pipeline/agent-status-card";
-import { Activity, Wifi, WifiOff, Play, Square } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { Activity, Wifi, Play, Square } from "lucide-react";
 
 const agentNames = [
   "orchestrator",
@@ -60,8 +60,9 @@ function getAgentDetail(name: string, msgs: WsMessage[]): string | undefined {
 export default function PipelinePage() {
   const [articleId, setArticleId] = useState("");
   const [connected, setConnected] = useState(false);
+  const { token } = useAuth();
   const { messages, connectionState, pipelineState, runningAgents, clear } =
-    usePipelineWebSocket(connected ? articleId : null);
+    usePipelineWebSocket(connected ? articleId : null, token);
 
   return (
     <div className="space-y-6">

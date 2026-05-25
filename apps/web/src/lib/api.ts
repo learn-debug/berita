@@ -1,17 +1,10 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const AUTH_KEY = "newsagent_token";
+import { redirectToLogin } from "./auth-redirect";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
     this.name = "ApiError";
   }
-}
-
-function authHeaders(): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  const token = localStorage.getItem(AUTH_KEY);
-  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export interface VerdictRaw {
@@ -69,15 +62,18 @@ export interface ArticleListResponse {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}/api/v1${path}`, {
+  const res = await fetch(`/api/v1${path}`, {
     ...init,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...authHeaders(),
       ...init?.headers,
     },
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      redirectToLogin();
+    }
     const body = await res.json().catch(() => ({}));
     throw new ApiError(res.status, body.detail ?? res.statusText);
   }

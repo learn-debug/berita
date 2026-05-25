@@ -32,6 +32,12 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!password.trim()) {
+      setError("Password harus diisi");
+      return;
+    }
+
     setSubmitting(true);
     try {
       await login(password);

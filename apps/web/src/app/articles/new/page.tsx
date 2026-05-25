@@ -22,12 +22,17 @@ export default function NewArticlePage() {
   const [inputType, setInputType] = useState("topic");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ content?: string }>({});
 
   const handleSubmit = async () => {
+    const newErrors: { content?: string } = {};
     if (!content.trim()) {
-      toast.error("Konten harus diisi");
-      return;
+      newErrors.content =
+        inputType === "draft" ? "Draf artikel harus diisi" : "Konten harus diisi";
     }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     setLoading(true);
     try {
       const result = await api.processArticle(inputType, content);
@@ -79,7 +84,10 @@ export default function NewArticlePage() {
                 placeholder="Tulis draf artikel di sini..."
                 rows={10}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (errors.content) setErrors({});
+                }}
               />
             ) : (
               <Input
@@ -89,8 +97,14 @@ export default function NewArticlePage() {
                     : "https://..."
                 }
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (errors.content) setErrors({});
+                }}
               />
+            )}
+            {errors.content && (
+              <p className="text-sm text-red-600">{errors.content}</p>
             )}
           </div>
 

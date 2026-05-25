@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Save, Sliders, Shield, GitMerge, Globe, Bell } from "lucide-react";
@@ -19,9 +18,11 @@ export default function SettingsPage() {
   const [consensusThreshold, setConsensusThreshold] = useState("0.7");
   const [cmsUrl, setCmsUrl] = useState("");
   const [publishSchedule, setPublishSchedule] = useState("immediate");
+  const [notifEmail, setNotifEmail] = useState("");
+  const [notifSlack, setNotifSlack] = useState("");
 
   const handleSave = (section: string) => {
-    toast.success(`Pengaturan ${section} disimpan (lokal)`);
+    toast.info(`Pengaturan ${section} — backend API belum tersedia`);
   };
 
   return (
@@ -228,6 +229,8 @@ export default function SettingsPage() {
                   id="notifEmail"
                   type="email"
                   placeholder="editor@example.com"
+                  value={notifEmail}
+                  onChange={(e) => setNotifEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -236,6 +239,8 @@ export default function SettingsPage() {
                   id="notifSlack"
                   type="url"
                   placeholder="https://hooks.slack.com/..."
+                  value={notifSlack}
+                  onChange={(e) => setNotifSlack(e.target.value)}
                 />
               </div>
               <Button onClick={() => handleSave("Notifikasi")}>

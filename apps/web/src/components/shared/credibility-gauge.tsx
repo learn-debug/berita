@@ -28,7 +28,7 @@ export function CredibilityGauge({
       : { text: "text-3xl", bar: "h-3", container: "gap-3" };
 
   return (
-    <div className={`flex items-center ${sizeClasses.container}`}>
+    <div className={`flex items-center ${sizeClasses.container}`} role="img" aria-label={`Skor kredibilitas: ${(score * 100).toFixed(0)} dari 100, ${label.toLowerCase()}`}>
       <div className={`${sizeClasses.text} font-bold ${colors.text}`}>
         {(score * 100).toFixed(0)}
       </div>

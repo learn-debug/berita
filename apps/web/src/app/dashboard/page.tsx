@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { api, ArticleState } from "@/lib/api";
 import { ActivityChart } from "@/components/dashboard/activity-chart";
-import { CredibilityGauge } from "@/components/shared/credibility-gauge";
 import { FileText, CheckCircle2, Clock, AlertCircle, Eye } from "lucide-react";
 
 const statusColors: Record<string, string> = {
@@ -48,10 +47,26 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.listArticles({ limit: 100 }).then((res) => {
-      setArticles(res.articles);
-      setLoading(false);
-    });
+    let cancelled = false;
+    const fetchArticles = () =>
+      api.listArticles({ limit: 100 }).then(
+        (res) => {
+          if (!cancelled) {
+            setArticles(res.articles);
+            setLoading(false);
+          }
+        },
+        () => {
+          if (!cancelled) setLoading(false);
+        }
+      );
+
+    fetchArticles();
+    const interval = setInterval(fetchArticles, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   const total = articles.length;

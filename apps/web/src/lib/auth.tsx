@@ -2,8 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const AUTH_KEY = "newsagent_token";
+import { setRedirectFn } from "./auth-redirect";
 
 interface AuthContextValue {
   token: string | null;
@@ -21,36 +20,29 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
 });
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const stored = localStorage.getItem(AUTH_KEY);
-    if (stored) {
-      fetch(`${API_BASE}/api/v1/auth/verify?token=${encodeURIComponent(stored)}`)
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.valid) {
-            setToken(stored);
-          } else {
-            localStorage.removeItem(AUTH_KEY);
-          }
-        })
-        .catch(() => {
-          setToken(stored);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, []);
+    setRedirectFn(() => router.replace("/login"));
+
+    fetch("/api/v1/auth/verify", { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.valid) {
+          setToken("authenticated");
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [router]);
 
   const login = useCallback(async (password: string) => {
-    const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+    const res = await fetch("/api/v1/auth/login", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
     });
@@ -59,14 +51,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(err.detail ?? "Login failed");
     }
     const data = await res.json();
-    localStorage.setItem(AUTH_KEY, data.token);
     setToken(data.token);
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_KEY);
+  const logout = useCallback(async () => {
+    try {
+      await fetch("/api/v1/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // best effort — clear state regardless
+    }
     setToken(null);
-  }, []);
+    router.replace("/login");
+  }, [router]);
 
   return (
     <AuthContext.Provider value={{ token, login, logout, isAuthenticated: !!token, loading }}>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -43,21 +44,23 @@ export default function ArticlesPage() {
   const [total, setTotal] = useState(0);
   const limit = 20;
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const status = statusFilter === "all" ? undefined : statusFilter;
-      const res = await api.listArticles({ status, page, limit });
-      setArticles(res.articles);
-      setTotal(res.total);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, statusFilter]);
-
   useEffect(() => {
-    load();
-  }, [statusFilter, page, load]);
+    let cancelled = false;
+    const status = statusFilter === "all" ? undefined : statusFilter;
+    api.listArticles({ status, page, limit }).then(
+      (res) => {
+        if (!cancelled) {
+          setArticles(res.articles);
+          setTotal(res.total);
+          setLoading(false);
+        }
+      },
+      () => {
+        if (!cancelled) setLoading(false);
+      }
+    );
+    return () => { cancelled = true; };
+  }, [page, statusFilter]);
 
   const filtered = searchQuery
     ? articles.filter(
@@ -77,7 +80,15 @@ export default function ArticlesPage() {
           <p className="text-muted-foreground">Daftar semua artikel</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={() => load()}>
+          <Button variant="outline" size="icon" aria-label="Muat ulang" onClick={() => {
+            setLoading(true);
+            const status = statusFilter === "all" ? undefined : statusFilter;
+            api.listArticles({ status, page, limit }).then((res) => {
+              setArticles(res.articles);
+              setTotal(res.total);
+              setLoading(false);
+            }, () => setLoading(false));
+          }}>
             <RefreshCw className="w-4 h-4" />
           </Button>
           <Link href="/articles/new">
@@ -124,7 +135,11 @@ export default function ArticlesPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Memuat...</p>
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-md" />
+              ))}
+            </div>
           ) : filtered.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               {searchQuery
