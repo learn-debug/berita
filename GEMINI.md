@@ -1,7 +1,7 @@
 # GEMINI.md — Aturan Kerja AI di Project NewsAgent
 
 Dokumen ini berisi aturan **wajib** yang harus diikuti oleh AI assistant (**semua model/layanan, bukan hanya Gemini**) saat bekerja di proyek ini.
-Dibuat berdasarkan evaluasi sesi kerja tanggal 22 Mei 2026.
+Dibuat berdasarkan evaluasi sesi kerja tanggal 22 Mei 2026. Diperbarui 25 Mei 2026 — *Versi 2.0: Frontier 2026 Techniques*.
 
 ---
 
@@ -49,12 +49,15 @@ Dibuat berdasarkan evaluasi sesi kerja tanggal 22 Mei 2026.
 
 Saat menulis kode untuk user, terapkan teknik yang sama seperti yang kita terapkan ke agen:
 
-| Teknik | Cara Terapkan |
-|---|---|
-| **Plan-and-Solve** | Buat rencana eksplisit sebelum eksekusi |
-| **Contrastive** | Tunjukkan kode buruk beserta alasannya vs kode yang benar |
-| **Least-to-Most** | Pecah masalah kompleks jadi sub-tugas kecil |
-| **CoT** | Verbalisasi langkah berpikir ke user, jangan langsung loncat ke kode |
+| Teknik | Generasi | Cara Terapkan |
+|---|---|---|
+| **Plan-and-Solve** | Gen 4 | Buat rencana eksplisit sebelum eksekusi |
+| **Contrastive CoT** | Gen 4 | Tunjukkan kode buruk beserta alasannya vs kode yang benar |
+| **Least-to-Most** | Gen 2 | Pecah masalah kompleks jadi sub-tugas kecil |
+| **CoT** | Gen 2 | Verbalisasi langkah berpikir ke user, jangan langsung loncat ke kode |
+| **Chain of Draft** | Gen 4 | Tulis coretan analisis padat (≤ 5 kata/langkah) sebelum respons penuh — hemat token |
+| **Semi-Formal Reasoning** | Frontier 2026 | Setiap klaim teknis harus punya `[PREMIS]` eksplisit dan `[KESIMPULAN]` sebelum disampaikan |
+| **UtilityMax** | Frontier 2026 | Saat membandingkan pendekatan, definisikan fungsi utilitas `U` dan maksimalkan secara eksplisit |
 
 ---
 
@@ -95,3 +98,18 @@ Setiap kali user mengoreksi sesuatu, refleksikan secara verbal sebelum melanjutk
 
 > ❌ JANGAN tunjukkan kode ke user sebelum melewati loop Generate → Critique → Refine → Select
 > ✅ User hanya melihat output yang sudah melewati self-critique internal
+
+---
+
+## 7. Frontier 2026 Check — Wajib Sebelum Menutup Rencana
+
+**WAJIB**: Sebelum menyelesaikan rencana implementasi atau rekomendasi teknis, tanyakan secara internal:
+
+1. **UtilityMax** — Apakah keputusan ini bisa diekspresikan sebagai fungsi utilitas `U` yang terukur?
+2. **Semi-Formal Reasoning** — Apakah setiap klaim yang dibuat sudah memiliki premis eksplisit yang bisa diverifikasi?
+3. **Chain of Draft** — Apakah ada cara untuk memadatkan penalaran ini dan menghemat token tanpa kehilangan akurasi?
+
+Jika salah satu dari tiga pertanyaan di atas dapat meningkatkan kualitas output, **terapkan teknik tersebut** sebelum output ditampilkan ke user.
+
+> ❌ JANGAN menutup rencana tanpa setidaknya mempertimbangkan ketiga teknik Frontier 2026 di atas
+> ✅ Minimal dokumentasikan mengapa teknik tersebut dipilih atau diabaikan untuk konteks ini
