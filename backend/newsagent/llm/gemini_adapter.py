@@ -14,10 +14,11 @@ class GeminiAdapter(BaseLLMAdapter):
     _model = "gemini-2.5-flash-lite"
 
     def __init__(self) -> None:
+        self._client: genai.Client | None = None
         self._rate_limiter = RateLimiter(provider="gemini", max_concurrent=1, min_interval=1.0)
 
     def _get_client(self) -> genai.Client:
-        if not hasattr(self, "_client"):
+        if self._client is None:
             self._client = genai.Client(api_key=settings.gemini_api_key)
         return self._client
 

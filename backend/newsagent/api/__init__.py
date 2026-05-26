@@ -3,4 +3,4 @@ from newsagent.api.main import app
 from newsagent.api.store import ArticleStore
 from newsagent.database.repository import ArticleRepository
 
-__all__ = ["app", "ArticleStore", "ArticleRepository", "EventBus"]
+__all__ = ["ArticleRepository", "ArticleStore", "EventBus", "app"]

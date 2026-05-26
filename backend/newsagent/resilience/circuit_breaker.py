@@ -19,10 +19,13 @@ class CircuitBreaker:
         return self._state
 
     def _try_half_open(self) -> bool:
-        if self._state == "open" and self._last_failure_time is not None:
-            if time.monotonic() - self._last_failure_time >= self._reset_timeout:
-                self._state = "half-open"
-                return True
+        if (
+            self._state == "open"
+            and self._last_failure_time is not None
+            and time.monotonic() - self._last_failure_time >= self._reset_timeout
+        ):
+            self._state = "half-open"
+            return True
         return False
 
     async def record_failure(self) -> None:

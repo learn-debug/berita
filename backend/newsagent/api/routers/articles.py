@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/articles")
 limiter = RateLimiter(max_calls=60, window=60.0)
+_background_tasks: set[asyncio.Task] = set()
 
 
 def _make_title(raw: str) -> str:
@@ -65,7 +66,9 @@ async def process_article(req: ProcessRequest, _auth: None = Depends(verify_api_
         },
     )
 
-    asyncio.create_task(_run_pipeline(article_id, initial, _graph, _store, _event_bus))
+    task = asyncio.create_task(_run_pipeline(article_id, initial, _graph, _store, _event_bus))
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
 
     return ProcessResponse(article_id=article_id)
 
@@ -91,7 +94,7 @@ async def _run_pipeline(
                 "status": status,
             },
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         await store.save(article_id, {"status": ArticleStatus.FAILED.value})
         await event_bus.publish(
             article_id,

@@ -105,8 +105,8 @@ async def process_article(req: ProcessRequest, _auth: None = Depends(verify_api_
     try:
         result = await asyncio.wait_for(_graph.ainvoke(initial), timeout=120.0)
         return ArticleResponse(article_id=result["article_id"], status=result["status"])
-    except asyncio.TimeoutError:
+    except TimeoutError:
         raise HTTPException(status_code=504, detail="Pipeline timeout")
     except Exception as e:
         logger.error("[API] pipeline error: %s", e)
-        raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Pipeline error: {e!s}")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 from typing import Any
@@ -156,8 +157,6 @@ class ArticleRepository:
         d = dict(row)
         for json_field in ("fact_check_report",):
             if isinstance(d.get(json_field), str):
-                try:
+                with contextlib.suppress(json.JSONDecodeError, TypeError):
                     d[json_field] = json.loads(d[json_field])
-                except (json.JSONDecodeError, TypeError):
-                    pass
         return d

@@ -1,7 +1,7 @@
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from newsagent.core.state import ArticleState, ArticleStatus
@@ -87,7 +87,7 @@ class ArticleStore:
         # Find all processing articles
         rows = await engine.fetch("SELECT id, article_id_str FROM articles WHERE status = 'processing'")
         count = 0
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         for r in rows:
             uid = r["id"]
             # Update status to failed
@@ -114,14 +114,11 @@ class ArticleStore:
     async def save(self, article_id: str, state: ArticleState | dict[str, Any]) -> None:
         uid = ensure_uuid(article_id)
         engine = await get_engine()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Convert fact_check_report to JSON string if it is a dict
         report = state.get("fact_check_report") or {}
-        if isinstance(report, dict):
-            report_str = json.dumps(report)
-        else:
-            report_str = str(report)
+        report_str = json.dumps(report) if isinstance(report, dict) else str(report)
 
         # We construct input_type check to be valid ENUM value
         input_type = state.get("input_type", "topic")
@@ -294,10 +291,7 @@ class ArticleStore:
         """
         rows = await engine.fetch(select_query, *params)
 
-        articles = []
-        for r in rows:
-            # We can skip fetching events for the list endpoint for speed, or return empty list
-            articles.append(map_row_to_state(r, []))
+        articles = [map_row_to_state(r, []) for r in rows]
 
         return {
             "total": total,

@@ -12,8 +12,11 @@ logger = logging.getLogger(__name__)
 class DeepSeekAdapter(BaseLLMAdapter):
     _model = "deepseek-chat"
 
+    def __init__(self) -> None:
+        self._client: AsyncOpenAI | None = None
+
     def _get_client(self) -> AsyncOpenAI:
-        if not hasattr(self, "_client"):
+        if self._client is None:
             self._client = AsyncOpenAI(
                 api_key=settings.deepseek_api_key,
                 base_url="https://api.deepseek.com",

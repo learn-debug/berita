@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import logging
 from typing import Any
@@ -16,6 +17,7 @@ class EventBus:
         self._redis: aioredis.Redis | None = None
         self._pubsub_task: asyncio.Task | None = None
         self._lock = asyncio.Lock()
+        self._redis_connect_task: asyncio.Task | None = None
         self._redis_attempted = False
 
     async def _ensure_redis(self) -> None:
@@ -79,17 +81,15 @@ class EventBus:
         except Exception as e:
             logger.error("[EventBus] Redis pubsub listener error: %s", e)
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 await pubsub.close()
-            except Exception:
-                pass
 
     def subscribe(self, article_id: str) -> asyncio.Queue:
         q: asyncio.Queue = asyncio.Queue()
         self._queues.setdefault(article_id, []).append(q)
 
         # Trigger Redis connection check asynchronously so we don't block
-        asyncio.create_task(self._ensure_redis())
+        self._redis_connect_task = asyncio.create_task(self._ensure_redis())
 
         return q
 

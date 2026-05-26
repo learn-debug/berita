@@ -6,6 +6,8 @@ import pytest
 from newsagent.core.state import ArticleState
 from newsagent.llm.base_adapter import BaseLLMAdapter
 
+_cleanup_tasks: set[asyncio.Task] = set()
+
 
 class FakeLLM(BaseLLMAdapter):
     async def complete(self, prompt: str, system: str | None = None, max_tokens: int = 2048) -> str:
@@ -58,11 +60,12 @@ def clean_database():
             loop = asyncio.get_running_loop()
             if loop.is_running():
                 # In active async tests, run it on the active loop
-                loop.create_task(_truncate())
+                task = loop.create_task(_truncate())
+                _cleanup_tasks.add(task)
             else:
                 loop.run_until_complete(_truncate())
         except RuntimeError:
             asyncio.run(_truncate())
     except Exception:
         pass
-    yield
+    return

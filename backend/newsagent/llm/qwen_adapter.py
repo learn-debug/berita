@@ -12,8 +12,11 @@ logger = logging.getLogger(__name__)
 class QwenAdapter(BaseLLMAdapter):
     _model = "qwen-plus"
 
+    def __init__(self) -> None:
+        self._client: AsyncOpenAI | None = None
+
     def _get_client(self) -> AsyncOpenAI:
-        if not hasattr(self, "_client"):
+        if self._client is None:
             self._client = AsyncOpenAI(
                 api_key=settings.qwen_api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",

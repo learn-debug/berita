@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-import enum
-from typing import Any, TypedDict
-
-from typing_extensions import NotRequired
+from enum import StrEnum
+from typing import Any, NotRequired, TypedDict
 
 from newsagent.core.events import EventDict
 
 
-class ArticleStatus(str, enum.Enum):
+class ArticleStatus(StrEnum):
     PENDING = "pending"
     PROCESSING = "processing"
     REVIEW = "review"
@@ -17,9 +15,6 @@ class ArticleStatus(str, enum.Enum):
     REJECTED = "rejected"
     PUBLISHED = "published"
     FAILED = "failed"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 _VALID_TRANSITIONS: dict[ArticleStatus, set[ArticleStatus]] = {

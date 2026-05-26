@@ -7,7 +7,7 @@ from newsagent.llm.qwen_adapter import QwenAdapter
 
 def test_lazy_init_does_not_crash() -> None:
     adapter = QwenAdapter()
-    assert not hasattr(adapter, "_client")
+    assert adapter._client is None
 
 
 def test_model_name() -> None:

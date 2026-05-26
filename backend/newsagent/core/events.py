@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, TypedDict
 
 
@@ -17,6 +17,6 @@ def make_event(
         agent=agent,
         action=action,
         detail=detail,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
         metadata=metadata or {},
     )

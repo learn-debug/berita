@@ -9,7 +9,7 @@ include = ["newsagent*"]
 name = "newsagent"
 version = "0.1.0"
 description = "Multi-agent system for automated news production"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "langgraph>=0.4.0",
     "fastapi>=0.115.0",
@@ -60,24 +60,38 @@ dev = [
 
 [tool.ruff]
 line-length = 110
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.format]
 quote-style = "double"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W"]
+select = ["E", "F", "I", "N", "W", "UP", "SIM", "RET", "ARG", "PT", "C4", "ASYNC", "RUF", "PERF"]
+
+[tool.ruff.lint.per-file-ignores]
+"newsagent/tests/*" = ["ARG", "ASYNC", "PERF", "PT"]
+"newsagent/llm/*" = ["ASYNC", "ARG"]
+"newsagent/memory/*" = ["ASYNC"]
+"newsagent/rag/*" = ["ASYNC"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "newsagent/tests"]
 asyncio_mode = "strict"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 ignore_missing_imports = true
-strict = false
+strict = true
 warn_unused_configs = true
 exclude = [
     ".venv/",
     "tests/",
 ]
+
+[[tool.mypy.overrides]]
+module = ["newsagent.tools.ner_extractor"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["newsagent.tools.*"]
+ignore_missing_imports = true

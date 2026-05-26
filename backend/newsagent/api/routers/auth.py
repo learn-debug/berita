@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.requests import Request
@@ -38,7 +38,7 @@ async def login(req: LoginRequest, response: Response) -> LoginResponse:
         key=COOKIE_NAME,
         value=token,
         max_age=max_age,
-        expires=int((datetime.now(timezone.utc) + timedelta(hours=settings.jwt_expiry_hours)).timestamp()),
+        expires=int((datetime.now(UTC) + timedelta(hours=settings.jwt_expiry_hours)).timestamp()),
         httponly=True,
         samesite="lax",
         secure=False,

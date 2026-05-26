@@ -31,7 +31,8 @@ class CMSClient(BaseTool):
         if client is None:
             await self.setup()
             client = self._client
-        assert client is not None
+        if client is None:
+            raise RuntimeError("CMS client not initialized after setup")
         safe_title = InputSanitizer.sanitize(title)
         safe_content = InputSanitizer.sanitize(content)
         response = await client.post(

@@ -25,7 +25,7 @@ class MistralAdapter(BaseLLMAdapter):
             messages: list[SystemMessage | UserMessage] = []
             if system:
                 messages = [SystemMessage(content=system)]
-            messages = messages + [UserMessage(content=prompt)]
+            messages = [*messages, UserMessage(content=prompt)]
 
             response = await self._client.chat.complete_async(
                 model=self._model,
@@ -50,7 +50,7 @@ class MistralAdapter(BaseLLMAdapter):
             messages: list[SystemMessage | UserMessage] = []
             if system:
                 messages = [SystemMessage(content=system)]
-            messages = messages + [UserMessage(content=prompt)]
+            messages = [*messages, UserMessage(content=prompt)]
 
             response = await self._client.chat.complete_async(
                 model=self._model,

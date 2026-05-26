@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.websocket("/ws/{article_id}")
-async def pipeline_ws(websocket: WebSocket, article_id: str, token: str | None = None) -> None:
+async def pipeline_ws(websocket: WebSocket, article_id: str, _token: str | None = None) -> None:
     from newsagent.api.auth import verify_ws_token
     from newsagent.api.main import _event_bus, _store
 
@@ -47,7 +47,7 @@ async def pipeline_ws(websocket: WebSocket, article_id: str, token: str | None =
                 await websocket.send_json(event)
                 if event.get("type") in ("pipeline_complete", "pipeline_error"):
                     break
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 try:
                     await websocket.send_json({"type": "ping"})
                 except Exception:

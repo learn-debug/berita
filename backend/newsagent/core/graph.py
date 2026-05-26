@@ -124,18 +124,18 @@ def build_graph(cleanup_handlers: list | None = None, event_bus: Any | None = No
 
     workflow = StateGraph(ArticleState)
 
-    workflow.add_node("orchestrator", _wrap_node("orchestrator", orchestrator.run, event_bus))
-    workflow.add_node("rag_pipeline", _wrap_node("rag_pipeline", rag_pipeline.run, event_bus))
-    workflow.add_node("draft_agent", _wrap_node("draft_agent", draft.run, event_bus))
-    workflow.add_node("editor_agent", _wrap_node("editor_agent", editor.run, event_bus))
-    workflow.add_node("input_ingestion", _wrap_node("input_ingestion", input_ingestion.run, event_bus))
-    workflow.add_node("query_generation", _wrap_node("query_generation", query_gen.run, event_bus))
-    workflow.add_node("evidence_retrieval", _wrap_node("evidence_retrieval", evidence_ret.run, event_bus))
-    workflow.add_node("verdict_prediction", _wrap_node("verdict_prediction", verdict.run, event_bus))
-    workflow.add_node("aggregator", _wrap_node("aggregator", aggregator.run, event_bus))
-    workflow.add_node("quality_gate", _wrap_node("quality_gate", quality.run, event_bus))
-    workflow.add_node("memory_agent", _wrap_node("memory_agent", memory.run, event_bus))
-    workflow.add_node("publisher", _wrap_node("publisher", publisher.run, event_bus))
+    workflow.add_node("orchestrator", _wrap_node("orchestrator", orchestrator.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("rag_pipeline", _wrap_node("rag_pipeline", rag_pipeline.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("draft_agent", _wrap_node("draft_agent", draft.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("editor_agent", _wrap_node("editor_agent", editor.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("input_ingestion", _wrap_node("input_ingestion", input_ingestion.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("query_generation", _wrap_node("query_generation", query_gen.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("evidence_retrieval", _wrap_node("evidence_retrieval", evidence_ret.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("verdict_prediction", _wrap_node("verdict_prediction", verdict.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("aggregator", _wrap_node("aggregator", aggregator.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("quality_gate", _wrap_node("quality_gate", quality.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("memory_agent", _wrap_node("memory_agent", memory.run, event_bus))  # type: ignore[call-overload]
+    workflow.add_node("publisher", _wrap_node("publisher", publisher.run, event_bus))  # type: ignore[call-overload]
 
     workflow.set_entry_point("orchestrator")
 

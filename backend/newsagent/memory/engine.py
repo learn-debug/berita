@@ -21,10 +21,11 @@ class PostgresEngine:
 
     async def pool(self) -> asyncpg.Pool:
         current_loop = asyncio.get_running_loop()
-        if self._pool_instance is not None:
-            if self._pool_loop is not current_loop or self._pool_loop.is_closed():
-                self._pool_instance = None
-                self._schema_initialized = False
+        if self._pool_instance is not None and (
+            self._pool_loop is not current_loop or self._pool_loop.is_closed()
+        ):
+            self._pool_instance = None
+            self._schema_initialized = False
 
         if self._pool_instance is None:
             dsn = settings.database_url.replace("+asyncpg", "")

@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any
+from typing import Any, ClassVar
 
 from lxml.html import fromstring
 
@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 class InputSanitizer:
-    BLOCKED_TAGS: set[str] = {"script", "style", "iframe", "object", "embed", "svg", "noscript"}
-    BLOCKED_ATTR_PATTERNS: list[re.Pattern[str]] = [
+    BLOCKED_TAGS: ClassVar[set[str]] = {"script", "style", "iframe", "object", "embed", "svg", "noscript"}
+    BLOCKED_ATTR_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(r"^\s*javascript:", re.IGNORECASE),
         re.compile(r"^\s*data:", re.IGNORECASE),
         re.compile(r"^\s*vbscript:", re.IGNORECASE),

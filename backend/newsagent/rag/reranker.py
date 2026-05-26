@@ -65,6 +65,6 @@ class Reranker:
             return documents
         return sorted(
             documents,
-            key=lambda d: len(set(w.lower() for w in d.split() if w.lower() not in STOP_WORDS) & query_words),
+            key=lambda d: len({w.lower() for w in d.split() if w.lower() not in STOP_WORDS} & query_words),
             reverse=True,
         )

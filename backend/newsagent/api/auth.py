@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from fastapi import Cookie, Header, HTTPException
@@ -21,7 +21,7 @@ def _algorithm() -> str:
 
 
 def create_token() -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "sub": "admin",
         "iat": now,

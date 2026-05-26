@@ -10,10 +10,10 @@ from newsagent.tools.web_search import WebSearchTool
 __all__ = [
     "BaseTool",
     "CMSClient",
-    "extract_entities",
-    "search_provider_factory",
     "SearchProvider",
     "SerperSearchProvider",
     "TavilySearchProvider",
     "WebSearchTool",
+    "extract_entities",
+    "search_provider_factory",
 ]
