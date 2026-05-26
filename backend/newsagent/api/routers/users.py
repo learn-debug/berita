@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from newsagent.api.auth import verify_api_key_or_jwt, verify_token
 from newsagent.api.auth_utils import hash_password
-from newsagent.core.config import settings
 from newsagent.memory.engine import get_engine
 
 logger = logging.getLogger(__name__)
@@ -62,8 +61,12 @@ async def create_user(body: CreateUserRequest, _auth: None = Depends(_require_ow
         raise HTTPException(status_code=409, detail="Email sudah terdaftar")
 
     pw_hash = hash_password(body.password)
+    insert_sql = (
+        "INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4) "
+        "RETURNING id, email, name, role, is_active, created_at"
+    )
     row = await engine.fetchrow(
-        "INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role, is_active, created_at",
+        insert_sql,
         body.email,
         pw_hash,
         body.name or body.email.split("@")[0],
@@ -105,8 +108,12 @@ async def update_user(user_id: str, body: UpdateUserRequest, _auth: None = Depen
 
     params.append(user_id)
     set_clause = ", ".join(updates)
+    update_sql = (
+        f"UPDATE users SET {set_clause}, updated_at = NOW() WHERE id = ${idx} "
+        "RETURNING id, email, name, role, is_active, created_at"
+    )
     row = await engine.fetchrow(
-        f"UPDATE users SET {set_clause}, updated_at = NOW() WHERE id = ${idx} RETURNING id, email, name, role, is_active, created_at",
+        update_sql,
         *params,
     )
     return dict(row) if row else {}

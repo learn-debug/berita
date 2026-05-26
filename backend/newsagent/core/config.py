@@ -54,7 +54,9 @@ class Settings(BaseSettings):
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expiry_hours: int = 24
-    secure_cookie: bool = False
+    secure_cookie: bool = True
+
+    cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     cms_base_url: str = ""
     cms_api_key: str = ""

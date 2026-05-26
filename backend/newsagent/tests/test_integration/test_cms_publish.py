@@ -5,8 +5,12 @@ import pytest
 from httpx import ASGITransport
 
 from newsagent.agents.publisher_agent import PublisherAgent
+from newsagent.api.auth import verify_api_key_or_jwt
+from newsagent.api.main import app
 from newsagent.core.state import ArticleState
 from newsagent.tools.cms_client import CMSClient
+
+app.dependency_overrides[verify_api_key_or_jwt] = lambda: None
 
 
 class FakeLLMPublisher:

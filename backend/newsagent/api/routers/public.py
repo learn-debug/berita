@@ -47,9 +47,7 @@ async def list_public_articles(
     """
     rows = await engine.fetch(select_sql, *params, limit, offset)
 
-    articles = []
-    for r in rows:
-        articles.append(_map_public_article(r))
+    articles = [_map_public_article(r) for r in rows]
 
     return {
         "total": total,
@@ -94,13 +92,14 @@ async def list_categories() -> dict[str, Any]:
         ORDER BY count DESC
     """)
 
-    categories = []
-    for r in rows:
-        categories.append({
+    categories = [
+        {
             "slug": r["input_type"],
             "name": _category_name(r["input_type"]),
             "count": r["count"],
-        })
+        }
+        for r in rows
+    ]
 
     return {"categories": categories}
 
@@ -109,15 +108,11 @@ async def list_categories() -> dict[str, Any]:
 async def get_public_stats() -> dict[str, Any]:
     engine = await get_engine()
 
-    total = await engine.fetchval(
-        "SELECT COUNT(*) FROM articles WHERE status = 'published'"
-    )
+    total = await engine.fetchval("SELECT COUNT(*) FROM articles WHERE status = 'published'")
     avg_score = await engine.fetchval(
         "SELECT COALESCE(AVG(credibility_score), 0) FROM articles WHERE status = 'published'"
     )
-    latest = await engine.fetchval(
-        "SELECT MAX(created_at) FROM articles WHERE status = 'published'"
-    )
+    latest = await engine.fetchval("SELECT MAX(created_at) FROM articles WHERE status = 'published'")
 
     return {
         "total_articles": total,
@@ -128,10 +123,18 @@ async def get_public_stats() -> dict[str, Any]:
 
 def _map_public_article(row: dict[str, Any]) -> dict[str, Any]:
     title = row.get("published_title") or row.get("title") or row.get("raw_input", "")[:80]
-    body = row.get("published_body") or row.get("aggregated_article") or row.get("edited_draft") or row.get("draft") or ""
+    body = (
+        row.get("published_body")
+        or row.get("aggregated_article")
+        or row.get("edited_draft")
+        or row.get("draft")
+        or ""
+    )
     report_raw = row.get("fact_check_report")
-    fact_check = report_raw if isinstance(report_raw, dict) else (
-        json.loads(report_raw) if isinstance(report_raw, str) else {}
+    fact_check = (
+        report_raw
+        if isinstance(report_raw, dict)
+        else (json.loads(report_raw) if isinstance(report_raw, str) else {})
     )
 
     claims = []

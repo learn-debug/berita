@@ -78,7 +78,8 @@ class PostgresEngine:
 
                     pw_hash = hash_password(app_settings.owner_password)
                     await conn.execute(
-                        "INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, 'owner') ON CONFLICT (email) DO NOTHING",
+                        "INSERT INTO users (email, password_hash, name, role) "
+                        "VALUES ($1, $2, $3, 'owner') ON CONFLICT (email) DO NOTHING",
                         app_settings.owner_email,
                         pw_hash,
                         app_settings.owner_name or app_settings.owner_email,

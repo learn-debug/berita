@@ -3,9 +3,12 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from newsagent.api.auth import verify_api_key_or_jwt
 from newsagent.api.main import app
 from newsagent.core.config import settings
 from newsagent.security.rate_limiter import RateLimiter
+
+app.dependency_overrides[verify_api_key_or_jwt] = lambda: None
 
 
 @pytest.fixture
@@ -107,7 +110,7 @@ async def test_process_endpoint_pipeline_error() -> None:
 @pytest.mark.asyncio
 async def test_process_endpoint_rate_limited() -> None:
     transport = ASGITransport(app=app)
-    with patch.object(RateLimiter, "_allow", return_value=False):
+    with patch.object(RateLimiter, "acquire", new_callable=AsyncMock, return_value=False):
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post("/process", json={"input_type": "topic", "raw_input": "test"})
             assert response.status_code == 429
@@ -116,6 +119,7 @@ async def test_process_endpoint_rate_limited() -> None:
 
 @pytest.mark.asyncio
 async def test_auth_missing_key_returns_401() -> None:
+    app.dependency_overrides.clear()
     original = settings.api_key
     settings.api_key = "secret-123"
     transport = ASGITransport(app=app)
@@ -126,10 +130,12 @@ async def test_auth_missing_key_returns_401() -> None:
         )
         assert response.status_code == 401
     settings.api_key = original
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: None
 
 
 @pytest.mark.asyncio
 async def test_auth_wrong_key_returns_401() -> None:
+    app.dependency_overrides.clear()
     original = settings.api_key
     settings.api_key = "secret-123"
     transport = ASGITransport(app=app)
@@ -141,14 +147,18 @@ async def test_auth_wrong_key_returns_401() -> None:
         )
         assert response.status_code == 401
     settings.api_key = original
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: None
 
 
 @pytest.mark.asyncio
 async def test_auth_valid_key_passes() -> None:
+    app.dependency_overrides.clear()
     import newsagent.api.main as api_main
 
     api_main._graph = AsyncMock()
     api_main._graph.ainvoke = AsyncMock(return_value={"article_id": "art_test", "status": "published"})
+    api_main._store = AsyncMock()
+    api_main._store.save_article = AsyncMock()
 
     original = settings.api_key
     settings.api_key = "secret-123"
@@ -161,10 +171,12 @@ async def test_auth_valid_key_passes() -> None:
         )
         assert response.status_code == 202
     settings.api_key = original
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: None
 
 
 @pytest.mark.asyncio
-async def test_auth_disabled_when_no_key() -> None:
+async def test_auth_fails_when_no_key_and_no_token() -> None:
+    app.dependency_overrides.clear()
     original = settings.api_key
     settings.api_key = ""
     transport = ASGITransport(app=app)
@@ -173,8 +185,9 @@ async def test_auth_disabled_when_no_key() -> None:
             "/api/v1/articles/process",
             json={"input_type": "topic", "raw_input": "test"},
         )
-        assert response.status_code in (202, 500)
+        assert response.status_code == 401
     settings.api_key = original
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: None
 
 
 @pytest.mark.asyncio

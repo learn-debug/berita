@@ -25,7 +25,12 @@ _VALID_TRANSITIONS: dict[ArticleStatus, set[ArticleStatus]] = {
         ArticleStatus.PUBLISHED,
         ArticleStatus.FAILED,
     },
-    ArticleStatus.REVIEW: {ArticleStatus.APPROVED, ArticleStatus.REJECTED, ArticleStatus.PROCESSING, ArticleStatus.PUBLISHED},
+    ArticleStatus.REVIEW: {
+        ArticleStatus.APPROVED,
+        ArticleStatus.REJECTED,
+        ArticleStatus.PROCESSING,
+        ArticleStatus.PUBLISHED,
+    },
     ArticleStatus.REVISION: {ArticleStatus.PROCESSING},
     ArticleStatus.APPROVED: {ArticleStatus.PUBLISHED},
     ArticleStatus.REJECTED: set(),

@@ -1,4 +1,5 @@
 import logging
+import secrets
 from datetime import UTC, datetime, timedelta
 
 import jwt
@@ -28,13 +29,21 @@ def create_token(email: str = "admin", role: str = "editor", name: str = "") -> 
         "name": name,
         "iat": now,
         "exp": now + timedelta(hours=settings.jwt_expiry_hours),
+        "iss": "newsagent",
+        "aud": "newsagent-api",
     }
     return jwt.encode(payload, _secret(), algorithm=_algorithm())
 
 
 def verify_token(token: str) -> dict | None:
     try:
-        return jwt.decode(token, _secret(), algorithms=[_algorithm()])
+        return jwt.decode(
+            token,
+            _secret(),
+            algorithms=[_algorithm()],
+            issuer="newsagent",
+            audience="newsagent-api",
+        )
     except jwt.ExpiredSignatureError:
         logger.warning("[auth] token expired")
         return None
@@ -48,7 +57,7 @@ async def verify_api_key_or_jwt(
     newsagent_token: str | None = Cookie(None),
 ) -> None:
     token = authorization.removeprefix("Bearer ").strip()
-    if token == settings.api_key:
+    if settings.api_key and secrets.compare_digest(token, settings.api_key):
         return
     if token and verify_token(token):
         return
@@ -61,6 +70,6 @@ async def verify_ws_token(websocket: WebSocket) -> bool:
     token = websocket.query_params.get("token", "")
     if not token:
         return False
-    if token == settings.api_key:
+    if settings.api_key and secrets.compare_digest(token, settings.api_key):
         return True
     return verify_token(token) is not None

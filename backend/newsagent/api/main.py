@@ -17,6 +17,7 @@ from newsagent.api.routers.users import router as users_router
 from newsagent.api.routers.ws import router as ws_router
 from newsagent.api.schemas import ArticleResponse, ProcessRequest
 from newsagent.api.store import ArticleStore
+from newsagent.core.config import settings
 from newsagent.core.state import ArticleState, ArticleStatus
 from newsagent.security.input_sanitizer import InputSanitizer
 from newsagent.security.rate_limiter import RateLimiter
@@ -35,6 +36,14 @@ async def lifespan(_app: FastAPI):
 
     global _graph
     _graph = build_graph(cleanup_handlers=_cleanup_handlers, event_bus=_event_bus)
+
+    from newsagent.core.config import settings
+
+    if settings.jwt_secret == "change-me-in-production":
+        logger.critical(
+            "[SECURITY ALERT] JWT_SECRET is set to the default insecure value ('change-me-in-production'). "
+            "Please configure a strong, unique JWT_SECRET in production environments."
+        )
 
     stale = await _store.reset_stale_processing()
     if stale:
@@ -61,7 +70,7 @@ app = FastAPI(title="NewsAgent API", version="0.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
