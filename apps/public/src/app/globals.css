@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: oklch(0.98 0 0);
+  --color-foreground: oklch(0.14 0 0);
+  --color-primary: oklch(0.55 0.16 260);
+  --color-primary-foreground: oklch(0.98 0 0);
+  --color-muted: oklch(0.94 0.01 260);
+  --color-muted-foreground: oklch(0.55 0.02 260);
+  --color-accent: oklch(0.5 0.18 150);
+  --color-accent-foreground: oklch(0.98 0 0);
+  --color-destructive: oklch(0.58 0.2 25);
+  --color-border: oklch(0.88 0.01 260);
+  --color-card: oklch(0.99 0 0);
+  --color-card-foreground: oklch(0.18 0 0);
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
+
+.dark {
+  --color-background: oklch(0.14 0.01 260);
+  --color-foreground: oklch(0.93 0 0);
+  --color-primary: oklch(0.7 0.15 260);
+  --color-primary-foreground: oklch(0.14 0 0);
+  --color-muted: oklch(0.22 0.01 260);
+  --color-muted-foreground: oklch(0.65 0.02 260);
+  --color-accent: oklch(0.65 0.16 150);
+  --color-accent-foreground: oklch(0.14 0 0);
+  --color-destructive: oklch(0.7 0.18 25);
+  --color-border: oklch(0.28 0.01 260);
+  --color-card: oklch(0.18 0.01 260);
+  --color-card-foreground: oklch(0.93 0 0);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentColor);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+@utility container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@utility prose {
+  max-width: 72ch;
+  line-height: 1.75;
+}
+
+.prose p {
+  margin-bottom: 1.25em;
+}
+
+.prose h2 {
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.prose h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-size: 1.25em;
+  font-weight: 600;
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1em;
+  margin: 1.5em 0;
+  color: var(--color-muted-foreground);
+  font-style: italic;
+}
