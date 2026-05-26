@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sys
 import time
 from collections.abc import Callable
 from functools import wraps
@@ -14,12 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 class RateLimiter:
-    def __init__(self, max_calls: int = 60, window: float = 60.0) -> None:
+    def __init__(self, max_calls: int = 60, window: float = 60.0, use_redis: bool = True) -> None:
         self._max_calls = max_calls
         self._window = window
-
-        # Disable Redis if running in pytest
-        self._use_redis = "pytest" not in sys.modules
+        self._use_redis = use_redis
 
         # Local fallback
         self._calls: list[float] = []
