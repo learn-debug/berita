@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -24,6 +25,10 @@ const links = [
   { href: "/pipeline", label: "Pipeline", icon: GitBranch },
   { href: "/articles", label: "Artikel", icon: FileText },
   { href: "/articles/new", label: "Input Artikel", icon: PenSquare },
+];
+
+const ownerLinks = [
+  { href: "/users", label: "Pengguna", icon: Users },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ];
 
@@ -34,7 +39,7 @@ function isActive(pathname: string, href: string): boolean {
 
 function SidebarContent() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, isOwner, user } = useAuth();
 
   return (
     <>
@@ -43,9 +48,29 @@ function SidebarContent() {
           NewsAgent
         </Link>
         <p className="text-xs text-muted-foreground mt-0.5">Dashboard Redaksi</p>
+        {user && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {user.name || user.email} · {isOwner ? "Owner" : "Editor"}
+          </p>
+        )}
       </div>
       <nav className="p-2 space-y-1 flex-1" aria-label="Navigasi utama">
         {links.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+              isActive(pathname, href)
+                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+            )}
+          >
+            <Icon className="w-4 h-4 shrink-0" />
+            {label}
+          </Link>
+        ))}
+        {isOwner && ownerLinks.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}

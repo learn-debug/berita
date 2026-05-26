@@ -205,7 +205,7 @@ export default function ArticleDetailPage() {
                       <DialogHeader>
                         <DialogTitle>Setujui Artikel</DialogTitle>
                         <DialogDescription>
-                          Artikel akan dikirim ke Publisher Agent untuk ditayangkan.
+                          Artikel akan langsung ditayangkan di situs publik.
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>

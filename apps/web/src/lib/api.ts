@@ -54,6 +54,15 @@ export interface ArticleState {
   updated_at: number;
 }
 
+export interface UserItem {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface ArticleListResponse {
   total: number;
   page: number;
@@ -109,4 +118,15 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ action, content }),
     }),
+
+  listUsers: () => request<UserItem[]>("/users"),
+
+  createUser: (data: { email: string; password: string; name?: string; role?: string }) =>
+    request<UserItem>("/users", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  deleteUser: (id: string) =>
+    request<{ ok: boolean }>(`/users/${id}`, { method: "DELETE" }),
 };

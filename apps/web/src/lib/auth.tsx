@@ -4,24 +4,35 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { useRouter } from "next/navigation";
 import { setRedirectFn } from "./auth-redirect";
 
+interface UserInfo {
+  email: string;
+  role: string;
+  name: string;
+}
+
 interface AuthContextValue {
   token: string | null;
-  login: (password: string) => Promise<void>;
+  user: UserInfo | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isOwner: boolean;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   token: null,
+  user: null,
   login: async () => {},
   logout: () => {},
   isAuthenticated: false,
+  isOwner: false,
   loading: true,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -33,18 +44,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then((data) => {
         if (data.valid) {
           setToken("authenticated");
+          setUser({ email: data.email, role: data.role, name: data.name });
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [router]);
 
-  const login = useCallback(async (password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const res = await fetch("/api/v1/auth/login", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ email, password }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -52,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const data = await res.json();
     setToken(data.token);
+    setUser({ email: data.email, role: data.role, name: data.name });
   }, []);
 
   const logout = useCallback(async () => {
@@ -64,11 +77,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // best effort — clear state regardless
     }
     setToken(null);
+    setUser(null);
     router.replace("/login");
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, isAuthenticated: !!token, loading }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        login,
+        logout,
+        isAuthenticated: !!token,
+        isOwner: user?.role === "owner",
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
