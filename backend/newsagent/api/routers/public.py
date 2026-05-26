@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
-from newsagent.api.store import ensure_uuid, map_row_to_state
+from newsagent.api.store import ensure_uuid
 from newsagent.memory.engine import get_engine
 
 logger = logging.getLogger(__name__)

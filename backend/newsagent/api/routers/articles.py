@@ -19,7 +19,7 @@ _background_tasks: set[asyncio.Task] = set()
 
 
 def _make_title(raw: str) -> str:
-    return raw[:80] if raw else "Untitled"
+    return raw[:120].strip() if raw else "Untitled"
 
 
 @router.post("/process", status_code=202)
@@ -153,7 +153,16 @@ async def patch_article(article_id: str, body: PatchRequest, _auth: None = Depen
     action = body.action
     current_status = article.get("status", "")
     if action == "approve":
-        target = ArticleStatus.APPROVED.value
+        target = ArticleStatus.PUBLISHED.value
+        article["published_title"] = _make_title(
+            article.get("raw_input") or ""
+        )
+        article["published_body"] = (
+            article.get("aggregated_article")
+            or article.get("edited_draft")
+            or article.get("draft")
+            or ""
+        )
     elif action == "reject":
         target = ArticleStatus.REJECTED.value
     elif action == "retry":

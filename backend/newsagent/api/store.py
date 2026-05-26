@@ -139,9 +139,10 @@ class ArticleStore:
             INSERT INTO articles (
                 id, article_id_str, input_type, raw_input, title, rag_context, draft,
                 fact_check_report, edited_draft, aggregated_article, credibility_score,
-                status, revision_count, created_at, updated_at
+                status, revision_count, created_at, updated_at,
+                published_title, published_body, published_url
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
             ON CONFLICT (id) DO UPDATE SET
                 input_type = EXCLUDED.input_type,
                 raw_input = EXCLUDED.raw_input,
@@ -154,6 +155,9 @@ class ArticleStore:
                 credibility_score = EXCLUDED.credibility_score,
                 status = EXCLUDED.status,
                 revision_count = EXCLUDED.revision_count,
+                published_title = EXCLUDED.published_title,
+                published_body = EXCLUDED.published_body,
+                published_url = EXCLUDED.published_url,
                 updated_at = EXCLUDED.updated_at
             """,
             uuid.UUID(uid),
@@ -171,6 +175,9 @@ class ArticleStore:
             int(state.get("revision_count") or 0),
             created_at,
             now,
+            state.get("published_title") or "",
+            state.get("published_body") or "",
+            state.get("published_url"),
         )
 
         # Sync events

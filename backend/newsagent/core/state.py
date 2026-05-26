@@ -25,7 +25,7 @@ _VALID_TRANSITIONS: dict[ArticleStatus, set[ArticleStatus]] = {
         ArticleStatus.PUBLISHED,
         ArticleStatus.FAILED,
     },
-    ArticleStatus.REVIEW: {ArticleStatus.APPROVED, ArticleStatus.REJECTED, ArticleStatus.PROCESSING},
+    ArticleStatus.REVIEW: {ArticleStatus.APPROVED, ArticleStatus.REJECTED, ArticleStatus.PROCESSING, ArticleStatus.PUBLISHED},
     ArticleStatus.REVISION: {ArticleStatus.PROCESSING},
     ArticleStatus.APPROVED: {ArticleStatus.PUBLISHED},
     ArticleStatus.REJECTED: set(),
@@ -65,6 +65,7 @@ class ArticleState(TypedDict):
     draft: str
     fact_check_report: FactCheckReport
     edited_draft: str
+    title: NotRequired[str]
     aggregated_article: str
     credibility_score: float
     status: str

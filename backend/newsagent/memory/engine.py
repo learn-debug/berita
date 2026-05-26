@@ -6,7 +6,7 @@ from typing import Any
 import asyncpg
 from pgvector.asyncpg import register_vector
 
-from newsagent.core.config import settings
+from newsagent.core.config import settings as app_settings
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class PostgresEngine:
             self._schema_initialized = False
 
         if self._pool_instance is None:
-            dsn = settings.database_url.replace("+asyncpg", "")
+            dsn = app_settings.database_url.replace("+asyncpg", "")
             self._pool_instance = await asyncpg.create_pool(
                 dsn,
                 min_size=1,
@@ -71,6 +71,20 @@ class PostgresEngine:
                         timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
                     )
                 """)
+                # Seed default owner if no users exist
+                owner_exists = await conn.fetchval("SELECT COUNT(*) FROM users")
+                if owner_exists == 0 and app_settings.owner_email and app_settings.owner_password:
+                    from newsagent.api.auth_utils import hash_password
+
+                    pw_hash = hash_password(app_settings.owner_password)
+                    await conn.execute(
+                        "INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, 'owner') ON CONFLICT (email) DO NOTHING",
+                        app_settings.owner_email,
+                        pw_hash,
+                        app_settings.owner_name or app_settings.owner_email,
+                    )
+                    logger.info("[schema] seeded owner: %s", app_settings.owner_email)
+
                 logger.info("[schema] initialized from %s", schema_path)
                 self._schema_initialized = True
             else:

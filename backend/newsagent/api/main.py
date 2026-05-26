@@ -13,6 +13,7 @@ from newsagent.api.event_bus import EventBus
 from newsagent.api.routers.articles import router as articles_router
 from newsagent.api.routers.auth import router as auth_router
 from newsagent.api.routers.public import router as public_router
+from newsagent.api.routers.users import router as users_router
 from newsagent.api.routers.ws import router as ws_router
 from newsagent.api.schemas import ArticleResponse, ProcessRequest
 from newsagent.api.store import ArticleStore
@@ -69,6 +70,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(articles_router)
 app.include_router(public_router)
+app.include_router(users_router)
 app.include_router(ws_router)
 
 limiter = RateLimiter(max_calls=60, window=60.0)

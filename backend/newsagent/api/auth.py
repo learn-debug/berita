@@ -20,10 +20,12 @@ def _algorithm() -> str:
     return settings.jwt_algorithm
 
 
-def create_token() -> str:
+def create_token(email: str = "admin", role: str = "editor", name: str = "") -> str:
     now = datetime.now(UTC)
     payload = {
-        "sub": "admin",
+        "sub": email,
+        "role": role,
+        "name": name,
         "iat": now,
         "exp": now + timedelta(hours=settings.jwt_expiry_hours),
     }
@@ -45,18 +47,13 @@ async def verify_api_key_or_jwt(
     authorization: str = Header(""),
     newsagent_token: str | None = Cookie(None),
 ) -> None:
-    if not settings.api_key and not settings.admin_password:
-        return
-
     token = authorization.removeprefix("Bearer ").strip()
     if token == settings.api_key:
         return
     if token and verify_token(token):
         return
-
     if newsagent_token and verify_token(newsagent_token):
         return
-
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 
